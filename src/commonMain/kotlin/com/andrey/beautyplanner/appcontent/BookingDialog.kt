@@ -9,13 +9,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
 import com.andrey.beautyplanner.AppSettings
-import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.Appointment
+import com.andrey.beautyplanner.Locales
 
 @Composable
 fun BookingDialog(
@@ -39,20 +39,43 @@ fun BookingDialog(
             backgroundColor = MaterialTheme.colors.surface
         ) {
             Column(
-                modifier = Modifier.padding(28.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(28.dp)
+                    .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = if (initialData != null) Locales.t("save") else Locales.t("nav_day"),
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = (22 * fontScale).sp,
-                    color = MaterialTheme.colors.primary
-                )
-                Text(
-                    "${Locales.t("start_time")}: $time",
-                    fontSize = (14 * fontScale).sp,
-                    color = Color.Gray
-                )
+                // Верхняя строка: заголовок по центру + крестик справа
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (initialData != null) Locales.t("save") else Locales.t("nav_day"),
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = (22 * fontScale).sp,
+                            color = MaterialTheme.colors.primary
+                        )
+                        Text(
+                            "${Locales.t("start_time")}: $time",
+                            fontSize = (14 * fontScale).sp,
+                            color = Color.Gray
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -87,7 +110,8 @@ fun BookingDialog(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = {
-                        Icon(Icons.Default.Face, null, tint = MaterialTheme.colors.primary)
+                        // Если Icons.Default.Brush не соберётся в твоей сборке — замени на Icons.Default.Spa
+                        Icon(Icons.Default.Brush, null, tint = MaterialTheme.colors.primary)
                     }
                 )
                 Spacer(modifier = Modifier.height(14.dp))
@@ -99,7 +123,7 @@ fun BookingDialog(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = {
-                        Icon(Icons.Default.Info, null, tint = MaterialTheme.colors.primary)
+                        Icon(Icons.Default.AttachMoney, null, tint = MaterialTheme.colors.primary)
                     }
                 )
 

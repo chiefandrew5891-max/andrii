@@ -28,7 +28,6 @@ object Locales {
             "all_appointments_list" to "Список всех записей:",
             "no_appointments" to "Нет записей",
 
-            // Upcoming list
             "upcoming_appointments_list" to "Предстоящие записи:",
             "no_upcoming_appointments" to "Нет предстоящих записей",
 
@@ -45,7 +44,6 @@ object Locales {
             "export_db" to "Экспорт",
             "import_db" to "Импорт",
 
-            // Backup dialogs
             "close" to "Закрыть",
             "export_hint" to "Скопируйте этот JSON и сохраните его. Он нужен для переноса записей на другое устройство.",
             "import_hint" to "Вставьте JSON резервной копии ниже и нажмите «Импорт». Текущие записи будут заменены.",
@@ -57,18 +55,44 @@ object Locales {
             "delete_title" to "Удаление",
             "delete_btn" to "Удалить",
             "delete_confirm_prefix" to "Удалить запись",
+            "delete_confirm_at" to "на",
+            "continue_question" to "Продолжить?",
+
             "transfer_appt" to "Перенести запись",
+            "transfer_title" to "Перенос записи",
+            "transfer_choose_time" to "Выберите время",
+            "transfer_confirm" to "Перенести",
+
+            "transfer_conflict_title" to "Время занято",
+            "transfer_conflict_text" to "Это время уже занято другой записью. Вы хотите перенести текущую запись сюда и затем переназначить вторую запись?",
+            "transfer_conflict_a" to "Переносим",
+            "transfer_conflict_b" to "Занято",
+            "transfer_agree" to "Согласовать",
+
+            "reschedule_title_for" to "Переназначить за��ись для",
+            "reschedule_choose_time" to "Выберите новое время",
+            "reschedule_confirm" to "Сохранить",
 
             "start_time" to "Начало",
             "duration_hours" to "Длительность (ч)",
 
-            // Months (nominative) for calendar title
+            "notifications_section" to "Уведомления",
+            "notifications_enabled" to "Включить уведомления",
+            "notif_sound_label" to "Звук уведомления",
+            "notif_sound_default" to "По умолчанию",
+            "notif_sound_silent" to "Без звука",
+            "reminders_when" to "Напоминать за:",
+
+            "remind_days" to "Дни",
+            "remind_hours" to "Часы",
+            "remind_summary" to "Итог",
+            "remind_off" to "Выключено",
+
             "month_jan" to "Январь", "month_feb" to "Февраль", "month_mar" to "Март",
             "month_apr" to "Апрель", "month_may" to "Май", "month_jun" to "Июнь",
             "month_jul" to "Июль", "month_aug" to "Август", "month_sep" to "Сентябрь",
             "month_oct" to "Октябрь", "month_nov" to "Ноябрь", "month_dec" to "Декабрь",
 
-            // Months (genitive) for collapsed header: "21 марта"
             "month_jan_gen" to "января",
             "month_feb_gen" to "февраля",
             "month_mar_gen" to "марта",
@@ -129,18 +153,44 @@ object Locales {
             "delete_title" to "Delete",
             "delete_btn" to "Delete",
             "delete_confirm_prefix" to "Delete appointment for",
+            "delete_confirm_at" to "at",
+            "continue_question" to "Continue?",
+
             "transfer_appt" to "Transfer appointment",
+            "transfer_title" to "Transfer appointment",
+            "transfer_choose_time" to "Choose time",
+            "transfer_confirm" to "Transfer",
+
+            "transfer_conflict_title" to "Time is busy",
+            "transfer_conflict_text" to "This time is already booked. Do you want to move the current appointment here and then reschedule the other one?",
+            "transfer_conflict_a" to "Moving",
+            "transfer_conflict_b" to "Booked",
+            "transfer_agree" to "Agree",
+
+            "reschedule_title_for" to "Reschedule appointment for",
+            "reschedule_choose_time" to "Choose new time",
+            "reschedule_confirm" to "Save",
 
             "start_time" to "Start time",
             "duration_hours" to "Duration (h)",
+
+            "notifications_section" to "Notifications",
+            "notifications_enabled" to "Enable notifications",
+            "notif_sound_label" to "Notification sound",
+            "notif_sound_default" to "Default",
+            "notif_sound_silent" to "Silent",
+            "reminders_when" to "Remind before:",
+
+            "remind_days" to "Days",
+            "remind_hours" to "Hours",
+            "remind_summary" to "Summary",
+            "remind_off" to "Off",
 
             "month_jan" to "January", "month_feb" to "February", "month_mar" to "March",
             "month_apr" to "April", "month_may" to "May", "month_jun" to "June",
             "month_jul" to "July", "month_aug" to "August", "month_sep" to "September",
             "month_oct" to "October", "month_nov" to "November", "month_dec" to "December",
 
-            // Genitive формы для EN не нужны — делаем равными обычным месяцам,
-            // чтобы в свернутой шапке не показывало "month_mar_gen".
             "month_jan_gen" to "January",
             "month_feb_gen" to "February",
             "month_mar_gen" to "March",
@@ -201,18 +251,44 @@ object Locales {
             "delete_title" to "Elimina",
             "delete_btn" to "Elimina",
             "delete_confirm_prefix" to "Eliminare appuntamento per",
+            "delete_confirm_at" to "alle",
+            "continue_question" to "Continuare?",
+
             "transfer_appt" to "Sposta appuntamento",
+            "transfer_title" to "Sposta appuntamento",
+            "transfer_choose_time" to "Scegli l'orario",
+            "transfer_confirm" to "Sposta",
+
+            "transfer_conflict_title" to "Orario occupato",
+            "transfer_conflict_text" to "Questo orario è già prenotato. Vuoi spostare l'appuntamento qui e poi riprogrammare l'altro?",
+            "transfer_conflict_a" to "Spostiamo",
+            "transfer_conflict_b" to "Occupato",
+            "transfer_agree" to "Concorda",
+
+            "reschedule_title_for" to "Riprogrammare appuntamento per",
+            "reschedule_choose_time" to "Scegli nuovo orario",
+            "reschedule_confirm" to "Salva",
 
             "start_time" to "Ora inizio",
             "duration_hours" to "Durata (h)",
 
-            // В IT месяцы обычно пишутся со строчной буквы, но раз у тебя календарь с Заглавной — оставляем как есть.
+            "notifications_section" to "Notifiche",
+            "notifications_enabled" to "Abilita notifiche",
+            "notif_sound_label" to "Suono notifica",
+            "notif_sound_default" to "Predefinito",
+            "notif_sound_silent" to "Silenzioso",
+            "reminders_when" to "Ricorda prima:",
+
+            "remind_days" to "Giorni",
+            "remind_hours" to "Ore",
+            "remind_summary" to "Riepilogo",
+            "remind_off" to "Disattivato",
+
             "month_jan" to "Gennaio", "month_feb" to "Febbraio", "month_mar" to "Marzo",
             "month_apr" to "Aprile", "month_may" to "Maggio", "month_jun" to "Giugno",
             "month_jul" to "Luglio", "month_aug" to "Agosto", "month_sep" to "Settembre",
             "month_oct" to "Ottobre", "month_nov" to "Novembre", "month_dec" to "Dicembre",
 
-            // Genitive формы для IT тоже отдельно не нужны — делаем равными обычным месяцам.
             "month_jan_gen" to "Gennaio",
             "month_feb_gen" to "Febbraio",
             "month_mar_gen" to "Marzo",
@@ -264,27 +340,53 @@ object Locales {
 
             "close" to "Закрити",
             "export_hint" to "Скопіюйте цей JSON і збережіть його. Він потрібен для перенесення записів на інший пристрій.",
-            "import_hint" to "Вставьте JSON резервної копії ��ижче та натисніть «Імпорт». Поточні записи буде замінено.",
+            "import_hint" to "Вставте JSON резервної копії нижче та натисніть «Імпорт». Поточні записи буде замінено.",
             "import_btn" to "Імпорт",
             "import_invalid_json" to "Не вдалося імпортувати: перевірте JSON (порожній або невірний формат).",
 
-            "privacy_policy" to "Політика конфиденційності",
+            "privacy_policy" to "Політика конфіденційності",
 
             "delete_title" to "Видалення",
             "delete_btn" to "Видалити",
             "delete_confirm_prefix" to "Видалити запис",
+            "delete_confirm_at" to "о",
+            "continue_question" to "Продовжити?",
+
             "transfer_appt" to "Перенести запис",
+            "transfer_title" to "Перенесення запису",
+            "transfer_choose_time" to "Оберіть час",
+            "transfer_confirm" to "Перенести",
+
+            "transfer_conflict_title" to "Час зайнято",
+            "transfer_conflict_text" to "Цей час уже зайнятий. Перенести запис сюди і потім переназначити інший?",
+            "transfer_conflict_a" to "Переносимо",
+            "transfer_conflict_b" to "Зайнято",
+            "transfer_agree" to "Погодити",
+
+            "reschedule_title_for" to "Переназначити запис для",
+            "reschedule_choose_time" to "Оберіть новий час",
+            "reschedule_confirm" to "Зберегти",
 
             "start_time" to "Початок",
             "duration_hours" to "Тривалість (год)",
+
+            "notifications_section" to "Сповіщення",
+            "notifications_enabled" to "Увімкнути сповіщення",
+            "notif_sound_label" to "Звук сповіщення",
+            "notif_sound_default" to "За замовчуванням",
+            "notif_sound_silent" to "Без звуку",
+            "reminders_when" to "Нагадувати за:",
+
+            "remind_days" to "Дні",
+            "remind_hours" to "Години",
+            "remind_summary" to "Підсумок",
+            "remind_off" to "Вимкнено",
 
             "month_jan" to "Січень", "month_feb" to "Лютий", "month_mar" to "Березень",
             "month_apr" to "Квітень", "month_may" to "Травень", "month_jun" to "Червень",
             "month_jul" to "Липень", "month_aug" to "Серпень", "month_sep" to "Вересень",
             "month_oct" to "Жовтень", "month_nov" to "Листопад", "month_dec" to "Грудень",
 
-            // Для UK (украинского) тоже добавляем *_gen.
-            // Правильные формы родительного:
             "month_jan_gen" to "січня",
             "month_feb_gen" to "лютого",
             "month_mar_gen" to "березня",
@@ -305,5 +407,46 @@ object Locales {
     fun t(key: String): String {
         val langCode = AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "ru"
         return strings[langCode]?.get(key) ?: strings["en"]?.get(key) ?: key
+    }
+
+    fun daysCount(n: Int): String {
+        val langCode = AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "ru"
+        return when (langCode) {
+            "ru" -> "$n ${ruPlural(n, "день", "дня", "дней")}"
+            "uk" -> "$n ${ukPlural(n, "день", "дні", "днів")}"
+            "it" -> if (n == 1) "$n giorno" else "$n giorni"
+            else -> if (n == 1) "$n day" else "$n days"
+        }
+    }
+
+    fun hoursCount(n: Int): String {
+        val langCode = AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "ru"
+        return when (langCode) {
+            "ru" -> "$n ${ruPlural(n, "час", "часа", "часов")}"
+            "uk" -> "$n ${ukPlural(n, "година", "години", "годин")}"
+            "it" -> if (n == 1) "$n ora" else "$n ore"
+            else -> if (n == 1) "$n hour" else "$n hours"
+        }
+    }
+
+    private fun ruPlural(n: Int, one: String, few: String, many: String): String {
+        val nn = kotlin.math.abs(n) % 100
+        val n1 = nn % 10
+        return if (nn in 11..14) many else when (n1) {
+            1 -> one
+            2, 3, 4 -> few
+            else -> many
+        }
+    }
+
+    private fun ukPlural(n: Int, one: String, few: String, many: String): String {
+        // украинские правила очень похожи на русские
+        val nn = kotlin.math.abs(n) % 100
+        val n1 = nn % 10
+        return if (nn in 11..14) many else when (n1) {
+            1 -> one
+            2, 3, 4 -> few
+            else -> many
+        }
     }
 }

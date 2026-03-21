@@ -1,6 +1,8 @@
 package com.andrey.beautyplanner.appcontent
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -12,7 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
+import com.andrey.beautyplanner.DataManager
 import com.andrey.beautyplanner.Locales
+import com.andrey.beautyplanner.notifications.NotificationSound
+import com.andrey.beautyplanner.notifications.Notifications
+import kotlinx.coroutines.delay
+import kotlinx.datetime.Clock
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -24,8 +32,41 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
 
     val fontScale = AppSettings.getFontScale()
 
+    // --- Local slider states (smooth drag) ---
+    var daysSlider by remember { mutableStateOf(AppSettings.reminderDaysBefore.toFloat()) }
+    var hoursSlider by remember { mutableStateOf(AppSettings.reminderHoursBefore.toFloat()) }
+
+    // --- Auto-reschedule (debounced) ---
+    val notificationsEnabled = AppSettings.notificationsEnabled
+    val notificationSound = AppSettings.notificationSound
+    val reminderDays = AppSettings.reminderDaysBefore
+    val reminderHours = AppSettings.reminderHoursBefore
+
+    LaunchedEffect(notificationsEnabled, notificationSound, reminderDays, reminderHours) {
+        delay(600)
+
+        val all = runCatching { DataManager.loadFromDatabase() }.getOrNull().orEmpty()
+        val mins = AppSettings.reminderMinutesComputed()
+
+        runCatching {
+            if (AppSettings.notificationsEnabled && mins.isNotEmpty()) {
+                Notifications.rescheduleAll(
+                    appointments = all,
+                    reminderMinutes = mins,
+                    sound = AppSettings.notificationSound,
+                    nowEpochMillis = Clock.System.now().toEpochMilliseconds()
+                )
+            } else {
+                Notifications.cancelAll()
+            }
+        }
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Text(
@@ -42,7 +83,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 if (AppSettings.selectedLanguage != newValue) {
                     AppSettings.selectedLanguage = newValue
                     val code = AppSettings.languageCodes[newValue] ?: "en"
-                    Locales.currentLanguage = code // можно оставить, но не обязательно
+                    Locales.currentLanguage = code
                 }
             }
         )
@@ -76,6 +117,127 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
         Spacer(modifier = Modifier.height(10.dp))
         Divider()
 
+        // -------------------- Notifications --------------------
+        Column {
+            Text(
+                text = Locales.t("notifications_section"),
+                fontSize = (14 * fontScale).sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = Locales.t("notifications_enabled"),
+                    fontSize = (16 * fontScale).sp
+                )
+                Switch(
+                    checked = AppSettings.notificationsEnabled,
+                    onCheckedChange = { AppSettings.notificationsEnabled = it },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colors.primary,
+                        checkedTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.35f),
+                        uncheckedThumbColor = MaterialTheme.colors.onSurface.copy(alpha = 0.45f),
+                        uncheckedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.20f)
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            val soundItems = listOf(
+                Locales.t("notif_sound_default") to NotificationSound.DEFAULT,
+                Locales.t("notif_sound_silent") to NotificationSound.SILENT
+            )
+
+            SettingsDropdown(
+                label = Locales.t("notif_sound_label"),
+                selected = soundItems.firstOrNull { it.second == AppSettings.notificationSound }?.first
+                    ?: Locales.t("notif_sound_default"),
+                items = soundItems.map { it.first },
+                onSelect = { selected ->
+                    val s = soundItems.firstOrNull { it.first == selected }?.second ?: NotificationSound.DEFAULT
+                    AppSettings.notificationSound = s
+                }
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = Locales.t("reminders_when"),
+                fontSize = (14 * fontScale).sp,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Days slider (0..3)
+            Text(
+                text = "${Locales.t("remind_days")}: ${Locales.daysCount(AppSettings.reminderDaysBefore)}",
+                fontSize = (15 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Slider(
+                value = daysSlider,
+                onValueChange = { daysSlider = it },
+                onValueChangeFinished = {
+                    AppSettings.reminderDaysBefore = daysSlider.roundToInt().coerceIn(0, 3)
+                },
+                valueRange = 0f..3f,
+                steps = 0, // без точек
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colors.primary,
+                    activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
+                    inactiveTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.20f)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Hours slider (0..12)
+            Text(
+                text = "${Locales.t("remind_hours")}: ${Locales.hoursCount(AppSettings.reminderHoursBefore)}",
+                fontSize = (15 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Slider(
+                value = hoursSlider,
+                onValueChange = { hoursSlider = it },
+                onValueChangeFinished = {
+                    AppSettings.reminderHoursBefore = hoursSlider.roundToInt().coerceIn(0, 12)
+                },
+                valueRange = 0f..12f,
+                steps = 0, // без точек
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colors.primary,
+                    activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
+                    inactiveTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.20f)
+                )
+            )
+
+            val totalMinutes = AppSettings.reminderDaysBefore * 24 * 60 + AppSettings.reminderHoursBefore * 60
+            val summary = if (totalMinutes <= 0) {
+                Locales.t("remind_off")
+            } else {
+                "${Locales.daysCount(AppSettings.reminderDaysBefore)} • ${Locales.hoursCount(AppSettings.reminderHoursBefore)}"
+            }
+
+            Text(
+                text = "${Locales.t("remind_summary")}: $summary",
+                fontSize = (13 * fontScale).sp,
+                color = Color.Gray
+            )
+        }
+
+        Divider()
+
+        // -------------------- Backup --------------------
         Column {
             Text(
                 text = Locales.t("backup_section"),
@@ -109,7 +271,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
             onClick = { /* TODO */ },
@@ -118,6 +280,9 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
         ) {
             Text(text = Locales.t("privacy_policy"), fontSize = (16 * fontScale).sp)
         }
+
+        // небольшой нижний отступ, чтобы удобно скроллить до конца
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

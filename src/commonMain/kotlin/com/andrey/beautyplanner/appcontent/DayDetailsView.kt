@@ -10,22 +10,23 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
 import com.andrey.beautyplanner.AppSettings
+import com.andrey.beautyplanner.Appointment
+import com.andrey.beautyplanner.Locales
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
-import com.andrey.beautyplanner.Appointment
 
 @Composable
 fun DayDetailsView(
@@ -105,7 +106,8 @@ fun DayDetailsView(
                             }
                         ),
                     backgroundColor = if (currentAppt != null) {
-                        if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFE3F2FD)
+                        // dark оставляем как было, light делаем серым вместо голубого
+                        if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
                     } else Color.Transparent,
                     border = if (currentAppt == null)
                         BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.2f))
@@ -126,8 +128,17 @@ fun DayDetailsView(
                                 val endIdx = index + currentAppt.durationHours
                                 val endTime =
                                     if (endIdx < timeSlots.size) timeSlots[endIdx] else "Конец"
+
+                                Divider(
+                                    modifier = Modifier
+                                        .padding(vertical = 4.dp)
+                                        .width(44.dp),
+                                    thickness = 1.dp,
+                                    color = MaterialTheme.colors.primary.copy(alpha = 0.35f)
+                                )
+
                                 Text(
-                                    text = "— $endTime",
+                                    text = endTime,
                                     fontSize = (14 * fontScale).sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colors.primary.copy(alpha = 0.6f)
@@ -164,7 +175,7 @@ fun DayDetailsView(
                                 }
                                 IconButton(onClick = { onDeleteClick(currentAppt) }) {
                                     Icon(
-                                        Icons.Default.Delete,
+                                        Icons.Default.Close,
                                         null,
                                         tint = Color.Red,
                                         modifier = Modifier.size(22.dp)
@@ -173,7 +184,7 @@ fun DayDetailsView(
                             }
                         } else {
                             Text(
-                                text = "Свободно",
+                                text = Locales.t("free"),
                                 color = Color.Gray.copy(alpha = 0.4f),
                                 fontSize = (14 * fontScale).sp,
                                 modifier = Modifier.padding(start = 12.dp)

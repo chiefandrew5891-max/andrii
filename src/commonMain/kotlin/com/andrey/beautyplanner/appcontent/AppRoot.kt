@@ -25,6 +25,7 @@ import com.andrey.beautyplanner.DataManager
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.Screen
 import com.andrey.beautyplanner.getCurrentTimeHm
+import com.andrey.beautyplanner.notifications.Notifications
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
@@ -47,7 +48,19 @@ fun AppRoot() {
     var showDeleteConfirm by remember { mutableStateOf<Appointment?>(null) }
     var selectedTimeSlot by remember { mutableStateOf("") }
     var editingAppointment by remember { mutableStateOf<Appointment?>(null) }
-    var pendingTransfer by remember { mutableStateOf<Appointment?>(null) }
+
+    // перенос: инициатор (A)
+    var transferA by remember { mutableStateOf<Appointment?>(null) }
+    var showTransferPickDialog by remember { mutableStateOf(false) }
+
+    // подтверждение "занято" (A на слот B)
+    var showTransferConflictConfirm by remember { mutableStateOf(false) }
+    var conflictB by remember { mutableStateOf<Appointment?>(null) }
+    var pendingTargetDate by remember { mutableStateOf<LocalDate?>(null) }
+    var pendingTargetTime by remember { mutableStateOf("") }
+
+    // перенос: модалка для переназначения клиента B
+    var showRescheduleBDialog by remember { mutableStateOf(false) }
 
     // Backup dialogs (Export/Import)
     var showExportDialog by remember { mutableStateOf(false) }
@@ -92,6 +105,36 @@ fun AppRoot() {
         h6 = TextStyle(fontSize = (20 * fontScale).sp, fontWeight = FontWeight.Bold),
         subtitle1 = TextStyle(fontSize = (14 * fontScale).sp)
     )
+
+    fun saveAll() {
+        DataManager.saveToDatabase(appointments.toList())
+
+        // Перепланируем уведомления после любого изменения записей
+        val mins = AppSettings.reminderMinutesComputed()
+        if (AppSettings.notificationsEnabled && mins.isNotEmpty()) {
+            Notifications.rescheduleAll(
+                appointments = appointments.toList(),
+                reminderMinutes = mins,
+                sound = AppSettings.notificationSound,
+                nowEpochMillis = Clock.System.now().toEpochMilliseconds()
+            )
+        } else {
+            Notifications.cancelAll()
+        }
+    }
+
+    fun findAppointment(date: LocalDate, time: String): Appointment? =
+        appointments.find { it.dateString == date.toString() && it.time == time }
+
+    fun moveAppointment(appt: Appointment, toDate: LocalDate, toTime: String) {
+        val idx = appointments.indexOfFirst { it.id == appt.id }
+        if (idx >= 0) {
+            appointments[idx] = appt.copy(dateString = toDate.toString(), time = toTime)
+        } else {
+            appointments.remove(appt)
+            appointments.add(appt.copy(dateString = toDate.toString(), time = toTime))
+        }
+    }
 
     MaterialTheme(colors = colors, typography = customTypography) {
         Scaffold(
@@ -174,7 +217,6 @@ fun AppRoot() {
                     )
 
                     Screen.MONTH -> {
-                        // текущее время обновляем раз в минуту
                         var nowTimeHm by remember { mutableStateOf(getCurrentTimeHm()) }
                         LaunchedEffect(Unit) {
                             while (true) {
@@ -185,7 +227,6 @@ fun AppRoot() {
 
                         val listState = rememberLazyListState()
 
-                        // upcoming пересчитываем корректно при изменениях appointments
                         val upcoming by remember(nowTimeHm, today) {
                             derivedStateOf {
                                 getUpcomingAppointments(
@@ -196,7 +237,6 @@ fun AppRoot() {
                             }
                         }
 
-                        // collapsed: календарь начал уезжать (или уже уехал)
                         val isCollapsed by remember {
                             derivedStateOf {
                                 listState.firstVisibleItemIndex > 0 ||
@@ -204,7 +244,6 @@ fun AppRoot() {
                             }
                         }
 
-                        // Заголовок: expanded = "Март 2026", collapsed = "16 марта 2026"
                         val headerText by remember(isCollapsed, calendarViewDate, today) {
                             derivedStateOf {
                                 if (!isCollapsed) {
@@ -246,7 +285,6 @@ fun AppRoot() {
                         }
 
                         Column(Modifier.fillMaxSize()) {
-                            // Шапка (не скроллится)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -261,7 +299,6 @@ fun AppRoot() {
                                     color = MaterialTheme.colors.onBackground
                                 )
 
-                                // Стрелки НЕ исчезают: просто становятся серыми и неактивными
                                 Row {
                                     val arrowsEnabled = !isCollapsed
                                     val arrowTint = if (arrowsEnabled) {
@@ -294,7 +331,6 @@ fun AppRoot() {
                                 }
                             }
 
-                            // Один общий скролл: календарь + список
                             LazyColumn(
                                 state = listState,
                                 modifier = Modifier.fillMaxSize(),
@@ -375,15 +411,15 @@ fun AppRoot() {
                 if (showBookingDialog) {
                     BookingDialog(
                         time = editingAppointment?.time ?: selectedTimeSlot,
-                        initialData = editingAppointment ?: pendingTransfer,
+                        initialData = editingAppointment ?: transferA,
                         onDismiss = {
                             showBookingDialog = false
                             editingAppointment = null
-                            pendingTransfer = null
+                            transferA = null
                         },
                         onSave = { name, phone, service, price, hours ->
                             editingAppointment?.let { appointments.remove(it) }
-                            pendingTransfer?.let { appointments.remove(it); pendingTransfer = null }
+                            transferA?.let { appointments.remove(it); transferA = null }
 
                             val newAppt = Appointment(
                                 id = editingAppointment?.id
@@ -397,13 +433,99 @@ fun AppRoot() {
                                 durationHours = hours
                             )
                             appointments.add(newAppt)
-                            DataManager.saveToDatabase(appointments.toList())
+                            saveAll()
+
                             showBookingDialog = false
                             editingAppointment = null
                         },
                         onTransferRequest = { appt ->
-                            pendingTransfer = appt
+                            transferA = appt
                             showBookingDialog = false
+                            showTransferPickDialog = true
+                        }
+                    )
+                }
+
+                if (showTransferPickDialog && transferA != null) {
+                    TransferPickDialog(
+                        initialSelectedDate = LocalDate.parse(transferA!!.dateString),
+                        initialMonthDate = LocalDate.parse(transferA!!.dateString),
+                        onDismiss = {
+                            showTransferPickDialog = false
+                            transferA = null
+                        },
+                        onConfirm = { newDate, newTime ->
+                            pendingTargetDate = newDate
+                            pendingTargetTime = newTime
+
+                            val b = findAppointment(newDate, newTime)
+                            if (b != null && b.id != transferA!!.id) {
+                                conflictB = b
+                                showTransferConflictConfirm = true
+                            } else {
+                                moveAppointment(transferA!!, newDate, newTime)
+                                saveAll()
+                                showTransferPickDialog = false
+                                transferA = null
+                            }
+                        }
+                    )
+                }
+
+                if (showTransferConflictConfirm && transferA != null && conflictB != null && pendingTargetDate != null) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            showTransferConflictConfirm = false
+                            conflictB = null
+                        },
+                        title = { Text(Locales.t("transfer_conflict_title")) },
+                        text = {
+                            Text(
+                                "${Locales.t("transfer_conflict_text")}\n\n" +
+                                        "${Locales.t("transfer_conflict_a")}: ${transferA!!.clientName}\n" +
+                                        "${Locales.t("transfer_conflict_b")}: ${conflictB!!.clientName}"
+                            )
+                        },
+                        confirmButton = {
+                            Button(onClick = {
+                                moveAppointment(transferA!!, pendingTargetDate!!, pendingTargetTime)
+                                showTransferConflictConfirm = false
+                                showTransferPickDialog = false
+                                showRescheduleBDialog = true
+                            }) { Text(Locales.t("transfer_agree")) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                showTransferConflictConfirm = false
+                                conflictB = null
+                            }) { Text(Locales.t("cancel")) }
+                        },
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                    )
+                }
+
+                if (showRescheduleBDialog && conflictB != null) {
+                    RescheduleClientBDialog(
+                        clientName = conflictB!!.clientName, // <-- вот это важно
+                        initialSelectedDate = LocalDate.parse(conflictB!!.dateString),
+                        initialMonthDate = LocalDate.parse(conflictB!!.dateString),
+                        onDismiss = {
+                            showRescheduleBDialog = false
+                            saveAll()
+                            transferA = null
+                            conflictB = null
+                            pendingTargetDate = null
+                            pendingTargetTime = ""
+                        },
+                        onConfirm = { newDate, newTime ->
+                            moveAppointment(conflictB!!, newDate, newTime)
+                            saveAll()
+
+                            showRescheduleBDialog = false
+                            transferA = null
+                            conflictB = null
+                            pendingTargetDate = null
+                            pendingTargetTime = ""
                         }
                     )
                 }
@@ -424,7 +546,7 @@ fun AppRoot() {
                         confirmButton = {
                             TextButton(onClick = {
                                 appointments.remove(showDeleteConfirm)
-                                DataManager.saveToDatabase(appointments.toList())
+                                saveAll()
                                 showDeleteConfirm = null
                             }) {
                                 Text(
@@ -465,7 +587,7 @@ fun AppRoot() {
 
                             appointments.clear()
                             appointments.addAll(imported)
-                            DataManager.saveToDatabase(appointments.toList())
+                            saveAll()
 
                             showImportDialog = false
                             importError = null
