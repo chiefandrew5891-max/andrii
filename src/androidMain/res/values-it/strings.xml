@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Beauty Planner</string>
+    <string name="nav_main">Principale</string>
+    <string name="nav_settings">Impostazioni</string>
+    <string name="nav_day">Dettagli giorno</string>
+    <string name="save">Salva</string>
+    <string name="cancel">Annulla</string>
+    <string name="client_name">Nome cliente</string>
+    <string name="phone">Telefono</string>
+    <string name="service">Servizio</string>
+    <string name="price">Prezzo</string>
+    <string name="free">Libero</string>
+    <string name="export_db">Esporta DB</string>
+    <string name="import_db">Importa DB</string>
+    <string name="btn_transfer">Trasferisci</string>
+</resources>
