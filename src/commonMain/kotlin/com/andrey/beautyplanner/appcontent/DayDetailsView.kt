@@ -28,6 +28,22 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
+private fun parseHmToMinutes(hm: String): Int? {
+    val parts = hm.split(":")
+    if (parts.size != 2) return null
+    val h = parts[0].toIntOrNull() ?: return null
+    val m = parts[1].toIntOrNull() ?: return null
+    if (h !in 0..23 || m !in 0..59) return null
+    return h * 60 + m
+}
+
+private fun minutesToHm(mins: Int): String {
+    val safe = mins.coerceIn(0, 24 * 60 - 1)
+    val h = safe / 60
+    val m = safe % 60
+    return "${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}"
+}
+
 @Composable
 fun DayDetailsView(
     date: LocalDate,
@@ -45,7 +61,18 @@ fun DayDetailsView(
     )
     val formattedDate = "${date.dayOfMonth} ${monthNames[date.monthNumber - 1]} ${date.year}"
 
+    // Базовые часы, как раньше
+    val hours = (8..20).toList()
+
+    // Записи на выбранный день, отсортированные по времени
+    val dayApptsSorted = remember(appointments, date) {
+        appointments
+            .filter { it.dateString == date.toString() }
+            .sortedBy { parseHmToMinutes(it.time) ?: Int.MAX_VALUE }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
+        // Header
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -54,140 +81,168 @@ fun DayDetailsView(
             Text(formattedDate, fontSize = (20 * fontScale).sp, fontWeight = FontWeight.Bold)
             Row {
                 IconButton(onClick = { onDateChange(date.minus(1, DateTimeUnit.DAY)) }) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                        null,
-                        modifier = Modifier.size(32.dp)
-                    )
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null, modifier = Modifier.size(32.dp))
                 }
                 IconButton(onClick = { onDateChange(date.plus(1, DateTimeUnit.DAY)) }) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        null,
-                        modifier = Modifier.size(32.dp)
-                    )
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, modifier = Modifier.size(32.dp))
                 }
             }
         }
-
-        val timeSlots = (8..20).map { "${if (it < 10) "0$it" else it}:00" }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
-            items(timeSlots.size) { index ->
-                val time = timeSlots[index]
-
-                val isOverlapped = appointments.any { a ->
-                    if (a.dateString != date.toString()) return@any false
-                    val startIdx = timeSlots.indexOf(a.time)
-                    index > startIdx && index < (startIdx + a.durationHours)
+            hours.forEach { h ->
+                // Заголовок часа (опционально). Если не нужен — скажи, уберу.
+                item {
+                    Text(
+                        text = "${h.toString().padStart(2, '0')}:00",
+                        fontSize = (13 * fontScale).sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 10.dp, bottom = 6.dp, start = 4.dp)
+                    )
                 }
-                if (isOverlapped) return@items
 
-                val currentAppt =
-                    appointments.find { it.dateString == date.toString() && it.time == time }
+                // Все записи, начинающиеся в этом часе (08:xx)
+                val apptsInThisHour = dayApptsSorted.filter { ap ->
+                    val m = parseHmToMinutes(ap.time) ?: return@filter false
+                    val apptHour = m / 60
+                    apptHour == h
+                }
 
-                val interactionSource = remember { MutableInteractionSource() }
+                // Рисуем каждую запись отдельной карточкой
+                apptsInThisHour.forEach { appt ->
+                    item {
+                        val interactionSource = remember { MutableInteractionSource() }
 
-                Card(
-                    elevation = 0.dp,
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                        .height(85.dp)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = LocalIndication.current,
-                            onClick = {
-                                if (currentAppt == null) onTimeClick(time) else onEditClick(currentAppt)
-                            }
-                        ),
-                    backgroundColor = if (currentAppt != null) {
-                        // dark оставляем как было, light делаем серым вместо голубого
-                        if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
-                    } else Color.Transparent,
-                    border = if (currentAppt == null)
-                        BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.2f))
-                    else null
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
-                        Column(modifier = Modifier.width(75.dp)) {
-                            Text(
-                                text = time,
-                                fontSize = (16 * fontScale).sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (currentAppt != null) MaterialTheme.colors.primary else Color.Gray
-                            )
-                            if (currentAppt != null) {
-                                val endIdx = index + currentAppt.durationHours
-                                val endTime =
-                                    if (endIdx < timeSlots.size) timeSlots[endIdx] else "Конец"
+                        // end = start + durationHours*60 (пока так, до миграции на minutes)
+                        val startMin = parseHmToMinutes(appt.time) ?: (h * 60)
+                        val dur = if (appt.durationMinutes > 0) appt.durationMinutes else appt.durationHours.coerceAtLeast(1) * 60
+                        val endMin = startMin + dur
+                        val endTime = minutesToHm(endMin)
 
-                                Divider(
+                        val serviceDisplay =
+                            if (appt.serviceName.startsWith("service_")) Locales.t(appt.serviceName)
+                            else appt.serviceName
+
+                        Card(
+                            elevation = 0.dp,
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 5.dp)
+                                .height(90.dp)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = LocalIndication.current,
+                                    onClick = { onEditClick(appt) }
+                                ),
+                            backgroundColor = if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            ) {
+                                Column(modifier = Modifier.width(86.dp)) {
+                                    Text(
+                                        text = appt.time,
+                                        fontSize = (16 * fontScale).sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colors.primary
+                                    )
+
+                                    Divider(
+                                        modifier = Modifier
+                                            .padding(vertical = 4.dp)
+                                            .width(50.dp),
+                                        thickness = 1.dp,
+                                        color = MaterialTheme.colors.primary.copy(alpha = 0.35f)
+                                    )
+
+                                    Text(
+                                        text = endTime,
+                                        fontSize = (14 * fontScale).sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colors.primary.copy(alpha = 0.6f)
+                                    )
+                                }
+
+                                Column(
                                     modifier = Modifier
-                                        .padding(vertical = 4.dp)
-                                        .width(44.dp),
-                                    thickness = 1.dp,
-                                    color = MaterialTheme.colors.primary.copy(alpha = 0.35f)
-                                )
+                                        .weight(1f)
+                                        .padding(horizontal = 8.dp)
+                                ) {
+                                    Text(
+                                        text = appt.clientName,
+                                        fontSize = (17 * fontScale).sp,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1
+                                    )
+                                    Text(
+                                        text = "$serviceDisplay • ${appt.durationHours} ч.",
+                                        fontSize = (13 * fontScale).sp,
+                                        color = Color.Gray
+                                    )
+                                }
 
-                                Text(
-                                    text = endTime,
-                                    fontSize = (14 * fontScale).sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colors.primary.copy(alpha = 0.6f)
-                                )
+                                Row {
+                                    IconButton(onClick = { onEditClick(appt) }) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            null,
+                                            tint = MaterialTheme.colors.primary,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                    IconButton(onClick = { onDeleteClick(appt) }) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            null,
+                                            tint = Color.Red,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
+                    }
+                }
 
-                        if (currentAppt != null) {
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(horizontal = 8.dp)
-                            ) {
-                                Text(
-                                    text = currentAppt.clientName,
-                                    fontSize = (17 * fontScale).sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1
-                                )
-                                Text(
-                                    text = "${currentAppt.serviceName} • ${currentAppt.durationHours} ч.",
-                                    fontSize = (13 * fontScale).sp,
-                                    color = Color.Gray
-                                )
-                            }
-                            Row {
-                                IconButton(onClick = { onEditClick(currentAppt) }) {
-                                    Icon(
-                                        Icons.Default.Edit,
-                                        null,
-                                        tint = MaterialTheme.colors.primary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                                IconButton(onClick = { onDeleteClick(currentAppt) }) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        null,
-                                        tint = Color.Red,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-                        } else {
+                // Карточка "Свободно" для этого часа (быстро добавить)
+                item {
+                    val baseTime = "${h.toString().padStart(2, '0')}:00"
+                    val interactionSource = remember { MutableInteractionSource() }
+
+                    Card(
+                        elevation = 0.dp,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp)
+                            .height(70.dp)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = LocalIndication.current,
+                                onClick = { onTimeClick(baseTime) }
+                            ),
+                        backgroundColor = Color.Transparent,
+                        border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.25f))
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
                             Text(
                                 text = Locales.t("free"),
-                                color = Color.Gray.copy(alpha = 0.4f),
-                                fontSize = (14 * fontScale).sp,
-                                modifier = Modifier.padding(start = 12.dp)
+                                color = Color.Gray.copy(alpha = 0.55f),
+                                fontSize = (14 * fontScale).sp
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                text = baseTime,
+                                color = Color.Gray.copy(alpha = 0.35f),
+                                fontSize = (12 * fontScale).sp
                             )
                         }
                     }

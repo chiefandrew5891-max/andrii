@@ -32,15 +32,18 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
 
     val fontScale = AppSettings.getFontScale()
 
-    // --- Local slider states (smooth drag) ---
     var daysSlider by remember { mutableStateOf(AppSettings.reminderDaysBefore.toFloat()) }
     var hoursSlider by remember { mutableStateOf(AppSettings.reminderHoursBefore.toFloat()) }
 
-    // --- Auto-reschedule (debounced) ---
     val notificationsEnabled = AppSettings.notificationsEnabled
     val notificationSound = AppSettings.notificationSound
     val reminderDays = AppSettings.reminderDaysBefore
     val reminderHours = AppSettings.reminderHoursBefore
+
+    // Support phone edit state (NEW UX)
+    var supportEditMode by remember { mutableStateOf(false) }
+    var supportPhoneDraft by remember { mutableStateOf(AppSettings.servicePhone) }
+    var showSupportEditConfirm by remember { mutableStateOf(false) }
 
     LaunchedEffect(notificationsEnabled, notificationSound, reminderDays, reminderHours) {
         delay(600)
@@ -60,6 +63,27 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 Notifications.cancelAll()
             }
         }
+    }
+
+    if (showSupportEditConfirm) {
+        AlertDialog(
+            onDismissRequest = { showSupportEditConfirm = false },
+            title = { Text(Locales.t("support_phone_edit_confirm_title")) },
+            text = { Text(Locales.t("support_phone_edit_confirm_text")) },
+            confirmButton = {
+                Button(onClick = {
+                    showSupportEditConfirm = false
+                    supportEditMode = true
+                    supportPhoneDraft = AppSettings.servicePhone
+                }) { Text(Locales.t("support_phone_edit_confirm_yes")) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSupportEditConfirm = false }) {
+                    Text(Locales.t("cancel"))
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 
     Column(
@@ -84,6 +108,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                     AppSettings.selectedLanguage = newValue
                     val code = AppSettings.languageCodes[newValue] ?: "en"
                     Locales.currentLanguage = code
+                    AppSettings.persist()
                 }
             }
         )
@@ -94,6 +119,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
             items = themeOptions,
             onSelect = { newValue ->
                 AppSettings.isDarkMode = (newValue == Locales.t("theme_dark"))
+                AppSettings.persist()
             }
         )
 
@@ -111,6 +137,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                     Locales.t("font_large") -> "Крупный"
                     else -> "Средний"
                 }
+                AppSettings.persist()
             }
         )
 
@@ -137,7 +164,10 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 )
                 Switch(
                     checked = AppSettings.notificationsEnabled,
-                    onCheckedChange = { AppSettings.notificationsEnabled = it },
+                    onCheckedChange = {
+                        AppSettings.notificationsEnabled = it
+                        AppSettings.persist()
+                    },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colors.primary,
                         checkedTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.35f),
@@ -162,6 +192,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 onSelect = { selected ->
                     val s = soundItems.firstOrNull { it.first == selected }?.second ?: NotificationSound.DEFAULT
                     AppSettings.notificationSound = s
+                    AppSettings.persist()
                 }
             )
 
@@ -175,7 +206,6 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Days slider (0..3)
             Text(
                 text = "${Locales.t("remind_days")}: ${Locales.daysCount(AppSettings.reminderDaysBefore)}",
                 fontSize = (15 * fontScale).sp,
@@ -187,9 +217,10 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 onValueChange = { daysSlider = it },
                 onValueChangeFinished = {
                     AppSettings.reminderDaysBefore = daysSlider.roundToInt().coerceIn(0, 3)
+                    AppSettings.persist()
                 },
                 valueRange = 0f..3f,
-                steps = 0, // без точек
+                steps = 0,
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colors.primary,
                     activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
@@ -199,7 +230,6 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Hours slider (0..12)
             Text(
                 text = "${Locales.t("remind_hours")}: ${Locales.hoursCount(AppSettings.reminderHoursBefore)}",
                 fontSize = (15 * fontScale).sp,
@@ -211,9 +241,10 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 onValueChange = { hoursSlider = it },
                 onValueChangeFinished = {
                     AppSettings.reminderHoursBefore = hoursSlider.roundToInt().coerceIn(0, 12)
+                    AppSettings.persist()
                 },
                 valueRange = 0f..12f,
-                steps = 0, // без точек
+                steps = 0,
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colors.primary,
                     activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
@@ -233,6 +264,57 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 fontSize = (13 * fontScale).sp,
                 color = Color.Gray
             )
+        }
+
+        Divider()
+
+        // -------------------- Support phone (LOCK/EDIT/SAVE) --------------------
+        Column {
+            Text(
+                text = Locales.t("support_section"),
+                fontSize = (14 * fontScale).sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            OutlinedTextField(
+                value = if (supportEditMode) supportPhoneDraft else AppSettings.servicePhone,
+                onValueChange = { if (supportEditMode) supportPhoneDraft = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                enabled = supportEditMode,
+                label = { Text(Locales.t("support_phone_label")) }
+            )
+
+            Text(
+                text = Locales.t("support_phone_hint"),
+                fontSize = (12 * fontScale).sp,
+                color = Color.Gray
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            if (!supportEditMode) {
+                OutlinedButton(
+                    onClick = { showSupportEditConfirm = true },
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(Locales.t("support_phone_edit"))
+                }
+            } else {
+                Button(
+                    onClick = {
+                        AppSettings.servicePhone = supportPhoneDraft.trim()
+                        AppSettings.persist()
+                        supportEditMode = false
+                    },
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(Locales.t("support_phone_save"))
+                }
+            }
         }
 
         Divider()
@@ -281,7 +363,6 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
             Text(text = Locales.t("privacy_policy"), fontSize = (16 * fontScale).sp)
         }
 
-        // небольшой нижний отступ, чтобы удобно скроллить до конца
         Spacer(modifier = Modifier.height(16.dp))
     }
 }

@@ -4,18 +4,24 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.andrey.beautyplanner.AndroidAppContext
 import com.andrey.beautyplanner.Appointment
 import kotlinx.datetime.TimeZone
+
+// НЕ private — чтобы NotificationsPlatform.android.kt видел этот объект
+internal object NotificationsAndroidContext {
+    var context: Context? = null
+    fun init(appContext: Context) {
+        context = appContext.applicationContext
+    }
+}
 
 actual object Notifications {
 
     private fun ctx(): Context =
-        AndroidAppContext.context ?: error("AndroidAppContext.context is not set")
+        NotificationsAndroidContext.context
+            ?: error("NotificationsAndroidContext.context is not set. Call NotificationsPlatform.init(context) in MainActivity.onCreate().")
 
-    actual suspend fun requestPermissionIfNeeded(): Boolean {
-        return true
-    }
+    actual suspend fun requestPermissionIfNeeded(): Boolean = true
 
     actual fun cancelAll() {
         // MVP: без полного списка requestCode не можем "снести всё".
@@ -62,10 +68,7 @@ actual object Notifications {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
 
-                // Сначала отменяем старый, если был
                 alarm.cancel(pi)
-
-                // ВАЖНО: не exact, чтобы не требовать SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM
                 alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
             }
         }

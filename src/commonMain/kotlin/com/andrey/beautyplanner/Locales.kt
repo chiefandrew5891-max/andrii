@@ -16,6 +16,9 @@ object Locales {
             "nav_main" to "Главная",
             "nav_settings" to "Настройки",
             "nav_day" to "Детали дня",
+            "nav_menu" to "Меню",
+            "nav_stats" to "Статистика",
+            "nav_feedback" to "Обратная связь",
             "save" to "Сохранить",
             "cancel" to "Отмена",
 
@@ -69,7 +72,7 @@ object Locales {
             "transfer_conflict_b" to "Занято",
             "transfer_agree" to "Согласовать",
 
-            "reschedule_title_for" to "Переназначить за��ись для",
+            "reschedule_title_for" to "Переназначить запись для",
             "reschedule_choose_time" to "Выберите новое время",
             "reschedule_confirm" to "Сохранить",
 
@@ -87,6 +90,32 @@ object Locales {
             "remind_hours" to "Часы",
             "remind_summary" to "Итог",
             "remind_off" to "Выключено",
+
+            // --- Support / feedback ---
+            "support_section" to "Служба поддержки",
+            "support_phone_label" to "Телефон поддержки",
+            "support_phone_hint" to "Введите номер (например: +39 123 456 789 или +7 999 000-00-00)",
+            "support_phone_empty" to "Не указан",
+            "support_feedback_text" to "Если у вас неполадки — позвоните в поддержку по номеру ниже.",
+            "support_call" to "Позвонить",
+
+            // --- Stats ---
+            "stats_period_day" to "День",
+            "stats_period_week" to "Неделя",
+            "stats_period_month" to "Месяц",
+            "stats_period_year" to "Год",
+            "stats_range" to "Период",
+
+            "stats_revenue" to "Выручка",
+            "stats_count" to "Количество записей",
+            "stats_hours" to "Отработано часов",
+            "stats_top_services" to "Процедуры",
+            "stats_procedures_done" to "Проведено",
+            "stats_empty" to "Нет данных за выбранный период",
+            "stats_unknown_service" to "Без названия",
+
+            // Currency
+            "currency_eur" to "€",
 
             "month_jan" to "Январь", "month_feb" to "Февраль", "month_mar" to "Март",
             "month_apr" to "Апрель", "month_may" to "Май", "month_jun" to "Июнь",
@@ -114,6 +143,9 @@ object Locales {
             "nav_main" to "Main",
             "nav_settings" to "Settings",
             "nav_day" to "Day Details",
+            "nav_menu" to "Menu",
+            "nav_stats" to "Statistics",
+            "nav_feedback" to "Support",
             "save" to "Save",
             "cancel" to "Cancel",
 
@@ -186,6 +218,32 @@ object Locales {
             "remind_summary" to "Summary",
             "remind_off" to "Off",
 
+            // --- Support / feedback ---
+            "support_section" to "Support",
+            "support_phone_label" to "Support phone",
+            "support_phone_hint" to "Enter phone number (e.g. +39 123 456 789)",
+            "support_phone_empty" to "Not set",
+            "support_feedback_text" to "If something is not working, call support using the number below.",
+            "support_call" to "Call",
+
+            // --- Stats ---
+            "stats_period_day" to "Day",
+            "stats_period_week" to "Week",
+            "stats_period_month" to "Month",
+            "stats_period_year" to "Year",
+            "stats_range" to "Range",
+
+            "stats_revenue" to "Revenue",
+            "stats_count" to "Appointments",
+            "stats_hours" to "Hours worked",
+            "stats_top_services" to "Services",
+            "stats_procedures_done" to "Done",
+            "stats_empty" to "No data for selected period",
+            "stats_unknown_service" to "Unnamed",
+
+            // Currency
+            "currency_eur" to "€",
+
             "month_jan" to "January", "month_feb" to "February", "month_mar" to "March",
             "month_apr" to "April", "month_may" to "May", "month_jun" to "June",
             "month_jul" to "July", "month_aug" to "August", "month_sep" to "September",
@@ -212,6 +270,9 @@ object Locales {
             "nav_main" to "Home",
             "nav_settings" to "Impostazioni",
             "nav_day" to "Dettagli",
+            "nav_menu" to "Menu",
+            "nav_stats" to "Statistiche",
+            "nav_feedback" to "Supporto",
             "save" to "Salva",
             "cancel" to "Annulla",
 
@@ -284,6 +345,32 @@ object Locales {
             "remind_summary" to "Riepilogo",
             "remind_off" to "Disattivato",
 
+            // --- Support / feedback ---
+            "support_section" to "Supporto",
+            "support_phone_label" to "Telefono supporto",
+            "support_phone_hint" to "Inserisci numero (es. +39 123 456 789)",
+            "support_phone_empty" to "Non impostato",
+            "support_feedback_text" to "Se qualcosa non funziona, chiama il supporto usando il numero qui sotto.",
+            "support_call" to "Chiama",
+
+            // --- Stats ---
+            "stats_period_day" to "Giorno",
+            "stats_period_week" to "Settimana",
+            "stats_period_month" to "Mese",
+            "stats_period_year" to "Anno",
+            "stats_range" to "Periodo",
+
+            "stats_revenue" to "Incasso",
+            "stats_count" to "Appuntamenti",
+            "stats_hours" to "Ore lavorate",
+            "stats_top_services" to "Servizi",
+            "stats_procedures_done" to "Eseguiti",
+            "stats_empty" to "Nessun dato per il periodo selezionato",
+            "stats_unknown_service" to "Senza nome",
+
+            // Currency
+            "currency_eur" to "€",
+
             "month_jan" to "Gennaio", "month_feb" to "Febbraio", "month_mar" to "Marzo",
             "month_apr" to "Aprile", "month_may" to "Maggio", "month_jun" to "Giugno",
             "month_jul" to "Luglio", "month_aug" to "Agosto", "month_sep" to "Settembre",
@@ -310,6 +397,9 @@ object Locales {
             "nav_main" to "Головна",
             "nav_settings" to "Налаштування",
             "nav_day" to "Деталі дня",
+            "nav_menu" to "Меню",
+            "nav_stats" to "Статистика",
+            "nav_feedback" to "Звʼязок",
             "save" to "Зберегти",
             "cancel" to "Скасувати",
 
@@ -382,6 +472,32 @@ object Locales {
             "remind_summary" to "Підсумок",
             "remind_off" to "Вимкнено",
 
+            // --- Support / feedback ---
+            "support_section" to "Підтримка",
+            "support_phone_label" to "Телефон підтримки",
+            "support_phone_hint" to "Введіть номер (наприклад: +39 123 456 789)",
+            "support_phone_empty" to "Не вказано",
+            "support_feedback_text" to "Якщо щось не працює — зателефонуйте в підтримку за номером нижче.",
+            "support_call" to "Подзвонити",
+
+            // --- Stats ---
+            "stats_period_day" to "День",
+            "stats_period_week" to "Тиждень",
+            "stats_period_month" to "Місяць",
+            "stats_period_year" to "Рік",
+            "stats_range" to "Період",
+
+            "stats_revenue" to "Виручка",
+            "stats_count" to "Кількість записів",
+            "stats_hours" to "Відпрацьовано годин",
+            "stats_top_services" to "Процедури",
+            "stats_procedures_done" to "Проведено",
+            "stats_empty" to "Немає даних за вибраний період",
+            "stats_unknown_service" to "Без назви",
+
+            // Currency
+            "currency_eur" to "€",
+
             "month_jan" to "Січень", "month_feb" to "Лютий", "month_mar" to "Березень",
             "month_apr" to "Квітень", "month_may" to "Травень", "month_jun" to "Червень",
             "month_jul" to "Липень", "month_aug" to "Серпень", "month_sep" to "Вересень",
@@ -440,7 +556,6 @@ object Locales {
     }
 
     private fun ukPlural(n: Int, one: String, few: String, many: String): String {
-        // украинские правила очень похожи на русские
         val nn = kotlin.math.abs(n) % 100
         val n1 = nn % 10
         return if (nn in 11..14) many else when (n1) {

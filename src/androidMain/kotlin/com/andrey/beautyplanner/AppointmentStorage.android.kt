@@ -7,6 +7,7 @@ private const val DB_FILE_NAME = "appointments_db.json"
 
 object AndroidAppContext {
     var context: Context? = null
+    var activity: android.app.Activity? = null
 }
 
 actual fun createAppointmentStorage(): AppointmentStorage {

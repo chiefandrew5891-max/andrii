@@ -2,6 +2,7 @@ package com.andrey.beautyplanner
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,20 +15,74 @@ class MainActivity : ComponentActivity() {
 
     private val requestNotificationsPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            // MVP: ничего не делаем. Если не дал — уведомления просто не появятся.
-            // Позже можно показывать подсказку в SettingsPage.
+            // MVP: nothing
         }
+
+    // --- Backup: Android system pickers ---
+    private var pendingExportJson: String? = null
+    private val exportLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri: Uri? ->
+        val json = pendingExportJson
+        pendingExportJson = null
+        if (uri == null || json == null) return@registerForActivityResult
+
+        runCatching {
+            contentResolver.openOutputStream(uri)?.use { os ->
+                os.write(json.toByteArray(Charsets.UTF_8))
+            }
+        }
+    }
+
+    private var pendingImportOnPicked: ((String) -> Unit)? = null
+    private var pendingImportOnError: ((String) -> Unit)? = null
+
+    private val importLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        val onPicked = pendingImportOnPicked
+        val onError = pendingImportOnError
+        pendingImportOnPicked = null
+        pendingImportOnError = null
+
+        if (uri == null) return@registerForActivityResult
+
+        runCatching {
+            val text = contentResolver.openInputStream(uri)
+                ?.use { it.readBytes().toString(Charsets.UTF_8) }
+                .orEmpty()
+
+            if (text.isBlank()) onError?.invoke(Locales.t("backup_import_error_empty"))
+            else onPicked?.invoke(text)
+        }.onFailure {
+            onError?.invoke(Locales.t("backup_import_error_read"))
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Важно для DataManager на Android (filesDir)
+        com.andrey.beautyplanner.notifications.NotificationsPlatform.init(applicationContext)
+
         AndroidAppContext.context = applicationContext
+        AndroidAppContext.activity = this
 
-        // Растягиваем интерфейс
+        // Bind BackupFilePicker implementations (IMPORTANT)
+        BackupFilePicker.exportImpl = { suggestedFileName, json ->
+            val name = suggestedFileName.trim().ifBlank { "beautyplanner-backup" }
+            val finalName = if (name.endsWith(".json", ignoreCase = true)) name else "$name.json"
+            pendingExportJson = json
+            exportLauncher.launch(finalName)
+        }
+        BackupFilePicker.importImpl = { onPicked, onError ->
+            pendingImportOnPicked = onPicked
+            pendingImportOnError = onError
+            importLauncher.launch(arrayOf("application/json", "text/plain"))
+        }
+
+        AppSettings.load()
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        // Android 13+ требует runtime permission на уведомления
         maybeRequestPostNotificationsPermission()
 
         setContent {
