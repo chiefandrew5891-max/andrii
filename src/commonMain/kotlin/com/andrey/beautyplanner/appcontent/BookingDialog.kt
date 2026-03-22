@@ -139,30 +139,24 @@ fun BookingDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
+
+                    // ✅ УБРАЛИ верхний заголовок "Просмотр/Сохранить/Детали дня"
+                    // Оставляем только строку времени (как ты просил — без лишней шапки)
+
+                    Text(
+                        "${Locales.t("start_time")}: $startTime • ${Locales.t("end_time")}: $endTime",
+                        fontSize = (14 * fontScale).sp,
+                        color = Color.Gray,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                    // ✅ крестик сдвинут вправо и вверх (примерно на 25dp/25dp)
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = (10).dp, y = -10.dp)
                     ) {
-                        val header = when {
-                            initialData == null -> Locales.t("nav_day")
-                            editEnabled -> Locales.t("save")
-                            else -> Locales.t("view")
-                        }
-
-                        Text(
-                            text = header,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = (22 * fontScale).sp,
-                            color = MaterialTheme.colors.primary
-                        )
-                        Text(
-                            "${Locales.t("start_time")}: $startTime • ${Locales.t("end_time")}: $endTime",
-                            fontSize = (14 * fontScale).sp,
-                            color = Color.Gray
-                        )
-                    }
-
-                    IconButton(onClick = onDismiss, modifier = Modifier.align(Alignment.TopEnd)) {
                         Icon(Icons.Default.Close, contentDescription = "Close")
                     }
                 }
@@ -238,7 +232,7 @@ fun BookingDialog(
 
                 if (triedSave && editEnabled && !endOk) {
                     Text(
-                        text = "End must be after start".let { // optional to localize later
+                        text = "End must be after start".let {
                             when (Locales.currentLanguage) {
                                 "ru" -> "Конец должен быть позже начала"
                                 "uk" -> "Кінець має бути пізніше початку"
@@ -317,7 +311,7 @@ fun BookingDialog(
                     value = price,
                     onValueChange = { price = it },
                     enabled = editEnabled,
-                    label = { Text(Locales.t("price") + " (���)") },
+                    label = { Text(Locales.t("price") + " (€)") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = { Icon(Icons.Default.Payments, null) },

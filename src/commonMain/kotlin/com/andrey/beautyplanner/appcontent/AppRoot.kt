@@ -79,6 +79,46 @@ fun AppRoot() {
     var showImportConfirm by remember { mutableStateOf(false) }
     var showImportError by remember { mutableStateOf<String?>(null) }
 
+    // --------- PIN / Security flow ---------
+    var mustCreatePin by remember { mutableStateOf(!AppSettings.isPinSet()) }
+    var locked by remember { mutableStateOf(AppSettings.pinEnabled && AppSettings.isPinSet()) }
+
+    var showPinDialog by remember { mutableStateOf(false) }
+    var pinDialogTitle by remember { mutableStateOf("") }
+    var pinDialogText by remember { mutableStateOf("") }
+    var pinDialogConfirmText by remember { mutableStateOf("") }
+    var pinDialogOnSuccess by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var pinErrorText by remember { mutableStateOf<String?>(null) }
+
+    var showSetPinDialog by remember { mutableStateOf(false) }
+    var showRemovePinConfirm by remember { mutableStateOf(false) }
+
+    var showClearDbBackupPrompt by remember { mutableStateOf(false) }
+    var showClearDbFinalConfirm by remember { mutableStateOf(false) }
+
+    fun runProtected(
+        title: String,
+        text: String,
+        confirmText: String,
+        action: () -> Unit
+    ) {
+        // If PIN isn't set yet, block actions (mandatory setup)
+        if (!AppSettings.isPinSet()) {
+            mustCreatePin = true
+            return
+        }
+        if (!(AppSettings.pinEnabled && AppSettings.isPinSet())) {
+            action()
+            return
+        }
+        pinErrorText = null
+        pinDialogTitle = title
+        pinDialogText = text
+        pinDialogConfirmText = confirmText
+        pinDialogOnSuccess = action
+        showPinDialog = true
+    }
+
     // Save error dialog
     var showSaveError by remember { mutableStateOf<String?>(null) }
 
@@ -167,11 +207,6 @@ fun AppRoot() {
             ?.first
     }
 
-    /**
-     * Build chain of shifts if we place new/edited appointment at [newStartMin, newEndMin).
-     * Strategy: shift the conflicting appointment to the end of the previous interval, keeping its duration.
-     * Repeat until no conflicts or until we exceed dayEnd.
-     */
     fun tryBuildShiftChain(
         day: String,
         baseIgnoreId: String?,
@@ -180,8 +215,6 @@ fun AppRoot() {
         dayEnd: Int = 21 * 60
     ): Pair<List<ShiftItem>, String?> {
         val chain = mutableListOf<ShiftItem>()
-
-        // We'll simulate with a map of "virtual starts" for moved appts
         val movedStart = mutableMapOf<String, Int>()
 
         fun virtualStart(a: Appointment): Int {
@@ -195,9 +228,7 @@ fun AppRoot() {
         var cursorStart = newStartMin
         var cursorEnd = newEndMin
 
-        // protect from infinite loop
         repeat(50) {
-            // find any overlap with current interval against appointments with virtual positions
             val conflict = appointments
                 .asSequence()
                 .filter { it.dateString == day }
@@ -209,31 +240,26 @@ fun AppRoot() {
                     Triple(a, s, e)
                 }
                 .firstOrNull { (a, s, e) ->
-                    // note: when editing, the original appt is ignored by baseIgnoreId
                     cursorStart < e && s < cursorEnd
                 }
                 ?.first
 
             if (conflict == null) return chain to null
 
-            // shift conflict to cursorEnd
             val newS = cursorEnd
             val newE = newS + apptDurationMinutes(conflict)
 
             if (newE > dayEnd) {
-                // blocked: need manual reschedule for this conflict appt
                 return chain to conflict.id
             }
 
             movedStart[conflict.id] = newS
             chain.add(ShiftItem(conflict.id, newS))
 
-            // now move cursor to represent this shifted appointment and continue chain
             cursorStart = newS
             cursorEnd = newE
         }
 
-        // if we got here, consider blocked
         return chain to null
     }
 
@@ -300,9 +326,7 @@ fun AppRoot() {
                 textAlign = TextAlign.Start
             )
         }
-    }
-
-    // --- Save error dialog ---
+    }    // --- Save error dialog ---
     if (showSaveError != null) {
         AlertDialog(
             onDismissRequest = { showSaveError = null },
@@ -310,6 +334,147 @@ fun AppRoot() {
             text = { Text(showSaveError ?: "") },
             confirmButton = {
                 TextButton(onClick = { showSaveError = null }) { Text(Locales.t("close")) }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // --------- Mandatory PIN creation on first run ---------
+    if (mustCreatePin) {
+        PinDialog(
+            title = Locales.t("pin_set"),
+            text = Locales.t("pin_invalid_format"),
+            confirmText = Locales.t("save"),
+            onDismiss = { /* cannot dismiss */ },
+            onConfirmPin = { newPin ->
+                if (AppSettings.setPin(newPin)) {
+                    mustCreatePin = false
+                    locked = false
+                }
+            }
+        )
+    }
+
+    // --------- PIN action dialog (for protected actions) ---------
+    if (showPinDialog) {
+        PinDialog(
+            title = pinDialogTitle,
+            text = pinDialogText + (pinErrorText?.let { "\n\n$it" } ?: ""),
+            confirmText = pinDialogConfirmText,
+            onDismiss = {
+                showPinDialog = false
+                pinDialogOnSuccess = null
+                pinErrorText = null
+            },
+            onConfirmPin = { pin ->
+                if (AppSettings.verifyPin(pin)) {
+                    showPinDialog = false
+                    pinErrorText = null
+                    val act = pinDialogOnSuccess
+                    pinDialogOnSuccess = null
+                    act?.invoke()
+                } else {
+                    pinErrorText = Locales.t("pin_wrong")
+                }
+            }
+        )
+    }
+
+    // --------- Lock screen (PIN on app open) ---------
+    if (locked && !mustCreatePin) {
+        PinDialog(
+            title = Locales.t("unlock_title"),
+            text = Locales.t("unlock_text"),
+            confirmText = Locales.t("confirm"),
+            onDismiss = { /* cannot dismiss */ },
+            onConfirmPin = { pin ->
+                if (AppSettings.verifyPin(pin)) locked = false
+            }
+        )
+    }
+
+    // --------- Set/Change PIN from Settings ---------
+    if (showSetPinDialog) {
+        PinDialog(
+            title = if (AppSettings.isPinSet()) Locales.t("pin_change") else Locales.t("pin_set"),
+            text = Locales.t("pin_invalid_format"),
+            confirmText = Locales.t("save"),
+            onDismiss = { showSetPinDialog = false },
+            onConfirmPin = { newPin ->
+                if (AppSettings.setPin(newPin)) {
+                    showSetPinDialog = false
+                    mustCreatePin = false
+                }
+            }
+        )
+    }
+
+    // --------- Remove PIN confirm ---------
+    if (showRemovePinConfirm) {
+        AlertDialog(
+            onDismissRequest = { showRemovePinConfirm = false },
+            title = { Text(Locales.t("pin_remove")) },
+            text = { Text(Locales.t("clear_db_confirm")) },
+            confirmButton = {
+                Button(onClick = {
+                    AppSettings.clearPin()
+                    showRemovePinConfirm = false
+                    locked = false
+                    mustCreatePin = true
+                }) { Text(Locales.t("yes")) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemovePinConfirm = false }) { Text(Locales.t("cancel")) }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // --------- Clear DB: backup prompt ---------
+    if (showClearDbBackupPrompt) {
+        AlertDialog(
+            onDismissRequest = { showClearDbBackupPrompt = false },
+            title = { Text(Locales.t("clear_db_title")) },
+            text = { Text(Locales.t("clear_db_warning_backup")) },
+            confirmButton = {
+                Button(onClick = {
+                    showClearDbBackupPrompt = false
+                    exportFileName = "beautyplanner-backup"
+                    showExportNameDialog = true
+                    showClearDbFinalConfirm = true
+                }) { Text(Locales.t("clear_db_make_backup")) }
+            },
+            dismissButton = {
+                Column {
+                    TextButton(onClick = {
+                        showClearDbBackupPrompt = false
+                        showClearDbFinalConfirm = true
+                    }) { Text(Locales.t("clear_db_skip_backup"), color = Color.Red) }
+
+                    TextButton(onClick = { showClearDbBackupPrompt = false }) {
+                        Text(Locales.t("cancel"))
+                    }
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // --------- Clear DB: final confirm ---------
+    if (showClearDbFinalConfirm) {
+        AlertDialog(
+            onDismissRequest = { showClearDbFinalConfirm = false },
+            title = { Text(Locales.t("clear_db_title")) },
+            text = { Text(Locales.t("clear_db_confirm")) },
+            confirmButton = {
+                Button(onClick = {
+                    appointments.clear()
+                    saveAll()
+                    showClearDbFinalConfirm = false
+                }) { Text(Locales.t("yes")) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDbFinalConfirm = false }) { Text(Locales.t("cancel")) }
             },
             shape = RoundedCornerShape(16.dp)
         )
@@ -347,7 +512,6 @@ fun AppRoot() {
             text = { Text(chainText) },
             confirmButton = {
                 Button(onClick = {
-                    // apply chain + save appointment
                     val newAppt = pendingNewAppt!!
 
                     applyShiftChain(day, shiftChain)
@@ -358,7 +522,6 @@ fun AppRoot() {
                     showAutoShiftConfirm = false
                     pendingNewAppt = null
 
-                    // if blocked => open manual reschedule for that client
                     if (blockedAppt != null) {
                         conflictB = blockedAppt
                         showRescheduleBDialog = true
@@ -599,13 +762,23 @@ fun AppRoot() {
                 }
             ) { padding ->
                 Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-                    when (currentScreen) {
-                        Screen.SETTINGS -> SettingsPage(
-                            onExport = {
+                    when (currentScreen) {                        Screen.SETTINGS -> SettingsPage(
+                        onExport = {
+                            runProtected(
+                                title = Locales.t("pin_required"),
+                                text = Locales.t("export_requires_pin"),
+                                confirmText = Locales.t("confirm")
+                            ) {
                                 exportFileName = "beautyplanner-backup"
                                 showExportNameDialog = true
-                            },
-                            onImport = {
+                            }
+                        },
+                        onImport = {
+                            runProtected(
+                                title = Locales.t("pin_required"),
+                                text = Locales.t("import_requires_pin"),
+                                confirmText = Locales.t("confirm")
+                            ) {
                                 BackupFilePicker.importJson(
                                     onPicked = { jsonText ->
                                         pendingImportText = jsonText
@@ -616,7 +789,29 @@ fun AppRoot() {
                                     }
                                 )
                             }
-                        )
+                        },
+                        onSetOrChangePin = {
+                            showSetPinDialog = true
+                        },
+                        onRemovePin = {
+                            runProtected(
+                                title = Locales.t("pin_required"),
+                                text = Locales.t("pin_required"),
+                                confirmText = Locales.t("confirm")
+                            ) {
+                                showRemovePinConfirm = true
+                            }
+                        },
+                        onClearDatabase = {
+                            runProtected(
+                                title = Locales.t("clear_db_title"),
+                                text = Locales.t("clear_db_requires_pin"),
+                                confirmText = Locales.t("confirm")
+                            ) {
+                                showClearDbBackupPrompt = true
+                            }
+                        }
+                    )
 
                         Screen.STATS -> StatsPage(
                             appointments = appointments,
@@ -837,10 +1032,6 @@ fun AppRoot() {
                                 bookingReadOnly = false
                             },
                             onSave = { startTime, durationMinutes, name, phone, service, price ->
-                                // твоя текущая логика сохранения (конфликт/автосдвиг или простая) должна быть здесь.
-                                // Если ты уже вставил "авто-сдвиг цепочкой" — оставь её.
-                                // Если нет — минимальный рабочий вариант:
-
                                 editingAppointment?.let { appointments.remove(it) }
                                 transferA?.let { appointments.remove(it); transferA = null }
 

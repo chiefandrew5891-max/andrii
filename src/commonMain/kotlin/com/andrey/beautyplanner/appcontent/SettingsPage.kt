@@ -24,9 +24,14 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
+fun SettingsPage(
+    onExport: () -> Unit,
+    onImport: () -> Unit,
+    onSetOrChangePin: () -> Unit,
+    onRemovePin: () -> Unit,
+    onClearDatabase: () -> Unit
+) {
     val languages = AppSettings.languageCodes.keys.toList()
-
     val themeOptions = listOf(Locales.t("theme_light"), Locales.t("theme_dark"))
     val fontOptions = listOf(Locales.t("font_small"), Locales.t("font_medium"), Locales.t("font_large"))
 
@@ -40,7 +45,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
     val reminderDays = AppSettings.reminderDaysBefore
     val reminderHours = AppSettings.reminderHoursBefore
 
-    // Support phone edit state (NEW UX)
+    // Support phone edit state
     var supportEditMode by remember { mutableStateOf(false) }
     var supportPhoneDraft by remember { mutableStateOf(AppSettings.servicePhone) }
     var showSupportEditConfirm by remember { mutableStateOf(false) }
@@ -78,9 +83,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 }) { Text(Locales.t("support_phone_edit_confirm_yes")) }
             },
             dismissButton = {
-                TextButton(onClick = { showSupportEditConfirm = false }) {
-                    Text(Locales.t("cancel"))
-                }
+                TextButton(onClick = { showSupportEditConfirm = false }) { Text(Locales.t("cancel")) }
             },
             shape = RoundedCornerShape(16.dp)
         )
@@ -158,10 +161,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = Locales.t("notifications_enabled"),
-                    fontSize = (16 * fontScale).sp
-                )
+                Text(text = Locales.t("notifications_enabled"), fontSize = (16 * fontScale).sp)
                 Switch(
                     checked = AppSettings.notificationsEnabled,
                     onCheckedChange = {
@@ -198,11 +198,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            Text(
-                text = Locales.t("reminders_when"),
-                fontSize = (14 * fontScale).sp,
-                color = Color.Gray
-            )
+            Text(text = Locales.t("reminders_when"), fontSize = (14 * fontScale).sp, color = Color.Gray)
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -253,11 +249,8 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
             )
 
             val totalMinutes = AppSettings.reminderDaysBefore * 24 * 60 + AppSettings.reminderHoursBefore * 60
-            val summary = if (totalMinutes <= 0) {
-                Locales.t("remind_off")
-            } else {
-                "${Locales.daysCount(AppSettings.reminderDaysBefore)} • ${Locales.hoursCount(AppSettings.reminderHoursBefore)}"
-            }
+            val summary = if (totalMinutes <= 0) Locales.t("remind_off")
+            else "${Locales.daysCount(AppSettings.reminderDaysBefore)} • ${Locales.hoursCount(AppSettings.reminderHoursBefore)}"
 
             Text(
                 text = "${Locales.t("remind_summary")}: $summary",
@@ -268,7 +261,7 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
 
         Divider()
 
-        // -------------------- Support phone (LOCK/EDIT/SAVE) --------------------
+        // -------------------- Support phone --------------------
         Column {
             Text(
                 text = Locales.t("support_section"),
@@ -350,6 +343,74 @@ fun SettingsPage(onExport: () -> Unit, onImport: () -> Unit) {
                 ) {
                     Text(text = Locales.t("import_db"), fontSize = (14 * fontScale).sp)
                 }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // moved here from Security -> Backup
+            OutlinedButton(
+                onClick = onClearDatabase,
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+            ) {
+                Text(Locales.t("clear_db"), color = Color.Red, fontWeight = FontWeight.SemiBold)
+            }
+        }
+
+        Divider()
+
+        // -------------------- Security --------------------
+        Column {
+            Text(
+                text = Locales.t("security_section"),
+                fontSize = (14 * fontScale).sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = Locales.t("pin_enabled"), fontSize = (16 * fontScale).sp)
+                Switch(
+                    checked = AppSettings.pinEnabled,
+                    onCheckedChange = {
+                        AppSettings.pinEnabled = it
+                        AppSettings.persist()
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colors.primary,
+                        checkedTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.35f),
+                        uncheckedThumbColor = MaterialTheme.colors.onSurface.copy(alpha = 0.45f),
+                        uncheckedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.20f)
+                    )
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            val pinBtnText = if (AppSettings.isPinSet()) Locales.t("pin_change") else Locales.t("pin_set")
+            Button(
+                onClick = onSetOrChangePin,
+                modifier = Modifier.fillMaxWidth().height(44.dp),
+                shape = RoundedCornerShape(12.dp),
+                enabled = true
+            ) {
+                Text(pinBtnText)
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            OutlinedButton(
+                onClick = onRemovePin,
+                modifier = Modifier.fillMaxWidth().height(44.dp),
+                shape = RoundedCornerShape(12.dp),
+                enabled = AppSettings.isPinSet()
+            ) {
+                Text(Locales.t("pin_remove"))
             }
         }
 

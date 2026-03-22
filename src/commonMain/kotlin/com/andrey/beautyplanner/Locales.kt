@@ -21,6 +21,9 @@ object Locales {
             "nav_feedback" to "Обратная связь",
             "save" to "Сохранить",
             "cancel" to "Отмена",
+            "close" to "Закрыть",
+            "confirm" to "Подтвердить",
+            "yes" to "Да",
 
             "client_name" to "Имя клиента",
             "phone" to "Телефон",
@@ -28,9 +31,9 @@ object Locales {
             "price" to "Стоимость",
             "free" to "Свободно",
 
-            // Services (keys stored in DB, translated in UI)
+            // Services
             "service_gel_polish" to "Гель-лак",
-            "service_gel_strengthening" to "Укрепление гелем",
+            "service_gel_strengthening" to "Укрепл��ние гелем",
             "service_nail_extensions" to "Наращивание",
             "service_lash_extensions" to "Наращивание ресниц",
 
@@ -52,24 +55,18 @@ object Locales {
             "backup_section" to "Резервное копирование",
             "export_db" to "Экспорт",
             "import_db" to "Импорт",
-
-            "close" to "Закрыть",
-            "export_hint" to "Скопируйте этот JSON и сохраните его. Он нужен для переноса записей на другое устройство.",
-            "import_hint" to "Вставьте JSON резервной копии ниже и нажмите «Импорт». Текущие записи будут заменены.",
-            "import_btn" to "Импорт",
-            "import_invalid_json" to "Не удалось импортировать: проверьте JSON (пустой или неверный формат).",
-
-            // NEW: backup file UX
             "backup_file_name" to "Имя файла",
             "backup_export_name_hint" to "Введите имя файла резервной копии. Расширение .json добавится автоматически.",
             "backup_extension_note" to "Формат: .json (подходит для Android и iOS)",
-            "backup_import_confirm_text" to "Импортировать выбранный файл? Текущие записи будут заменены.",
+            "backup_import_confirm_text" to "Импортировать выбранный файл? Текущие ��аписи будут заменены.",
+            "import_btn" to "Импорт",
+            "import_invalid_json" to "Не удалось импортировать: проверьте JSON (пустой или неверный формат).",
             "backup_import_error_empty" to "Файл пустой или не удалось прочитать содержимое.",
             "backup_import_error_read" to "Не удалось прочитать файл.",
             "backup_import_error_no_activity" to "Не удалось открыть проводник (нет Activity).",
             "backup_import_error_no_vc" to "Не удалось открыть проводник.",
 
-            // NEW: support phone edit flow
+            // Support phone edit flow
             "support_phone_edit" to "Изменить",
             "support_phone_save" to "Сохранить",
             "support_phone_edit_confirm_title" to "Изменение номера",
@@ -109,13 +106,12 @@ object Locales {
             "notif_sound_default" to "По умолчанию",
             "notif_sound_silent" to "Без звука",
             "reminders_when" to "Напоминать за:",
-
             "remind_days" to "Дни",
             "remind_hours" to "Часы",
             "remind_summary" to "Итог",
             "remind_off" to "Выключено",
 
-            // --- Support / feedback ---
+            // Support / feedback
             "support_section" to "Служба поддержки",
             "support_phone_label" to "Телефон поддержки",
             "support_phone_hint" to "Введите номер (например: +39 123 456 789 или +7 999 000-00-00)",
@@ -123,33 +119,57 @@ object Locales {
             "support_feedback_text" to "Если у вас неполадки — позвоните в поддержку по номеру ниже.",
             "support_call" to "Позвонить",
 
-            // --- Stats ---
+            // Stats
             "stats_period_day" to "День",
             "stats_period_week" to "Неделя",
             "stats_period_month" to "Месяц",
             "stats_period_year" to "Год",
             "stats_range" to "Период",
-
             "stats_revenue" to "Выручка",
-            "stats_count" to "Кол��чество записей",
+            "stats_count" to "Количество записей",
             "stats_hours" to "Отработано часов",
             "stats_top_services" to "Процедуры",
             "stats_procedures_done" to "Проведено",
             "stats_empty" to "Нет данных за выбранный период",
             "stats_unknown_service" to "Без названия",
 
-            //  ---- Completed Record Card — Карточка готовой записи.
+            // Completed Record Card
             "view" to "Просмотр",
             "edit" to "Изменить",
             "edit_appointment_title" to "Изменение записи",
             "edit_appointment_confirm" to "Вы уверены, что хотите изменить эту запись?",
-            "yes" to "Да",
             "conflict_time_title" to "Конфликт времени",
             "shift" to "Сдвинуть",
 
             // Currency
             "currency_eur" to "€",
 
+            // --------- Security / PIN ---------
+            "security_section" to "Безопасность",
+            "pin_enabled" to "Запрашивать PIN",
+            "pin_set" to "Установить PIN",
+            "pin_change" to "Изменить PIN",
+            "pin_remove" to "Удалить PIN",
+            "pin_label" to "PIN (4–8 цифр)",
+            "pin_invalid_format" to "Введите PIN из 4–8 цифр",
+            "pin_required" to "Требуется PIN",
+            "pin_wrong" to "Неверный PIN",
+
+            "export_requires_pin" to "Для экспорта требуется PIN.",
+            "import_requires_pin" to "Для импорта требуется PIN.",
+
+            "clear_db" to "Очистить базу данных",
+            "clear_db_title" to "Очистка базы",
+            "clear_db_requires_pin" to "Чтобы очистить базу данных, введите PIN.",
+            "clear_db_warning_backup" to "Рекомендуем сначала сделать резервную копию базы данных. Сделать копию сейчас?",
+            "clear_db_make_backup" to "Сделать копию",
+            "clear_db_skip_backup" to "Очистить без копии",
+            "clear_db_confirm" to "Вы уверены? Все записи будут удалены без возможности восстановления.",
+
+            "unlock_title" to "Введите PIN",
+            "unlock_text" to "Для доступа к приложению требуется PIN.",
+
+            // months + weekdays
             "month_jan" to "Январь", "month_feb" to "Февраль", "month_mar" to "Март",
             "month_apr" to "Апрель", "month_may" to "Май", "month_jun" to "Июнь",
             "month_jul" to "Июль", "month_aug" to "Август", "month_sep" to "Сентябрь",
@@ -181,6 +201,9 @@ object Locales {
             "nav_feedback" to "Support",
             "save" to "Save",
             "cancel" to "Cancel",
+            "close" to "Close",
+            "confirm" to "Confirm",
+            "yes" to "Yes",
 
             "client_name" to "Client Name",
             "phone" to "Phone",
@@ -188,7 +211,6 @@ object Locales {
             "price" to "Price",
             "free" to "Free",
 
-            // Services
             "service_gel_polish" to "Gel polish",
             "service_gel_strengthening" to "Gel strengthening",
             "service_nail_extensions" to "Nail extensions",
@@ -212,24 +234,17 @@ object Locales {
             "backup_section" to "Backup",
             "export_db" to "Export",
             "import_db" to "Import",
-
-            "close" to "Close",
-            "export_hint" to "Copy this JSON and save it. You can use it to transfer appointments to another device.",
-            "import_hint" to "Paste the backup JSON below and press “Import”. Current appointments will be replaced.",
-            "import_btn" to "Import",
-            "import_invalid_json" to "Import failed: please check the JSON (empty or invalid format).",
-
-            // NEW: backup file UX
             "backup_file_name" to "File name",
             "backup_export_name_hint" to "Enter backup file name. .json extension will be added automatically.",
             "backup_extension_note" to "Format: .json (works on Android and iOS)",
             "backup_import_confirm_text" to "Import selected file? Current appointments will be replaced.",
+            "import_btn" to "Import",
+            "import_invalid_json" to "Import failed: please check the JSON (empty or invalid format).",
             "backup_import_error_empty" to "File is empty or cannot be read.",
             "backup_import_error_read" to "Cannot read file.",
             "backup_import_error_no_activity" to "Cannot open file picker (no Activity).",
             "backup_import_error_no_vc" to "Cannot open file picker.",
 
-            // NEW: support phone edit flow
             "support_phone_edit" to "Edit",
             "support_phone_save" to "Save",
             "support_phone_edit_confirm_title" to "Edit phone",
@@ -269,13 +284,11 @@ object Locales {
             "notif_sound_default" to "Default",
             "notif_sound_silent" to "Silent",
             "reminders_when" to "Remind before:",
-
             "remind_days" to "Days",
             "remind_hours" to "Hours",
             "remind_summary" to "Summary",
             "remind_off" to "Off",
 
-            // --- Support / feedback ---
             "support_section" to "Support",
             "support_phone_label" to "Support phone",
             "support_phone_hint" to "Enter phone number (e.g. +39 123 456 789)",
@@ -283,13 +296,11 @@ object Locales {
             "support_feedback_text" to "If something is not working, call support using the number below.",
             "support_call" to "Call",
 
-            // --- Stats ---
             "stats_period_day" to "Day",
             "stats_period_week" to "Week",
             "stats_period_month" to "Month",
             "stats_period_year" to "Year",
             "stats_range" to "Range",
-
             "stats_revenue" to "Revenue",
             "stats_count" to "Appointments",
             "stats_hours" to "Hours worked",
@@ -297,17 +308,40 @@ object Locales {
             "stats_procedures_done" to "Done",
             "stats_empty" to "No data for selected period",
             "stats_unknown_service" to "Unnamed",
-            //  ---- Completed Record Card — Карточка готовой записи.
+
             "view" to "View",
             "edit" to "Edit",
             "edit_appointment_title" to "Edit appointment",
             "edit_appointment_confirm" to "Are you sure you want to edit this appointment?",
-            "yes" to "Yes",
             "conflict_time_title" to "Time conflict",
             "shift" to "Shift",
 
-            // Currency
             "currency_eur" to "€",
+
+            // --------- Security / PIN ---------
+            "security_section" to "Security",
+            "pin_enabled" to "Require PIN",
+            "pin_set" to "Set PIN",
+            "pin_change" to "Change PIN",
+            "pin_remove" to "Remove PIN",
+            "pin_label" to "PIN (4–8 digits)",
+            "pin_invalid_format" to "Enter a 4–8 digit PIN",
+            "pin_required" to "PIN required",
+            "pin_wrong" to "Wrong PIN",
+
+            "export_requires_pin" to "PIN is required to export.",
+            "import_requires_pin" to "PIN is required to import.",
+
+            "clear_db" to "Clear database",
+            "clear_db_title" to "Clear database",
+            "clear_db_requires_pin" to "To clear the database, enter PIN.",
+            "clear_db_warning_backup" to "We recommend creating a backup first. Create a backup now?",
+            "clear_db_make_backup" to "Create backup",
+            "clear_db_skip_backup" to "Clear without backup",
+            "clear_db_confirm" to "Are you sure? All appointments will be deleted and cannot be restored.",
+
+            "unlock_title" to "Enter PIN",
+            "unlock_text" to "PIN is required to access the app.",
 
             "month_jan" to "January", "month_feb" to "February", "month_mar" to "March",
             "month_apr" to "April", "month_may" to "May", "month_jun" to "June",
@@ -340,6 +374,9 @@ object Locales {
             "nav_feedback" to "Supporto",
             "save" to "Salva",
             "cancel" to "Annulla",
+            "close" to "Chiudi",
+            "confirm" to "Conferma",
+            "yes" to "Sì",
 
             "client_name" to "Nome cliente",
             "phone" to "Telefono",
@@ -347,7 +384,6 @@ object Locales {
             "price" to "Prezzo",
             "free" to "Libero",
 
-            // Services
             "service_gel_polish" to "Smalto gel",
             "service_gel_strengthening" to "Rinforzo con gel",
             "service_nail_extensions" to "Ricostruzione unghie",
@@ -371,24 +407,17 @@ object Locales {
             "backup_section" to "Backup",
             "export_db" to "Esporta",
             "import_db" to "Importa",
-
-            "close" to "Chiudi",
-            "export_hint" to "Copia questo JSON e salvalo. Puoi usarlo per trasferire gli appuntamenti su un altro dispositivo.",
-            "import_hint" to "Incolla qui sotto il JSON del backup e premi “Importa”. Gli appuntamenti attuali verranno sostituiti.",
-            "import_btn" to "Importa",
-            "import_invalid_json" to "Importazione non riuscita: controlla il JSON (vuoto o formato non valido).",
-
-            // NEW: backup file UX
             "backup_file_name" to "Nome file",
             "backup_export_name_hint" to "Inserisci il nome del file di backup. L'estensione .json verrà aggiunta automaticamente.",
             "backup_extension_note" to "Formato: .json (Android e iOS)",
             "backup_import_confirm_text" to "Importare il file selezionato? Gli appuntamenti attuali verranno sostituiti.",
+            "import_btn" to "Importa",
+            "import_invalid_json" to "Importazione non riuscita: controlla il JSON (vuoto o formato non valido).",
             "backup_import_error_empty" to "Il file è vuoto o non può essere letto.",
             "backup_import_error_read" to "Impossibile leggere il file.",
             "backup_import_error_no_activity" to "Impossibile aprire il selettore file.",
             "backup_import_error_no_vc" to "Impossibile aprire il selettore file.",
 
-            // NEW: support phone edit flow
             "support_phone_edit" to "Modifica",
             "support_phone_save" to "Salva",
             "support_phone_edit_confirm_title" to "Modifica numero",
@@ -428,13 +457,11 @@ object Locales {
             "notif_sound_default" to "Predefinito",
             "notif_sound_silent" to "Silenzioso",
             "reminders_when" to "Ricorda prima:",
-
             "remind_days" to "Giorni",
             "remind_hours" to "Ore",
             "remind_summary" to "Riepilogo",
             "remind_off" to "Disattivato",
 
-            // --- Support / feedback ---
             "support_section" to "Supporto",
             "support_phone_label" to "Telefono supporto",
             "support_phone_hint" to "Inserisci numero (es. +39 123 456 789)",
@@ -442,13 +469,11 @@ object Locales {
             "support_feedback_text" to "Se qualcosa non funziona, chiama il supporto usando il numero qui sotto.",
             "support_call" to "Chiama",
 
-            // --- Stats ---
             "stats_period_day" to "Giorno",
             "stats_period_week" to "Settimana",
             "stats_period_month" to "Mese",
             "stats_period_year" to "Anno",
             "stats_range" to "Periodo",
-
             "stats_revenue" to "Incasso",
             "stats_count" to "Appuntamenti",
             "stats_hours" to "Ore lavorate",
@@ -457,16 +482,39 @@ object Locales {
             "stats_empty" to "Nessun dato per il periodo selezionato",
             "stats_unknown_service" to "Senza nome",
 
-            //  ---- Completed Record Card — Карточка готовой записи.
             "view" to "Visualizza",
             "edit" to "Modifica",
             "edit_appointment_title" to "Modifica appuntamento",
             "edit_appointment_confirm" to "Vuoi davvero modificare questo appuntamento?",
-            "yes" to "Sì",
             "conflict_time_title" to "Conflitto di orario",
             "shift" to "Sposta",
-            // Currency
+
             "currency_eur" to "€",
+
+            // --------- Security / PIN ---------
+            "security_section" to "Sicurezza",
+            "pin_enabled" to "Richiedi PIN",
+            "pin_set" to "Imposta PIN",
+            "pin_change" to "Cambia PIN",
+            "pin_remove" to "Rimuovi PIN",
+            "pin_label" to "PIN (4–8 cifre)",
+            "pin_invalid_format" to "Inserisci un PIN di 4–8 cifre",
+            "pin_required" to "PIN richiesto",
+            "pin_wrong" to "PIN errato",
+
+            "export_requires_pin" to "È richiesto il PIN per esportare.",
+            "import_requires_pin" to "È richiesto il PIN per importare.",
+
+            "clear_db" to "Svuota database",
+            "clear_db_title" to "Svuota database",
+            "clear_db_requires_pin" to "Per svuotare il database inserisci il PIN.",
+            "clear_db_warning_backup" to "Consigliamo di creare prima un backup. Creare un backup ora?",
+            "clear_db_make_backup" to "Crea backup",
+            "clear_db_skip_backup" to "Svuota senza backup",
+            "clear_db_confirm" to "Sei sicuro? Tutti gli appuntamenti verranno eliminati e non potranno essere ripristinati.",
+
+            "unlock_title" to "Inserisci PIN",
+            "unlock_text" to "È richiesto un PIN per accedere all'app.",
 
             "month_jan" to "Gennaio", "month_feb" to "Febbraio", "month_mar" to "Marzo",
             "month_apr" to "Aprile", "month_may" to "Maggio", "month_jun" to "Giugno",
@@ -499,6 +547,9 @@ object Locales {
             "nav_feedback" to "Звʼязок",
             "save" to "Зберегти",
             "cancel" to "Скасувати",
+            "close" to "Закрити",
+            "confirm" to "Підтвердити",
+            "yes" to "Так",
 
             "client_name" to "Ім'я клієнта",
             "phone" to "Телефон",
@@ -506,7 +557,6 @@ object Locales {
             "price" to "Вартість",
             "free" to "Вільно",
 
-            // Services
             "service_gel_polish" to "Гель-лак",
             "service_gel_strengthening" to "Зміцнення гелем",
             "service_nail_extensions" to "Нарощування",
@@ -530,24 +580,17 @@ object Locales {
             "backup_section" to "Резервне копіювання",
             "export_db" to "Експорт",
             "import_db" to "Імпорт",
-
-            "close" to "Закрити",
-            "export_hint" to "Скопіюйте цей JSON і збережіть його. Він потрібен для перенесення записів на інший пристрій.",
-            "import_hint" to "Вставте JSON резервної копії нижче та натисніть «Імпорт». Поточні записи буде замінено.",
-            "import_btn" to "Імпорт",
-            "import_invalid_json" to "Не вдалося імпортувати: перевірте JSON (порожній або невірний формат).",
-
-            // NEW: backup file UX
             "backup_file_name" to "Назва файлу",
             "backup_export_name_hint" to "Введіть назву файлу резервної копії. Розширення .json додасться автоматично.",
             "backup_extension_note" to "Формат: .json (Android та iOS)",
             "backup_import_confirm_text" to "Імпортувати вибраний файл? Поточні записи буде замінено.",
+            "import_btn" to "Імпорт",
+            "import_invalid_json" to "Не вдалося імпортувати: перевірте JSON (порожній або невірний формат).",
             "backup_import_error_empty" to "Файл порожній або не вдалося прочитати.",
             "backup_import_error_read" to "Не вдалося прочитати файл.",
             "backup_import_error_no_activity" to "Не вдалося відкрити провідник.",
             "backup_import_error_no_vc" to "Не вдалося відкрити провідник.",
 
-            // NEW: support phone edit flow
             "support_phone_edit" to "Змінити",
             "support_phone_save" to "Зберегти",
             "support_phone_edit_confirm_title" to "Зміна номера",
@@ -587,13 +630,11 @@ object Locales {
             "notif_sound_default" to "За замовчуванням",
             "notif_sound_silent" to "Без звуку",
             "reminders_when" to "Нагадувати за:",
-
             "remind_days" to "Дні",
             "remind_hours" to "Години",
             "remind_summary" to "Підсумок",
             "remind_off" to "Вимкнено",
 
-            // --- Support / feedback ---
             "support_section" to "Підтримка",
             "support_phone_label" to "Телефон підтримки",
             "support_phone_hint" to "Введіть номер (наприклад: +39 123 456 789)",
@@ -601,13 +642,11 @@ object Locales {
             "support_feedback_text" to "Якщо щось не працює — зателефонуйте в підтримку за номером нижче.",
             "support_call" to "Подзвонити",
 
-            // --- Stats ---
             "stats_period_day" to "День",
             "stats_period_week" to "Тиждень",
             "stats_period_month" to "Місяць",
             "stats_period_year" to "Рік",
             "stats_range" to "Період",
-
             "stats_revenue" to "Виручка",
             "stats_count" to "Кількість записів",
             "stats_hours" to "Відпрацьовано годин",
@@ -616,16 +655,39 @@ object Locales {
             "stats_empty" to "Немає даних за вибраний період",
             "stats_unknown_service" to "Без назви",
 
-            //  ---- Completed Record Card — Карточка готовой записи.
             "view" to "Перегляд",
             "edit" to "Змінити",
             "edit_appointment_title" to "Зміна запису",
             "edit_appointment_confirm" to "Ви впевнені, що хочете змінити цей запис?",
-            "yes" to "Так",
             "conflict_time_title" to "Конфлікт часу",
             "shift" to "Зсунути",
-            // Currency
+
             "currency_eur" to "€",
+
+            // --------- Security / PIN ---------
+            "security_section" to "Безпека",
+            "pin_enabled" to "Запитувати PIN",
+            "pin_set" to "Встановити PIN",
+            "pin_change" to "Змінити PIN",
+            "pin_remove" to "Видалити PIN",
+            "pin_label" to "PIN (4–8 цифр)",
+            "pin_invalid_format" to "Введіть PIN з 4–8 цифр",
+            "pin_required" to "Потрібен PIN",
+            "pin_wrong" to "Невірний PIN",
+
+            "export_requires_pin" to "Для експорту потрібен PIN.",
+            "import_requires_pin" to "Для імпорту потрібен PIN.",
+
+            "clear_db" to "Очистити базу даних",
+            "clear_db_title" to "Очищення бази",
+            "clear_db_requires_pin" to "Щоб очистити базу даних, введіть PIN.",
+            "clear_db_warning_backup" to "Рекомендуємо спочатку зробити резервну копію. Зробити копію зараз?",
+            "clear_db_make_backup" to "Зробити копію",
+            "clear_db_skip_backup" to "Очистити без копії",
+            "clear_db_confirm" to "Ви впевнені? Усі записи буде видалено без можливості відновлення.",
+
+            "unlock_title" to "Введіть PIN",
+            "unlock_text" to "Для доступу до застосунку потрібен PIN.",
 
             "month_jan" to "Січень", "month_feb" to "Лютий", "month_mar" to "Березень",
             "month_apr" to "Квітень", "month_may" to "Травень", "month_jun" to "Червень",
