@@ -50,6 +50,12 @@ fun SettingsPage(
     var supportPhoneDraft by remember { mutableStateOf(AppSettings.servicePhone) }
     var showSupportEditConfirm by remember { mutableStateOf(false) }
 
+    // ✅ Confirm disable PIN dialog
+    var showDisablePinConfirm by remember { mutableStateOf(false) }
+    var pendingPinEnabledValue by remember { mutableStateOf(AppSettings.pinEnabled) }
+
+    val dbOpsAllowed = AppSettings.pinEnabled && AppSettings.isPinSet()
+
     LaunchedEffect(notificationsEnabled, notificationSound, reminderDays, reminderHours) {
         delay(600)
 
@@ -84,6 +90,41 @@ fun SettingsPage(
             },
             dismissButton = {
                 TextButton(onClick = { showSupportEditConfirm = false }) { Text(Locales.t("cancel")) }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // ✅ Disable PIN confirmation dialog
+    if (showDisablePinConfirm) {
+        AlertDialog(
+            onDismissRequest = {
+                showDisablePinConfirm = false
+                pendingPinEnabledValue = AppSettings.pinEnabled
+            },
+            title = { Text(Locales.t("security_section")) },
+            text = {
+                Text(
+                    "При отключении PIN-кода будут ограничены операции с базой данных:\n" +
+                            "• импорт\n" +
+                            "• экспорт\n" +
+                            "• очистка базы\n\n" +
+                            "Продолжить?"
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    AppSettings.pinEnabled = false
+                    AppSettings.persist()
+                    pendingPinEnabledValue = false
+                    showDisablePinConfirm = false
+                }) { Text(Locales.t("confirm")) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDisablePinConfirm = false
+                    pendingPinEnabledValue = true
+                }) { Text(Locales.t("cancel")) }
             },
             shape = RoundedCornerShape(16.dp)
         )
@@ -327,6 +368,7 @@ fun SettingsPage(
             ) {
                 Button(
                     onClick = onExport,
+                    enabled = dbOpsAllowed,
                     modifier = Modifier.weight(0.45f).height(38.dp),
                     shape = RoundedCornerShape(12.dp),
                     elevation = ButtonDefaults.elevation(0.dp, 0.dp)
@@ -338,6 +380,7 @@ fun SettingsPage(
 
                 OutlinedButton(
                     onClick = onImport,
+                    enabled = dbOpsAllowed,
                     modifier = Modifier.weight(0.45f).height(38.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -347,14 +390,23 @@ fun SettingsPage(
 
             Spacer(Modifier.height(12.dp))
 
-            // moved here from Security -> Backup
             OutlinedButton(
                 onClick = onClearDatabase,
+                enabled = dbOpsAllowed,
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
             ) {
                 Text(Locales.t("clear_db"), color = Color.Red, fontWeight = FontWeight.SemiBold)
+            }
+
+            if (!dbOpsAllowed) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Чтобы использовать импорт/экспорт/очистку базы, включите PIN и установите его.",
+                    color = Color.Gray,
+                    fontSize = (12 * fontScale).sp
+                )
             }
         }
 
@@ -375,11 +427,20 @@ fun SettingsPage(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = Locales.t("pin_enabled"), fontSize = (16 * fontScale).sp)
+
                 Switch(
-                    checked = AppSettings.pinEnabled,
-                    onCheckedChange = {
-                        AppSettings.pinEnabled = it
-                        AppSettings.persist()
+                    checked = pendingPinEnabledValue,
+                    onCheckedChange = { newValue ->
+                        // Включение: просто включаем
+                        if (newValue) {
+                            AppSettings.pinEnabled = true
+                            AppSettings.persist()
+                            pendingPinEnabledValue = true
+                        } else {
+                            // Выключение: только через confirm
+                            pendingPinEnabledValue = false
+                            showDisablePinConfirm = true
+                        }
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colors.primary,

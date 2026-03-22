@@ -22,14 +22,15 @@ fun PinDialog(
     text: String,
     confirmText: String,
     onDismiss: () -> Unit,
-    onConfirmPin: (String) -> Unit
+    onConfirmPin: (String) -> Unit,
+    allowDismiss: Boolean = true // ✅ NEW: если false — крестик и "Отмена" скрываются
 ) {
     var pin by remember { mutableStateOf("") }
     var tried by remember { mutableStateOf(false) }
 
     val validFormat = AppSettings.isPinValidFormat(pin)
 
-    // ✅ Принудительно задаём "синий как в SettingsPage", чтобы не вылезал дефолтный фиолетовый
+    // ✅ Принудительно задаём "синий как в SettingsPage"
     val themeColors = if (AppSettings.isDarkMode) {
         darkColors(
             primary = Color(0xFF8AB4F8),
@@ -46,9 +47,11 @@ fun PinDialog(
         )
     }
 
+    val safeDismiss = { if (allowDismiss) onDismiss() }
+
     MaterialTheme(colors = themeColors) {
         AlertDialog(
-            onDismissRequest = onDismiss,
+            onDismissRequest = safeDismiss,
             title = null,
             text = {
                 Column(Modifier.fillMaxWidth()) {
@@ -58,23 +61,24 @@ fun PinDialog(
                             style = MaterialTheme.typography.h6,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(end = 44.dp),
+                                .padding(end = if (allowDismiss) 44.dp else 0.dp),
                             color = MaterialTheme.colors.onSurface
                         )
 
-                        IconButton(
-                            onClick = onDismiss,
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                // как у тебя сейчас
-                                .offset(x = 14.dp, y = (-5).dp)
-                                .size(36.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = Locales.t("close"),
-                                tint = MaterialTheme.colors.onSurface.copy(alpha = 0.65f)
-                            )
+                        if (allowDismiss) {
+                            IconButton(
+                                onClick = safeDismiss,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 14.dp, y = (-5).dp)
+                                    .size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = Locales.t("close"),
+                                    tint = MaterialTheme.colors.onSurface.copy(alpha = 0.65f)
+                                )
+                            }
                         }
                     }
 
@@ -100,24 +104,25 @@ fun PinDialog(
                 }
             },
 
-            // ✅ Кнопки: не липнут к низу/правому краю + расстояние между ними
+            // ✅ Кнопки (как у тебя) + скрываем "Отмена" если нельзя закрывать
             buttons = {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        // отступы снизу/справа/слева как просил, чтобы было гармонично с полем
                         .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 16.dp),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(
-                        onClick = onDismiss,
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colors.onSurface.copy(alpha = 0.75f)
-                        )
-                    ) { Text(Locales.t("cancel")) }
+                    if (allowDismiss) {
+                        TextButton(
+                            onClick = safeDismiss,
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colors.onSurface.copy(alpha = 0.75f)
+                            )
+                        ) { Text(Locales.t("cancel")) }
 
-                    Spacer(Modifier.width(15.dp))
+                        Spacer(Modifier.width(15.dp))
+                    }
 
                     Button(
                         onClick = {
@@ -130,7 +135,7 @@ fun PinDialog(
                         contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
                         elevation = ButtonDefaults.elevation(0.dp, 0.dp),
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = MaterialTheme.colors.primary,   // ✅ синий
+                            backgroundColor = MaterialTheme.colors.primary,
                             contentColor = MaterialTheme.colors.onPrimary
                         )
                     ) { Text(confirmText) }
