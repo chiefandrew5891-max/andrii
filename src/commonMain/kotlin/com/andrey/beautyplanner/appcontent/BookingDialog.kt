@@ -23,38 +23,78 @@ import com.andrey.beautyplanner.ServicesCatalog
 fun BookingDialog(
     time: String,
     initialData: Appointment?,
+    readOnly: Boolean,
     onDismiss: () -> Unit,
-    onSave: (String, String, String, String, String, Int) -> Unit, // time, name, phone, serviceKey, price, hours
+    onSave: (String, Int, String, String, String, String) -> Unit,
     onTransferRequest: (Appointment) -> Unit
 ) {
     val fontScale = AppSettings.getFontScale()
 
-    // --------- state ----------
-    var name by remember { mutableStateOf(initialData?.clientName ?: "") }
-    var phone by remember { mutableStateOf(initialData?.phone ?: "") }
-    var serviceKey by remember { mutableStateOf(initialData?.serviceName ?: "") } // service_* key
-    var price by remember { mutableStateOf(initialData?.price ?: "") }
-    var hours by remember { mutableStateOf(initialData?.durationHours ?: 1) }
-
-    // Time (hour fixed from base time, minutes chosen from dropdown)
-    val initialTime = remember(time, initialData) { initialData?.time ?: time }
-    val baseHour = remember(initialTime) { initialTime.substringBefore(":").toIntOrNull() ?: 0 }
-    val initialMin = remember(initialTime) { initialTime.substringAfter(":", "00").toIntOrNull() ?: 0 }
-
-    // Minutes dropdown: кратно 10 (10, 20, 30, 40, 50) + 00
-    // Если хочешь без 00 — уберём, но обычно удобно оставить.
-    val minuteOptions = remember { listOf(0, 10, 20, 30, 40, 50) }
-    var minutes by remember {
-        mutableStateOf(
-            // если в базе уже стояло 22 — округлим к ближайшему вниз (20)
-            minuteOptions.lastOrNull { it <= initialMin } ?: 0
-        )
+    fun parseHmToMinutes(hm: String): Int? {
+        val p = hm.split(":")
+        if (p.size != 2) return null
+        val h = p[0].toIntOrNull() ?: return null
+        val m = p[1].toIntOrNull() ?: return null
+        if (h !in 0..23 || m !in 0..59) return null
+        return h * 60 + m
     }
 
-    val finalTime = remember(baseHour, minutes) {
-        val hh = baseHour.toString().padStart(2, '0')
-        val mm = minutes.toString().padStart(2, '0')
-        "$hh:$mm"
+    fun minutesToHm(total: Int): String {
+        val t = total.coerceIn(0, 24 * 60 - 1)
+        val h = t / 60
+        val m = t % 60
+        return "${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}"
+    }
+
+    var editEnabled by remember(readOnly, initialData) { mutableStateOf(!readOnly) }
+    var showEnableEditConfirm by remember { mutableStateOf(false) }
+
+    // --------- fields ----------
+    var name by remember { mutableStateOf(initialData?.clientName ?: "") }
+    var phone by remember { mutableStateOf(initialData?.phone ?: "") }
+    var serviceKey by remember { mutableStateOf(initialData?.serviceName ?: "") }
+    var price by remember { mutableStateOf(initialData?.price ?: "") }
+
+    // --------- start time ----------
+    val initialStart = remember(time, initialData) { initialData?.time ?: time }
+    val startBaseHour = remember(initialStart) { initialStart.substringBefore(":").toIntOrNull() ?: 0 }
+    val initialStartMinRaw = remember(initialStart) { initialStart.substringAfter(":", "00").toIntOrNull() ?: 0 }
+    val minuteOptions = remember { listOf(0, 10, 20, 30, 40, 50) }
+
+    var startMinutesPart by remember { mutableStateOf(minuteOptions.lastOrNull { it <= initialStartMinRaw } ?: 0) }
+
+    val startTime = remember(startBaseHour, startMinutesPart) {
+        "${startBaseHour.toString().padStart(2, '0')}:${startMinutesPart.toString().padStart(2, '0')}"
+    }
+    val startAbsMinutes = remember(startTime) { parseHmToMinutes(startTime) ?: (startBaseHour * 60) }
+
+    // --------- end time options ----------
+    val endOptions = remember(startAbsMinutes) {
+        val list = mutableListOf<String>()
+        val minEnd = startAbsMinutes + 10
+        val maxEnd = startAbsMinutes + 4 * 60
+        var t = minEnd
+        while (t <= maxEnd) {
+            list.add(minutesToHm(t))
+            t += 10
+        }
+        list
+    }
+
+    fun defaultEnd(): String {
+        val x = startAbsMinutes + 60
+        val rounded = (x / 10) * 10
+        return minutesToHm(rounded)
+    }
+
+    val existingDurationMins = remember(initialData) {
+        val dm = initialData?.durationMinutes ?: 0
+        if (dm > 0) dm else ((initialData?.durationHours ?: 1) * 60)
+    }
+
+    var endTime by remember(startAbsMinutes, existingDurationMins) {
+        val proposed = minutesToHm(startAbsMinutes + existingDurationMins)
+        mutableStateOf(if (endOptions.contains(proposed)) proposed else defaultEnd())
     }
 
     // --------- validation ----------
@@ -63,11 +103,30 @@ fun BookingDialog(
     val nameOk = name.trim().isNotBlank()
     val phoneOk = phone.trim().isNotBlank()
     val serviceOk = serviceKey.trim().isNotBlank()
-
-    // price можешь сделать обязательным/необязательным — пока считаю обязательным
     val priceOk = price.trim().isNotBlank()
 
-    val formOk = nameOk && phoneOk && serviceOk && priceOk
+    val endAbs = parseHmToMinutes(endTime)
+    val endOk = endAbs != null && endAbs > startAbsMinutes
+
+    val formOk = nameOk && phoneOk && serviceOk && priceOk && endOk
+
+    if (showEnableEditConfirm) {
+        AlertDialog(
+            onDismissRequest = { showEnableEditConfirm = false },
+            title = { Text(Locales.t("edit_appointment_title")) },
+            text = { Text(Locales.t("edit_appointment_confirm")) },
+            confirmButton = {
+                Button(onClick = {
+                    showEnableEditConfirm = false
+                    editEnabled = true
+                }) { Text(Locales.t("yes")) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEnableEditConfirm = false }) { Text(Locales.t("cancel")) }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -76,164 +135,157 @@ fun BookingDialog(
             backgroundColor = MaterialTheme.colors.surface
         ) {
             Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.padding(24.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Column(
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        val header = when {
+                            initialData == null -> Locales.t("nav_day")
+                            editEnabled -> Locales.t("save")
+                            else -> Locales.t("view")
+                        }
+
                         Text(
-                            text = if (initialData != null) Locales.t("save") else Locales.t("nav_day"),
+                            text = header,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = (22 * fontScale).sp,
                             color = MaterialTheme.colors.primary
                         )
                         Text(
-                            "${Locales.t("start_time")}: $finalTime",
+                            "${Locales.t("start_time")}: $startTime • ${Locales.t("end_time")}: $endTime",
                             fontSize = (14 * fontScale).sp,
                             color = Color.Gray
                         )
                     }
 
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = MaterialTheme.colors.onSurface.copy(alpha = 0.7f)
-                        )
+                    IconButton(onClick = onDismiss, modifier = Modifier.align(Alignment.TopEnd)) {
+                        Icon(Icons.Default.Close, contentDescription = "Close")
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
 
-                // --------- Time + Duration block (duration moved up) ----------
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Time picker (hour fixed + minutes dropdown)
+                    // START
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = Locales.t("start_time"),
-                            fontSize = (12 * fontScale).sp,
-                            color = Color.Gray
-                        )
+                        Text(Locales.t("start_time"), fontSize = (12 * fontScale).sp, color = Color.Gray)
 
-                        var minutesExpanded by remember { mutableStateOf(false) }
+                        var expStart by remember { mutableStateOf(false) }
                         ExposedDropdownMenuBox(
-                            expanded = minutesExpanded,
-                            onExpandedChange = { minutesExpanded = !minutesExpanded }
+                            expanded = expStart,
+                            onExpandedChange = { if (editEnabled) expStart = !expStart }
                         ) {
                             OutlinedTextField(
-                                value = "${baseHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}",
+                                value = startTime,
                                 onValueChange = {},
                                 readOnly = true,
+                                enabled = editEnabled,
                                 modifier = Modifier.fillMaxWidth(),
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = minutesExpanded) },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expStart) },
                                 shape = RoundedCornerShape(14.dp)
                             )
-
-                            ExposedDropdownMenu(
-                                expanded = minutesExpanded,
-                                onDismissRequest = { minutesExpanded = false }
-                            ) {
+                            ExposedDropdownMenu(expanded = expStart, onDismissRequest = { expStart = false }) {
                                 minuteOptions.forEach { m ->
                                     DropdownMenuItem(onClick = {
-                                        minutes = m
-                                        minutesExpanded = false
+                                        startMinutesPart = m
+                                        expStart = false
+                                        endTime = defaultEnd()
                                     }) {
-                                        Text(text = "${baseHour.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}")
+                                        Text("${startBaseHour.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}")
                                     }
                                 }
                             }
                         }
                     }
 
-                    // Duration hours (moved up next to time)
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = Locales.t("duration_hours"),
-                            fontSize = (12 * fontScale).sp,
-                            color = Color.Gray
-                        )
+                    // END
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(Locales.t("end_time"), fontSize = (12 * fontScale).sp, color = Color.Gray)
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { if (hours > 1) hours-- }) {
-                                Icon(Icons.Default.RemoveCircleOutline, null, tint = MaterialTheme.colors.primary)
-                            }
-                            Text(
-                                text = hours.toString(),
-                                fontSize = (18 * fontScale).sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 6.dp)
+                        var expEnd by remember { mutableStateOf(false) }
+                        ExposedDropdownMenuBox(
+                            expanded = expEnd,
+                            onExpandedChange = { if (editEnabled) expEnd = !expEnd }
+                        ) {
+                            OutlinedTextField(
+                                value = endTime,
+                                onValueChange = {},
+                                readOnly = true,
+                                enabled = editEnabled,
+                                modifier = Modifier.fillMaxWidth(),
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expEnd) },
+                                shape = RoundedCornerShape(14.dp),
+                                isError = triedSave && editEnabled && !endOk
                             )
-                            IconButton(onClick = { if (hours < 5) hours++ }) {
-                                Icon(Icons.Default.AddCircleOutline, null, tint = MaterialTheme.colors.primary)
+                            ExposedDropdownMenu(expanded = expEnd, onDismissRequest = { expEnd = false }) {
+                                endOptions.forEach { t ->
+                                    DropdownMenuItem(onClick = {
+                                        endTime = t
+                                        expEnd = false
+                                    }) { Text(t) }
+                                }
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                if (triedSave && editEnabled && !endOk) {
+                    Text(
+                        text = "End must be after start".let { // optional to localize later
+                            when (Locales.currentLanguage) {
+                                "ru" -> "Конец должен быть позже начала"
+                                "uk" -> "Кінець має бути пізніше початку"
+                                "it" -> "La fine deve essere dopo l'inizio"
+                                else -> "End must be after start"
+                            }
+                        },
+                        color = MaterialTheme.colors.error,
+                        fontSize = (12 * fontScale).sp,
+                        modifier = Modifier.align(Alignment.Start).padding(top = 6.dp)
+                    )
+                }
 
-                // --------- Name ----------
+                Spacer(Modifier.height(14.dp))
+
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
+                    enabled = editEnabled,
                     label = { Text(Locales.t("client_name")) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    leadingIcon = { Icon(Icons.Default.Person, null, tint = MaterialTheme.colors.primary) },
-                    isError = triedSave && !nameOk
+                    leadingIcon = { Icon(Icons.Default.Person, null) },
+                    isError = triedSave && editEnabled && !nameOk
                 )
-                if (triedSave && !nameOk) {
-                    Text(
-                        text = "Обязательно",
-                        color = MaterialTheme.colors.error,
-                        fontSize = (12 * fontScale).sp,
-                        modifier = Modifier.align(Alignment.Start).padding(top = 4.dp)
-                    )
-                }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
 
-                // --------- Phone ----------
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
+                    enabled = editEnabled,
                     label = { Text(Locales.t("phone")) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    leadingIcon = { Icon(Icons.Default.Phone, null, tint = MaterialTheme.colors.primary) },
-                    isError = triedSave && !phoneOk
+                    leadingIcon = { Icon(Icons.Default.Phone, null) },
+                    isError = triedSave && editEnabled && !phoneOk
                 )
-                if (triedSave && !phoneOk) {
-                    Text(
-                        text = "Обязательно",
-                        color = MaterialTheme.colors.error,
-                        fontSize = (12 * fontScale).sp,
-                        modifier = Modifier.align(Alignment.Start).padding(top = 4.dp)
-                    )
-                }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
 
-                // --------- Service dropdown ----------
                 var serviceExpanded by remember { mutableStateOf(false) }
                 val services = remember { ServicesCatalog.keys }
 
                 ExposedDropdownMenuBox(
                     expanded = serviceExpanded,
-                    onExpandedChange = { serviceExpanded = !serviceExpanded }
+                    onExpandedChange = { if (editEnabled) serviceExpanded = !serviceExpanded }
                 ) {
                     val displayText = if (serviceKey.isBlank()) "" else Locales.t(serviceKey)
 
@@ -241,87 +293,89 @@ fun BookingDialog(
                         value = displayText,
                         onValueChange = {},
                         readOnly = true,
+                        enabled = editEnabled,
                         label = { Text(Locales.t("service")) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(14.dp),
-                        leadingIcon = { Icon(Icons.Default.Brush, null, tint = MaterialTheme.colors.primary) },
+                        leadingIcon = { Icon(Icons.Default.Brush, null) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = serviceExpanded) },
-                        isError = triedSave && !serviceOk
+                        isError = triedSave && editEnabled && !serviceOk
                     )
-
-                    ExposedDropdownMenu(
-                        expanded = serviceExpanded,
-                        onDismissRequest = { serviceExpanded = false }
-                    ) {
+                    ExposedDropdownMenu(expanded = serviceExpanded, onDismissRequest = { serviceExpanded = false }) {
                         services.forEach { key ->
                             DropdownMenuItem(onClick = {
                                 serviceKey = key
                                 serviceExpanded = false
-                            }) {
-                                Text(Locales.t(key))
-                            }
+                            }) { Text(Locales.t(key)) }
                         }
                     }
                 }
-                if (triedSave && !serviceOk) {
-                    Text(
-                        text = "Обязательно",
-                        color = MaterialTheme.colors.error,
-                        fontSize = (12 * fontScale).sp,
-                        modifier = Modifier.align(Alignment.Start).padding(top = 4.dp)
-                    )
-                }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
 
-                // --------- Price ----------
                 OutlinedTextField(
                     value = price,
                     onValueChange = { price = it },
-                    label = { Text(Locales.t("price") + " (€)") },
+                    enabled = editEnabled,
+                    label = { Text(Locales.t("price") + " (���)") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    leadingIcon = { Icon(Icons.Default.AttachMoney, null, tint = MaterialTheme.colors.primary) },
-                    isError = triedSave && !priceOk
+                    leadingIcon = { Icon(Icons.Default.Payments, null) },
+                    isError = triedSave && editEnabled && !priceOk
                 )
-                if (triedSave && !priceOk) {
-                    Text(
-                        text = "Обязательно",
-                        color = MaterialTheme.colors.error,
-                        fontSize = (12 * fontScale).sp,
-                        modifier = Modifier.align(Alignment.Start).padding(top = 4.dp)
-                    )
-                }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(Modifier.height(16.dp))
 
-                // Global hint
-                if (triedSave && !formOk) {
-                    Text(
-                        text = "Заполните обязательные поля",
-                        color = MaterialTheme.colors.error,
-                        fontSize = (13 * fontScale).sp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
+                if (editEnabled) {
+                    if (triedSave && !formOk) {
+                        Text(
+                            text = "Fill required fields".let {
+                                when (Locales.currentLanguage) {
+                                    "ru" -> "Заполните обязательные поля"
+                                    "uk" -> "Заповніть обовʼязкові поля"
+                                    "it" -> "Compila i campi obbligatori"
+                                    else -> "Fill required fields"
+                                }
+                            },
+                            color = MaterialTheme.colors.error,
+                            fontSize = (13 * fontScale).sp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(Modifier.height(10.dp))
+                    }
 
-                Button(
-                    onClick = {
-                        triedSave = true
-                        if (!formOk) return@Button
-                        onSave(finalTime, name.trim(), phone.trim(), serviceKey.trim(), price.trim(), hours)
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    enabled = true,
-                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
-                ) {
-                    Text(
-                        Locales.t("save").uppercase(),
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Button(
+                        onClick = {
+                            triedSave = true
+                            if (!formOk) return@Button
+
+                            val durationMinutes = ((parseHmToMinutes(endTime) ?: 0) - startAbsMinutes)
+                                .coerceAtLeast(10)
+
+                            onSave(
+                                startTime,
+                                durationMinutes,
+                                name.trim(),
+                                phone.trim(),
+                                serviceKey.trim(),
+                                price.trim()
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
+                    ) {
+                        Text(Locales.t("save").uppercase(), color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    Button(
+                        onClick = { showEnableEditConfirm = true },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
+                    ) {
+                        Text(Locales.t("edit").uppercase(), color = Color.White, fontWeight = FontWeight.Bold)
+                    }
                 }
 
                 if (initialData != null) {

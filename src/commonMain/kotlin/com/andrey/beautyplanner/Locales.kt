@@ -28,6 +28,12 @@ object Locales {
             "price" to "Стоимость",
             "free" to "Свободно",
 
+            // Services (keys stored in DB, translated in UI)
+            "service_gel_polish" to "Гель-лак",
+            "service_gel_strengthening" to "Укрепление гелем",
+            "service_nail_extensions" to "Наращивание",
+            "service_lash_extensions" to "Наращивание ресниц",
+
             "all_appointments_list" to "Список всех записей:",
             "no_appointments" to "Нет записей",
 
@@ -53,6 +59,23 @@ object Locales {
             "import_btn" to "Импорт",
             "import_invalid_json" to "Не удалось импортировать: проверьте JSON (пустой или неверный формат).",
 
+            // NEW: backup file UX
+            "backup_file_name" to "Имя файла",
+            "backup_export_name_hint" to "Введите имя файла резервной копии. Расширение .json добавится автоматически.",
+            "backup_extension_note" to "Формат: .json (подходит для Android и iOS)",
+            "backup_import_confirm_text" to "Импортировать выбранный файл? Текущие записи будут заменены.",
+            "backup_import_error_empty" to "Файл пустой или не удалось прочитать содержимое.",
+            "backup_import_error_read" to "Не удалось прочитать файл.",
+            "backup_import_error_no_activity" to "Не удалось открыть проводник (нет Activity).",
+            "backup_import_error_no_vc" to "Не удалось открыть проводник.",
+
+            // NEW: support phone edit flow
+            "support_phone_edit" to "Изменить",
+            "support_phone_save" to "Сохранить",
+            "support_phone_edit_confirm_title" to "Изменение номера",
+            "support_phone_edit_confirm_text" to "Вы уверены, что хотите изменить номер службы поддержки?",
+            "support_phone_edit_confirm_yes" to "Да, изменить",
+
             "privacy_policy" to "Политика конфиденциальности",
 
             "delete_title" to "Удаление",
@@ -77,6 +100,7 @@ object Locales {
             "reschedule_confirm" to "Сохранить",
 
             "start_time" to "Начало",
+            "end_time" to "Конец",
             "duration_hours" to "Длительность (ч)",
 
             "notifications_section" to "Уведомления",
@@ -107,12 +131,21 @@ object Locales {
             "stats_range" to "Период",
 
             "stats_revenue" to "Выручка",
-            "stats_count" to "Количество записей",
+            "stats_count" to "Кол��чество записей",
             "stats_hours" to "Отработано часов",
             "stats_top_services" to "Процедуры",
             "stats_procedures_done" to "Проведено",
             "stats_empty" to "Нет данных за выбранный период",
             "stats_unknown_service" to "Без названия",
+
+            //  ---- Completed Record Card — Карточка готовой записи.
+            "view" to "Просмотр",
+            "edit" to "Изменить",
+            "edit_appointment_title" to "Изменение записи",
+            "edit_appointment_confirm" to "Вы уверены, что хотите изменить эту запись?",
+            "yes" to "Да",
+            "conflict_time_title" to "Конфликт времени",
+            "shift" to "Сдвинуть",
 
             // Currency
             "currency_eur" to "€",
@@ -155,6 +188,12 @@ object Locales {
             "price" to "Price",
             "free" to "Free",
 
+            // Services
+            "service_gel_polish" to "Gel polish",
+            "service_gel_strengthening" to "Gel strengthening",
+            "service_nail_extensions" to "Nail extensions",
+            "service_lash_extensions" to "Lash extensions",
+
             "all_appointments_list" to "All appointments list:",
             "no_appointments" to "No appointments",
 
@@ -180,6 +219,23 @@ object Locales {
             "import_btn" to "Import",
             "import_invalid_json" to "Import failed: please check the JSON (empty or invalid format).",
 
+            // NEW: backup file UX
+            "backup_file_name" to "File name",
+            "backup_export_name_hint" to "Enter backup file name. .json extension will be added automatically.",
+            "backup_extension_note" to "Format: .json (works on Android and iOS)",
+            "backup_import_confirm_text" to "Import selected file? Current appointments will be replaced.",
+            "backup_import_error_empty" to "File is empty or cannot be read.",
+            "backup_import_error_read" to "Cannot read file.",
+            "backup_import_error_no_activity" to "Cannot open file picker (no Activity).",
+            "backup_import_error_no_vc" to "Cannot open file picker.",
+
+            // NEW: support phone edit flow
+            "support_phone_edit" to "Edit",
+            "support_phone_save" to "Save",
+            "support_phone_edit_confirm_title" to "Edit phone",
+            "support_phone_edit_confirm_text" to "Are you sure you want to change support phone number?",
+            "support_phone_edit_confirm_yes" to "Yes",
+
             "privacy_policy" to "Privacy Policy",
 
             "delete_title" to "Delete",
@@ -204,6 +260,7 @@ object Locales {
             "reschedule_confirm" to "Save",
 
             "start_time" to "Start time",
+            "end_time" to "End",
             "duration_hours" to "Duration (h)",
 
             "notifications_section" to "Notifications",
@@ -240,6 +297,14 @@ object Locales {
             "stats_procedures_done" to "Done",
             "stats_empty" to "No data for selected period",
             "stats_unknown_service" to "Unnamed",
+            //  ---- Completed Record Card — Карточка готовой записи.
+            "view" to "View",
+            "edit" to "Edit",
+            "edit_appointment_title" to "Edit appointment",
+            "edit_appointment_confirm" to "Are you sure you want to edit this appointment?",
+            "yes" to "Yes",
+            "conflict_time_title" to "Time conflict",
+            "shift" to "Shift",
 
             // Currency
             "currency_eur" to "€",
@@ -282,6 +347,12 @@ object Locales {
             "price" to "Prezzo",
             "free" to "Libero",
 
+            // Services
+            "service_gel_polish" to "Smalto gel",
+            "service_gel_strengthening" to "Rinforzo con gel",
+            "service_nail_extensions" to "Ricostruzione unghie",
+            "service_lash_extensions" to "Extension ciglia",
+
             "all_appointments_list" to "Elenco appuntamenti:",
             "no_appointments" to "Nessun appuntamento",
 
@@ -307,6 +378,23 @@ object Locales {
             "import_btn" to "Importa",
             "import_invalid_json" to "Importazione non riuscita: controlla il JSON (vuoto o formato non valido).",
 
+            // NEW: backup file UX
+            "backup_file_name" to "Nome file",
+            "backup_export_name_hint" to "Inserisci il nome del file di backup. L'estensione .json verrà aggiunta automaticamente.",
+            "backup_extension_note" to "Formato: .json (Android e iOS)",
+            "backup_import_confirm_text" to "Importare il file selezionato? Gli appuntamenti attuali verranno sostituiti.",
+            "backup_import_error_empty" to "Il file è vuoto o non può essere letto.",
+            "backup_import_error_read" to "Impossibile leggere il file.",
+            "backup_import_error_no_activity" to "Impossibile aprire il selettore file.",
+            "backup_import_error_no_vc" to "Impossibile aprire il selettore file.",
+
+            // NEW: support phone edit flow
+            "support_phone_edit" to "Modifica",
+            "support_phone_save" to "Salva",
+            "support_phone_edit_confirm_title" to "Modifica numero",
+            "support_phone_edit_confirm_text" to "Vuoi modificare il numero di supporto?",
+            "support_phone_edit_confirm_yes" to "Sì",
+
             "privacy_policy" to "Privacy Policy",
 
             "delete_title" to "Elimina",
@@ -331,6 +419,7 @@ object Locales {
             "reschedule_confirm" to "Salva",
 
             "start_time" to "Ora inizio",
+            "end_time" to "Fine",
             "duration_hours" to "Durata (h)",
 
             "notifications_section" to "Notifiche",
@@ -368,6 +457,14 @@ object Locales {
             "stats_empty" to "Nessun dato per il periodo selezionato",
             "stats_unknown_service" to "Senza nome",
 
+            //  ---- Completed Record Card — Карточка готовой записи.
+            "view" to "Visualizza",
+            "edit" to "Modifica",
+            "edit_appointment_title" to "Modifica appuntamento",
+            "edit_appointment_confirm" to "Vuoi davvero modificare questo appuntamento?",
+            "yes" to "Sì",
+            "conflict_time_title" to "Conflitto di orario",
+            "shift" to "Sposta",
             // Currency
             "currency_eur" to "€",
 
@@ -409,6 +506,12 @@ object Locales {
             "price" to "Вартість",
             "free" to "Вільно",
 
+            // Services
+            "service_gel_polish" to "Гель-лак",
+            "service_gel_strengthening" to "Зміцнення гелем",
+            "service_nail_extensions" to "Нарощування",
+            "service_lash_extensions" to "Нарощування вій",
+
             "all_appointments_list" to "Список всіх записів:",
             "no_appointments" to "Немає записів",
 
@@ -434,6 +537,23 @@ object Locales {
             "import_btn" to "Імпорт",
             "import_invalid_json" to "Не вдалося імпортувати: перевірте JSON (порожній або невірний формат).",
 
+            // NEW: backup file UX
+            "backup_file_name" to "Назва файлу",
+            "backup_export_name_hint" to "Введіть назву файлу резервної копії. Розширення .json додасться автоматично.",
+            "backup_extension_note" to "Формат: .json (Android та iOS)",
+            "backup_import_confirm_text" to "Імпортувати вибраний файл? Поточні записи буде замінено.",
+            "backup_import_error_empty" to "Файл порожній або не вдалося прочитати.",
+            "backup_import_error_read" to "Не вдалося прочитати файл.",
+            "backup_import_error_no_activity" to "Не вдалося відкрити провідник.",
+            "backup_import_error_no_vc" to "Не вдалося відкрити провідник.",
+
+            // NEW: support phone edit flow
+            "support_phone_edit" to "Змінити",
+            "support_phone_save" to "Зберегти",
+            "support_phone_edit_confirm_title" to "Зміна номера",
+            "support_phone_edit_confirm_text" to "Ви впевнені, що хочете змінити номер підтримки?",
+            "support_phone_edit_confirm_yes" to "Так",
+
             "privacy_policy" to "Політика конфіденційності",
 
             "delete_title" to "Видалення",
@@ -458,6 +578,7 @@ object Locales {
             "reschedule_confirm" to "Зберегти",
 
             "start_time" to "Початок",
+            "end_time" to "Кінець",
             "duration_hours" to "Тривалість (год)",
 
             "notifications_section" to "Сповіщення",
@@ -495,6 +616,14 @@ object Locales {
             "stats_empty" to "Немає даних за вибраний період",
             "stats_unknown_service" to "Без назви",
 
+            //  ---- Completed Record Card — Карточка готовой записи.
+            "view" to "Перегляд",
+            "edit" to "Змінити",
+            "edit_appointment_title" to "Зміна запису",
+            "edit_appointment_confirm" to "Ви впевнені, що хочете змінити цей запис?",
+            "yes" to "Так",
+            "conflict_time_title" to "Конфлікт часу",
+            "shift" to "Зсунути",
             // Currency
             "currency_eur" to "€",
 

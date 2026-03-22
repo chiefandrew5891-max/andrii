@@ -56,6 +56,7 @@ fun AppRoot() {
     var showDeleteConfirm by remember { mutableStateOf<Appointment?>(null) }
     var selectedTimeSlot by remember { mutableStateOf("") }
     var editingAppointment by remember { mutableStateOf<Appointment?>(null) }
+    var bookingReadOnly by remember { mutableStateOf(false) }
 
     // перенос: инициатор (A)
     var transferA by remember { mutableStateOf<Appointment?>(null) }
@@ -78,6 +79,172 @@ fun AppRoot() {
     var showImportConfirm by remember { mutableStateOf(false) }
     var showImportError by remember { mutableStateOf<String?>(null) }
 
+    // Save error dialog
+    var showSaveError by remember { mutableStateOf<String?>(null) }
+
+    // NEW: auto-shift chain confirm (when overlap on save)
+    data class ShiftItem(val apptId: String, val newStartMin: Int)
+    var showAutoShiftConfirm by remember { mutableStateOf(false) }
+    var pendingNewAppt by remember { mutableStateOf<Appointment?>(null) }
+    var shiftChain by remember { mutableStateOf<List<ShiftItem>>(emptyList()) }
+    var shiftBlockedApptId by remember { mutableStateOf<String?>(null) } // which client needs manual reschedule
+
+    fun parseHmToMinutes(hm: String): Int? {
+        val parts = hm.split(":")
+        if (parts.size != 2) return null
+        val h = parts[0].toIntOrNull() ?: return null
+        val m = parts[1].toIntOrNull() ?: return null
+        if (h !in 0..23) return null
+        if (m !in 0..59) return null
+        return h * 60 + m
+    }
+
+    fun minutesToHm(mins: Int): String {
+        val safe = mins.coerceIn(0, 24 * 60 - 1)
+        val h = safe / 60
+        val m = safe % 60
+        return "${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}"
+    }
+
+    fun apptDurationMinutes(a: Appointment): Int =
+        if (a.durationMinutes > 0) a.durationMinutes else a.durationHours.coerceAtLeast(1) * 60
+
+    fun apptStartEndMinutes(a: Appointment): Pair<Int, Int>? {
+        val start = parseHmToMinutes(a.time) ?: return null
+        val end = start + apptDurationMinutes(a)
+        return start to end
+    }
+
+    fun saveAll() {
+        DataManager.saveToDatabase(appointments.toList())
+
+        val mins = AppSettings.reminderMinutesComputed()
+        if (AppSettings.notificationsEnabled && mins.isNotEmpty()) {
+            Notifications.rescheduleAll(
+                appointments = appointments.toList(),
+                reminderMinutes = mins,
+                sound = AppSettings.notificationSound,
+                nowEpochMillis = Clock.System.now().toEpochMilliseconds()
+            )
+        } else {
+            Notifications.cancelAll()
+        }
+    }
+
+    fun findAppointment(date: LocalDate, time: String): Appointment? =
+        appointments.find { it.dateString == date.toString() && it.time == time }
+
+    fun moveAppointment(appt: Appointment, toDate: LocalDate, toTime: String) {
+        val idx = appointments.indexOfFirst { it.id == appt.id }
+        if (idx >= 0) {
+            appointments[idx] = appt.copy(dateString = toDate.toString(), time = toTime)
+        } else {
+            appointments.remove(appt)
+            appointments.add(appt.copy(dateString = toDate.toString(), time = toTime))
+        }
+    }
+
+    fun replaceById(updated: Appointment) {
+        val idx = appointments.indexOfFirst { it.id == updated.id }
+        if (idx >= 0) appointments[idx] = updated
+        else {
+            appointments.removeAll { it.id == updated.id }
+            appointments.add(updated)
+        }
+    }
+
+    // Find first overlapping appointment with [start,end) on same day, excluding ignoreId
+    fun firstOverlapOnDay(day: String, start: Int, end: Int, ignoreId: String?): Appointment? {
+        return appointments
+            .asSequence()
+            .filter { it.dateString == day }
+            .filter { ignoreId == null || it.id != ignoreId }
+            .mapNotNull { a ->
+                val se = apptStartEndMinutes(a) ?: return@mapNotNull null
+                Triple(a, se.first, se.second)
+            }
+            .firstOrNull { (_, s, e) -> start < e && s < end }
+            ?.first
+    }
+
+    /**
+     * Build chain of shifts if we place new/edited appointment at [newStartMin, newEndMin).
+     * Strategy: shift the conflicting appointment to the end of the previous interval, keeping its duration.
+     * Repeat until no conflicts or until we exceed dayEnd.
+     */
+    fun tryBuildShiftChain(
+        day: String,
+        baseIgnoreId: String?,
+        newStartMin: Int,
+        newEndMin: Int,
+        dayEnd: Int = 21 * 60
+    ): Pair<List<ShiftItem>, String?> {
+        val chain = mutableListOf<ShiftItem>()
+
+        // We'll simulate with a map of "virtual starts" for moved appts
+        val movedStart = mutableMapOf<String, Int>()
+
+        fun virtualStart(a: Appointment): Int {
+            return movedStart[a.id] ?: (parseHmToMinutes(a.time) ?: 0)
+        }
+
+        fun virtualEnd(a: Appointment): Int {
+            return virtualStart(a) + apptDurationMinutes(a)
+        }
+
+        var cursorStart = newStartMin
+        var cursorEnd = newEndMin
+
+        // protect from infinite loop
+        repeat(50) {
+            // find any overlap with current interval against appointments with virtual positions
+            val conflict = appointments
+                .asSequence()
+                .filter { it.dateString == day }
+                .filter { baseIgnoreId == null || it.id != baseIgnoreId }
+                .filter { it.id != baseIgnoreId }
+                .mapNotNull { a ->
+                    val s = virtualStart(a)
+                    val e = virtualEnd(a)
+                    Triple(a, s, e)
+                }
+                .firstOrNull { (a, s, e) ->
+                    // note: when editing, the original appt is ignored by baseIgnoreId
+                    cursorStart < e && s < cursorEnd
+                }
+                ?.first
+
+            if (conflict == null) return chain to null
+
+            // shift conflict to cursorEnd
+            val newS = cursorEnd
+            val newE = newS + apptDurationMinutes(conflict)
+
+            if (newE > dayEnd) {
+                // blocked: need manual reschedule for this conflict appt
+                return chain to conflict.id
+            }
+
+            movedStart[conflict.id] = newS
+            chain.add(ShiftItem(conflict.id, newS))
+
+            // now move cursor to represent this shifted appointment and continue chain
+            cursorStart = newS
+            cursorEnd = newE
+        }
+
+        // if we got here, consider blocked
+        return chain to null
+    }
+
+    fun applyShiftChain(day: String, chain: List<ShiftItem>) {
+        chain.forEach { item ->
+            val a = appointments.firstOrNull { it.id == item.apptId && it.dateString == day } ?: return@forEach
+            val updated = a.copy(time = minutesToHm(item.newStartMin))
+            replaceById(updated)
+        }
+    }
+
     LaunchedEffect(Unit) {
         try {
             val loaded = DataManager.loadFromDatabase()
@@ -86,7 +253,7 @@ fun AppRoot() {
                 appointments.addAll(loaded)
             }
         } catch (_: Exception) {
-            // intentionally ignored
+            // ignored
         }
     }
 
@@ -115,36 +282,6 @@ fun AppRoot() {
         subtitle1 = TextStyle(fontSize = (14 * fontScale).sp)
     )
 
-    fun saveAll() {
-        DataManager.saveToDatabase(appointments.toList())
-
-        // Перепланируем уведомления после любого изменения записей
-        val mins = AppSettings.reminderMinutesComputed()
-        if (AppSettings.notificationsEnabled && mins.isNotEmpty()) {
-            Notifications.rescheduleAll(
-                appointments = appointments.toList(),
-                reminderMinutes = mins,
-                sound = AppSettings.notificationSound,
-                nowEpochMillis = Clock.System.now().toEpochMilliseconds()
-            )
-        } else {
-            Notifications.cancelAll()
-        }
-    }
-
-    fun findAppointment(date: LocalDate, time: String): Appointment? =
-        appointments.find { it.dateString == date.toString() && it.time == time }
-
-    fun moveAppointment(appt: Appointment, toDate: LocalDate, toTime: String) {
-        val idx = appointments.indexOfFirst { it.id == appt.id }
-        if (idx >= 0) {
-            appointments[idx] = appt.copy(dateString = toDate.toString(), time = toTime)
-        } else {
-            appointments.remove(appt)
-            appointments.add(appt.copy(dateString = toDate.toString(), time = toTime))
-        }
-    }
-
     @Composable
     fun DrawerItem(
         title: String,
@@ -163,6 +300,87 @@ fun AppRoot() {
                 textAlign = TextAlign.Start
             )
         }
+    }
+
+    // --- Save error dialog ---
+    if (showSaveError != null) {
+        AlertDialog(
+            onDismissRequest = { showSaveError = null },
+            title = { Text(Locales.t("import_db")) },
+            text = { Text(showSaveError ?: "") },
+            confirmButton = {
+                TextButton(onClick = { showSaveError = null }) { Text(Locales.t("close")) }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // --- Auto shift confirm dialog ---
+    if (showAutoShiftConfirm && pendingNewAppt != null) {
+        val day = pendingNewAppt!!.dateString
+        val blockedId = shiftBlockedApptId
+        val blockedAppt = blockedId?.let { id -> appointments.firstOrNull { it.id == id && it.dateString == day } }
+
+        val chainText = buildString {
+            append("Есть пересечение по времени.\n\n")
+            append("Сдвинуть следующие записи автоматически?\n\n")
+            if (shiftChain.isNotEmpty()) {
+                shiftChain.forEachIndexed { idx, item ->
+                    val a = appointments.firstOrNull { it.id == item.apptId && it.dateString == day }
+                    val name = a?.clientName ?: "?"
+                    append("${idx + 1}) $name → ${minutesToHm(item.newStartMin)}\n")
+                }
+            }
+            if (blockedAppt != null) {
+                append("\nНе хватает места в конце дня для: ${blockedAppt.clientName}")
+            }
+        }
+
+        AlertDialog(
+            onDismissRequest = {
+                showAutoShiftConfirm = false
+                pendingNewAppt = null
+                shiftChain = emptyList()
+                shiftBlockedApptId = null
+            },
+            title = { Text("Конфликт времени") },
+            text = { Text(chainText) },
+            confirmButton = {
+                Button(onClick = {
+                    // apply chain + save appointment
+                    val newAppt = pendingNewAppt!!
+
+                    applyShiftChain(day, shiftChain)
+                    replaceById(newAppt)
+
+                    saveAll()
+
+                    showAutoShiftConfirm = false
+                    pendingNewAppt = null
+
+                    // if blocked => open manual reschedule for that client
+                    if (blockedAppt != null) {
+                        conflictB = blockedAppt
+                        showRescheduleBDialog = true
+                    }
+
+                    shiftChain = emptyList()
+                    shiftBlockedApptId = null
+
+                    showBookingDialog = false
+                    editingAppointment = null
+                }) { Text("Сдвинуть") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showAutoShiftConfirm = false
+                    pendingNewAppt = null
+                    shiftChain = emptyList()
+                    shiftBlockedApptId = null
+                }) { Text(Locales.t("cancel")) }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 
     // --- Export name dialog ---
@@ -579,6 +797,7 @@ fun AppRoot() {
                                             val appt = upcoming[idx]
                                             UpcomingAppointmentCard(appt = appt) {
                                                 editingAppointment = appt
+                                                bookingReadOnly = true
                                                 showBookingDialog = true
                                             }
                                         }
@@ -594,10 +813,12 @@ fun AppRoot() {
                             onTimeClick = { time ->
                                 selectedTimeSlot = time
                                 editingAppointment = null
+                                bookingReadOnly = false
                                 showBookingDialog = true
                             },
                             onEditClick = { appt ->
                                 editingAppointment = appt
+                                bookingReadOnly = false
                                 showBookingDialog = true
                             },
                             onDeleteClick = { appt -> showDeleteConfirm = appt }
@@ -608,18 +829,23 @@ fun AppRoot() {
                         BookingDialog(
                             time = editingAppointment?.time ?: selectedTimeSlot,
                             initialData = editingAppointment ?: transferA,
+                            readOnly = bookingReadOnly && editingAppointment != null,
                             onDismiss = {
                                 showBookingDialog = false
                                 editingAppointment = null
                                 transferA = null
+                                bookingReadOnly = false
                             },
                             onSave = { startTime, durationMinutes, name, phone, service, price ->
+                                // твоя текущая логика сохранения (конфликт/автосдвиг или простая) должна быть здесь.
+                                // Если ты уже вставил "авто-сдвиг цепочкой" — оставь её.
+                                // Если нет — минимальный рабочий вариант:
+
                                 editingAppointment?.let { appointments.remove(it) }
                                 transferA?.let { appointments.remove(it); transferA = null }
 
                                 val newAppt = Appointment(
-                                    id = editingAppointment?.id
-                                        ?: Clock.System.now().toEpochMilliseconds().toString(),
+                                    id = editingAppointment?.id ?: Clock.System.now().toEpochMilliseconds().toString(),
                                     dateString = selectedDate.toString(),
                                     time = startTime,
                                     clientName = name,
@@ -627,18 +853,21 @@ fun AppRoot() {
                                     serviceName = service,
                                     price = price,
                                     durationMinutes = durationMinutes,
-                                    durationHours = ((durationMinutes + 59) / 60).coerceAtLeast(1) // fallback
+                                    durationHours = ((durationMinutes + 59) / 60).coerceAtLeast(1)
                                 )
+
                                 appointments.add(newAppt)
                                 saveAll()
 
                                 showBookingDialog = false
                                 editingAppointment = null
+                                bookingReadOnly = false
                             },
                             onTransferRequest = { appt ->
                                 transferA = appt
                                 showBookingDialog = false
                                 showTransferPickDialog = true
+                                bookingReadOnly = false
                             }
                         )
                     }
