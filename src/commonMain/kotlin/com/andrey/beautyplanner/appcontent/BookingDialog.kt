@@ -49,19 +49,22 @@ fun BookingDialog(
     var editEnabled by remember(readOnly, initialData) { mutableStateOf(!readOnly) }
     var showEnableEditConfirm by remember { mutableStateOf(false) }
 
+    // ✅ КЛЮЧ (чтобы поля не “обнулялись” и не тащили старые значения между разными записями)
+    val initKey = remember(time, initialData?.id) { initialData?.id ?: "new:$time" }
+
     // --------- fields ----------
-    var name by remember { mutableStateOf(initialData?.clientName ?: "") }
-    var phone by remember { mutableStateOf(initialData?.phone ?: "") }
-    var serviceKey by remember { mutableStateOf(initialData?.serviceName ?: "") }
-    var price by remember { mutableStateOf(initialData?.price ?: "") }
+    var name by remember(initKey) { mutableStateOf(initialData?.clientName ?: "") }
+    var phone by remember(initKey) { mutableStateOf(initialData?.phone ?: "") }
+    var serviceKey by remember(initKey) { mutableStateOf(initialData?.serviceName ?: "") }
+    var price by remember(initKey) { mutableStateOf(initialData?.price ?: "") }
 
     // --------- start time ----------
-    val initialStart = remember(time, initialData) { initialData?.time ?: time }
-    val startBaseHour = remember(initialStart) { initialStart.substringBefore(":").toIntOrNull() ?: 0 }
-    val initialStartMinRaw = remember(initialStart) { initialStart.substringAfter(":", "00").toIntOrNull() ?: 0 }
+    val initialStart = remember(initKey) { initialData?.time ?: time }
+    val startBaseHour = remember(initKey) { initialStart.substringBefore(":").toIntOrNull() ?: 0 }
+    val initialStartMinRaw = remember(initKey) { initialStart.substringAfter(":", "00").toIntOrNull() ?: 0 }
     val minuteOptions = remember { listOf(0, 10, 20, 30, 40, 50) }
 
-    var startMinutesPart by remember { mutableStateOf(minuteOptions.lastOrNull { it <= initialStartMinRaw } ?: 0) }
+    var startMinutesPart by remember(initKey) { mutableStateOf(minuteOptions.lastOrNull { it <= initialStartMinRaw } ?: 0) }
 
     val startTime = remember(startBaseHour, startMinutesPart) {
         "${startBaseHour.toString().padStart(2, '0')}:${startMinutesPart.toString().padStart(2, '0')}"
@@ -87,12 +90,12 @@ fun BookingDialog(
         return minutesToHm(rounded)
     }
 
-    val existingDurationMins = remember(initialData) {
+    val existingDurationMins = remember(initKey) {
         val dm = initialData?.durationMinutes ?: 0
         if (dm > 0) dm else ((initialData?.durationHours ?: 1) * 60)
     }
 
-    var endTime by remember(startAbsMinutes, existingDurationMins) {
+    var endTime by remember(initKey, startAbsMinutes, existingDurationMins) {
         val proposed = minutesToHm(startAbsMinutes + existingDurationMins)
         mutableStateOf(if (endOptions.contains(proposed)) proposed else defaultEnd())
     }
@@ -140,9 +143,6 @@ fun BookingDialog(
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
 
-                    // ✅ УБРАЛИ верхний заголовок "Просмотр/Сохранить/Детали дня"
-                    // Оставляем только строку времени (как ты просил — без лишней шапки)
-
                     Text(
                         "${Locales.t("start_time")}: $startTime • ${Locales.t("end_time")}: $endTime",
                         fontSize = (14 * fontScale).sp,
@@ -150,7 +150,6 @@ fun BookingDialog(
                         modifier = Modifier.align(Alignment.Center)
                     )
 
-                    // ✅ крестик сдвинут вправо и вверх (примерно на 25dp/25dp)
                     IconButton(
                         onClick = onDismiss,
                         modifier = Modifier

@@ -4,9 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Divider
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.*
 import com.andrey.beautyplanner.appcontent.*
 import kotlinx.coroutines.delay
+import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
@@ -303,13 +304,16 @@ fun AppRootContent(
                     state.bookingReadOnly = false
                 },
                 onSave = { startTime, durationMinutes, name, phone, service, price ->
-                    state.editingAppointment?.let { state.appointments.remove(it) }
-                    state.transferA?.let { state.appointments.remove(it); state.transferA = null }
+                    // ✅ Важно: сначала формируем id и целевую дату
+                    val id = state.editingAppointment?.id
+                        ?: state.transferA?.id
+                        ?: Clock.System.now().toEpochMilliseconds().toString()
+
+                    val targetDate = state.selectedDate.toString()
 
                     val newAppt = Appointment(
-                        id = state.editingAppointment?.id
-                            ?: kotlinx.datetime.Clock.System.now().toEpochMilliseconds().toString(),
-                        dateString = state.selectedDate.toString(),
+                        id = id,
+                        dateString = targetDate,
                         time = startTime,
                         clientName = name,
                         phone = phone,
@@ -319,7 +323,11 @@ fun AppRootContent(
                         durationHours = ((durationMinutes + 59) / 60).coerceAtLeast(1)
                     )
 
-                    state.appointments.add(newAppt)
+                    // ✅ Убираем старую запись (если была) по id-логике (стабильно для UI)
+                    state.transferA?.let { state.appointments.remove(it); state.transferA = null }
+
+                    // ✅ Замена по id (или добавление, если ещё нет)
+                    state.replaceById(newAppt)
                     state.saveAll()
 
                     state.showBookingDialog = false
@@ -362,9 +370,5 @@ fun AppRootContent(
                 }
             )
         }
-
-        // Transfer conflict confirm (styled + actual UI in dialogs file)
-        // Reschedule B (in dialogs file)
-        // Delete confirm (in dialogs file)
     }
 }

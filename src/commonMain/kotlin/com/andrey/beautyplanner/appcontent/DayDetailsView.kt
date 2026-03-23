@@ -79,8 +79,9 @@ fun DayDetailsView(
     val dayStart = 8 * 60
     val dayEnd = 21 * 60
 
-    // IMPORTANT: snapshot, so UI updates immediately when mutableStateList changes
-    val apptsSnapshot = remember(appointments.size) { appointments.toList() }
+    // ✅ ВАЖНО: убрали remember(appointments.size) — это и давало “обновляется не сразу”.
+    // Snapshot всё равно делаем, чтобы не держаться за state-list внутри derived вычислений.
+    val apptsSnapshot = appointments.toList()
 
     val dayAppts = remember(apptsSnapshot, date) {
         apptsSnapshot
@@ -194,7 +195,7 @@ fun DayDetailsView(
                         elevation = 0.dp,
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
 
-                        // ✅ ВАЖНО: карточка НЕ кликабельна, окно открывается только по карандашу
+                        // карточка НЕ кликабельна, окно открывается только по карандашу
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
@@ -262,22 +263,11 @@ fun DayDetailsView(
                             }
 
                             Row {
-                                // ✅ только карандаш открывает окно
                                 IconButton(onClick = { onEditClick(appt) }) {
-                                    Icon(
-                                        Icons.Default.Edit,
-                                        null,
-                                        tint = MaterialTheme.colors.primary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
+                                    Icon(Icons.Default.Edit, null, tint = MaterialTheme.colors.primary, modifier = Modifier.size(22.dp))
                                 }
                                 IconButton(onClick = { onDeleteClick(appt) }) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        null,
-                                        tint = Color.Red,
-                                        modifier = Modifier.size(22.dp)
-                                    )
+                                    Icon(Icons.Default.Close, null, tint = Color.Red, modifier = Modifier.size(22.dp))
                                 }
                             }
                         }
