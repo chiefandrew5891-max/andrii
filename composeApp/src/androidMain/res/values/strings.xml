@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Beauty Planner</string>
+    <string name="nav_main">Главная</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="nav_day">Детали дня</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="client_name">Имя клиента</string>
+    <string name="phone">Телефон</string>
+    <string name="service">Название процедуры</string>
+    <string name="price">Стоимость</string>
+    <string name="free">Свободно</string>
+    <string name="export_db">Экспорт базы</string>
+    <string name="import_db">Импорт базы</string>
+    <string name="btn_transfer">Перенести</string>
+</resources>
