@@ -130,7 +130,7 @@ fun DayDetailsView(
     }
 
     // unified time layout
-    val timeColWidth = 86.dp
+    val timeColWidth = 60.dp
     val timeFont = (16 * fontScale).sp
     val timeFontWeight = FontWeight.Bold
     val busyTimeColor = MaterialTheme.colors.primary
@@ -138,17 +138,36 @@ fun DayDetailsView(
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(formattedDate, fontSize = (20 * fontScale).sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = formattedDate,
+                fontSize = (24 * fontScale).sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.onBackground
+            )
+
             Row {
+                val arrowTint = MaterialTheme.colors.primary
+
                 IconButton(onClick = { onDateChange(date.minus(1, DateTimeUnit.DAY)) }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null, modifier = Modifier.size(32.dp))
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        null,
+                        tint = arrowTint
+                    )
                 }
+
                 IconButton(onClick = { onDateChange(date.plus(1, DateTimeUnit.DAY)) }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, modifier = Modifier.size(32.dp))
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        null,
+                        tint = arrowTint
+                    )
                 }
             }
         }
@@ -174,15 +193,13 @@ fun DayDetailsView(
                     Card(
                         elevation = 0.dp,
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+
+                        // ✅ ВАЖНО: карточка НЕ кликабельна, окно открывается только по карандашу
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
-                            .height(92.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = LocalIndication.current,
-                                onClick = { onEditClick(appt) }
-                            ),
+                            .height(92.dp),
+
                         backgroundColor = if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
                     ) {
                         Row(
@@ -230,12 +247,37 @@ fun DayDetailsView(
                                 )
                             }
 
+                            val priceText = appt.price.trim().let { p ->
+                                if (p.isBlank()) "" else "$p €"
+                            }
+
+                            if (priceText.isNotBlank()) {
+                                Text(
+                                    text = priceText,
+                                    fontSize = (14 * fontScale).sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colors.onSurface,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                            }
+
                             Row {
+                                // ✅ только карандаш открывает окно
                                 IconButton(onClick = { onEditClick(appt) }) {
-                                    Icon(Icons.Default.Edit, null, tint = MaterialTheme.colors.primary, modifier = Modifier.size(22.dp))
+                                    Icon(
+                                        Icons.Default.Edit,
+                                        null,
+                                        tint = MaterialTheme.colors.primary,
+                                        modifier = Modifier.size(22.dp)
+                                    )
                                 }
                                 IconButton(onClick = { onDeleteClick(appt) }) {
-                                    Icon(Icons.Default.Close, null, tint = Color.Red, modifier = Modifier.size(22.dp))
+                                    Icon(
+                                        Icons.Default.Close,
+                                        null,
+                                        tint = Color.Red,
+                                        modifier = Modifier.size(22.dp)
+                                    )
                                 }
                             }
                         }

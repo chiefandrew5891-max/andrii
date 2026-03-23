@@ -76,21 +76,51 @@ fun SettingsPage(
         }
     }
 
+    // --- Support phone edit confirm dialog (styled) ---
     if (showSupportEditConfirm) {
         AlertDialog(
             onDismissRequest = { showSupportEditConfirm = false },
-            title = { Text(Locales.t("support_phone_edit_confirm_title")) },
+
+            // ✅ Заголовок меньше, чем основной текст (второстепенный)
+            title = {
+                Text(
+                    text = Locales.t("support_phone_edit_confirm_title"),
+                    style = MaterialTheme.typography.subtitle2.copy(
+                        fontSize = (14 * fontScale).sp,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.75f)
+                )
+            },
+
+            // основной текст оставляем как есть (можно не трогать вообще)
             text = { Text(Locales.t("support_phone_edit_confirm_text")) },
-            confirmButton = {
-                Button(onClick = {
-                    showSupportEditConfirm = false
-                    supportEditMode = true
-                    supportPhoneDraft = AppSettings.servicePhone
-                }) { Text(Locales.t("support_phone_edit_confirm_yes")) }
+
+            // ✅ Кнопки оставляем теми же (Button + TextButton), меняем только отступы как в PinDialog
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 16.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = { showSupportEditConfirm = false }) {
+                        Text(Locales.t("cancel"))
+                    }
+
+                    Spacer(Modifier.width(15.dp))
+
+                    Button(onClick = {
+                        showSupportEditConfirm = false
+                        supportEditMode = true
+                        supportPhoneDraft = AppSettings.servicePhone
+                    }) {
+                        Text(Locales.t("support_phone_edit_confirm_yes"))
+                    }
+                }
             },
-            dismissButton = {
-                TextButton(onClick = { showSupportEditConfirm = false }) { Text(Locales.t("cancel")) }
-            },
+
             shape = RoundedCornerShape(16.dp)
         )
     }
