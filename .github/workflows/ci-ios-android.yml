@@ -1,0 +1,55 @@
+name: CI (Android + iOS Simulator)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build Android debug
+        run: ./gradlew :composeApp:assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: composeApp/build/outputs/apk/debug/*.apk
+
+  ios-simulator:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build iOS Simulator (KMP)
+        run: ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+
+      - name: Upload iOS framework (simulator)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-sim-framework
+          path: composeApp/build/bin/iosSimulatorArm64/debugFramework/*.framework
