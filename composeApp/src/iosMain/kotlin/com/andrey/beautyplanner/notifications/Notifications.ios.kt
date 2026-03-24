@@ -8,7 +8,6 @@ actual object Notifications {
 
     actual suspend fun requestPermissionIfNeeded(): Boolean {
         val center = UNUserNotificationCenter.currentNotificationCenter()
-        // iOS запрос асинхронны��, но в KMP проще сделать “best effort”
         center.requestAuthorizationWithOptions(
             options = UNAuthorizationOptionAlert or UNAuthorizationOptionSound or UNAuthorizationOptionBadge
         ) { _, _ -> }
@@ -37,13 +36,12 @@ actual object Notifications {
                 val triggerAt = startMs - mins * 60_000L
                 if (triggerAt <= nowEpochMillis) return@forEach
 
-                val content = UNMutableNotificationContent().apply {
-                    title = "Beauty Planner"
-                    body = "${appt.clientName}: ${appt.serviceName} • ${appt.dateString} ${appt.time}"
-                    sound = when (sound) {
-                        NotificationSound.SILENT -> null
-                        NotificationSound.DEFAULT -> UNNotificationSound.defaultSound()
-                    }
+                val content = UNMutableNotificationContent()
+                content.title = "Beauty Planner"
+                content.body = "${appt.clientName}: ${appt.serviceName} • ${appt.dateString} ${appt.time}"
+                content.sound = when (sound) {
+                    NotificationSound.SILENT -> null
+                    NotificationSound.DEFAULT -> UNNotificationSound.defaultSound()
                 }
 
                 val seconds = ((triggerAt - nowEpochMillis) / 1000.0).coerceAtLeast(1.0)

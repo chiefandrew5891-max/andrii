@@ -7,6 +7,8 @@ import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSString
+import platform.Foundation.NSFileManager
+import platform.Foundation.stringWithContentsOfFile
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
@@ -18,8 +20,9 @@ import platform.UniformTypeIdentifiers.UTTypeJSON
 actual object BackupFilePicker {
 
     private fun topViewController(): UIViewController? {
-        val window = UIApplication.sharedApplication.keyWindow
-        var vc = window?.rootViewController
+        val window = UIApplication.sharedApplication.delegate?.window ?: return null
+        val root = (window as? UIWindow)?.rootViewController
+        var vc = root
         while (vc?.presentedViewController != null) vc = vc.presentedViewController
         return vc
     }
@@ -30,7 +33,8 @@ actual object BackupFilePicker {
         val name = suggestedFileName.trim().ifBlank { "beautyplanner-backup" }
         val fileName = if (name.lowercase().endsWith(".json")) name else "$name.json"
 
-        val data = (json as NSString).dataUsingEncoding(NSUTF8StringEncoding) ?: return
+        val dataObj: NSString = json as NSString
+        val data = dataObj.dataUsingEncoding(NSUTF8StringEncoding) ?: return
         val path = NSTemporaryDirectory() + fileName
         val url = NSURL.fileURLWithPath(path)
 
@@ -51,7 +55,7 @@ actual object BackupFilePicker {
         val delegate = DocumentPickerDelegate(onPicked, onError)
 
         val picker = UIDocumentPickerViewController(
-            forOpeningContentTypes = listOfNotNull(UTTypeJSON, UTType.item),
+            forOpeningContentTypes = listOfNotNull(UTTypeJSON/*, UTType.plainText*/) /* .item может не быть в API */,
             asCopy = true
         )
 
@@ -68,10 +72,7 @@ private class DocumentPickerDelegate(
     val onError: (String) -> Unit
 ) : NSObject(), UIDocumentPickerDelegateProtocol {
 
-    override fun documentPicker(
-        controller: UIDocumentPickerViewController,
-        didPickDocumentsAtURLs: List<*>
-    ) {
+    override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
         val url = didPickDocumentsAtURLs.firstOrNull() as? NSURL
             ?: run {
                 onError(Locales.t("backup_import_error_read"))
@@ -80,7 +81,7 @@ private class DocumentPickerDelegate(
             }
 
         val text = runCatching {
-            NSString.stringWithContentsOfURL(url, encoding = NSUTF8StringEncoding, error = null) as String?
+            NSString.stringWithContentsOfFile(url.path ?: return@runCatching null, encoding = NSUTF8StringEncoding, error = null) as String?
         }.getOrNull()
 
         if (text.isNullOrBlank()) onError(Locales.t("backup_import_error_empty"))
