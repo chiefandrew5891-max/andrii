@@ -1,7 +1,17 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.andrey.beautyplanner
 
-import platform.Foundation.*
-import platform.UIKit.*
+import platform.Foundation.NSObject
+import platform.Foundation.NSTemporaryDirectory
+import platform.Foundation.NSURL
+import platform.Foundation.NSUTF8StringEncoding
+import platform.Foundation.NSString
+import platform.UIKit.UIApplication
+import platform.UIKit.UIDocumentPickerDelegateProtocol
+import platform.UIKit.UIDocumentPickerViewController
+import platform.UIKit.UIModalPresentationFullScreen
+import platform.UIKit.UIViewController
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeJSON
 
@@ -21,8 +31,7 @@ actual object BackupFilePicker {
         val fileName = if (name.lowercase().endsWith(".json")) name else "$name.json"
 
         val data = (json as NSString).dataUsingEncoding(NSUTF8StringEncoding) ?: return
-        val tmpDir = NSTemporaryDirectory()
-        val path = tmpDir + fileName
+        val path = NSTemporaryDirectory() + fileName
         val url = NSURL.fileURLWithPath(path)
 
         data.writeToURL(url, atomically = true)
@@ -40,10 +49,12 @@ actual object BackupFilePicker {
         }
 
         val delegate = DocumentPickerDelegate(onPicked, onError)
+
         val picker = UIDocumentPickerViewController(
-            forOpeningContentTypes = listOf(UTTypeJSON ?: UTType.plainText),
+            forOpeningContentTypes = listOfNotNull(UTTypeJSON, UTType.item),
             asCopy = true
         )
+
         picker.delegate = delegate
         picker.modalPresentationStyle = UIModalPresentationFullScreen
 
@@ -57,7 +68,10 @@ private class DocumentPickerDelegate(
     val onError: (String) -> Unit
 ) : NSObject(), UIDocumentPickerDelegateProtocol {
 
-    override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
+    override fun documentPicker(
+        controller: UIDocumentPickerViewController,
+        didPickDocumentsAtURLs: List<*>
+    ) {
         val url = didPickDocumentsAtURLs.firstOrNull() as? NSURL
             ?: run {
                 onError(Locales.t("backup_import_error_read"))

@@ -30,7 +30,6 @@ import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Appointment
 import com.andrey.beautyplanner.Locales
 import kotlinx.datetime.LocalDate
-import kotlin.math.ceil
 
 // ------------------------- time helpers -------------------------
 
@@ -178,7 +177,12 @@ fun MonthCalendarGrid(
     onDateClick: (LocalDate) -> Unit
 ) {
     val isLeap = monthDate.year % 4 == 0 && (monthDate.year % 100 != 0 || monthDate.year % 400 == 0)
-    val daysInMonth = monthDate.month.length(isLeap)
+    val daysInMonth = when (monthDate.monthNumber) {
+        1, 3, 5, 7, 8, 10, 12 -> 31
+        4, 6, 9, 11 -> 30
+        2 -> if (isLeap) 29 else 28
+        else -> 30
+    }
     val firstDayOfMonth = LocalDate(monthDate.year, monthDate.month, 1)
 
     // MONDAY=0 ... SUNDAY=6
@@ -189,7 +193,7 @@ fun MonthCalendarGrid(
 
     // динамическая высота под 5/6 недель
     val totalCells = dayOfWeekOffset + daysInMonth
-    val rows = ceil(totalCells / 7.0).toInt().coerceAtLeast(5)
+    val rows = ((totalCells + 6) / 7).coerceAtLeast(5)
     val rowHeight = 48.dp
     val gridHeight = rowHeight * rows
 

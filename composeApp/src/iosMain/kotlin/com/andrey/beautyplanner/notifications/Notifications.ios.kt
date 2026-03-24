@@ -8,7 +8,7 @@ actual object Notifications {
 
     actual suspend fun requestPermissionIfNeeded(): Boolean {
         val center = UNUserNotificationCenter.currentNotificationCenter()
-        // iOS запрос асинхронный, но в KMP проще сделать “best effort”
+        // iOS запрос асинхронны��, но в KMP проще сделать “best effort”
         center.requestAuthorizationWithOptions(
             options = UNAuthorizationOptionAlert or UNAuthorizationOptionSound or UNAuthorizationOptionBadge
         ) { _, _ -> }
@@ -40,7 +40,7 @@ actual object Notifications {
                 val content = UNMutableNotificationContent().apply {
                     title = "Beauty Planner"
                     body = "${appt.clientName}: ${appt.serviceName} • ${appt.dateString} ${appt.time}"
-                    this.sound = when (sound) {
+                    sound = when (sound) {
                         NotificationSound.SILENT -> null
                         NotificationSound.DEFAULT -> UNNotificationSound.defaultSound()
                     }
