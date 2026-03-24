@@ -51,13 +51,13 @@ jobs:
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build iOS Device Framework (KMP)
-        # ИСПРАВЛЕНО: Теперь собираем под реальное железо (IosArm64)
-        run: ./gradlew :composeApp:linkDebugFrameworkIosArm64
+      - name: Build iOS App Binary (Real Device)
+        # Собираем полноценный исполняемый файл вместо фреймворка
+        run: ./gradlew :composeApp:iosArm64Binaries
 
-      - name: Upload iOS framework (Real Device)
+      - name: Upload iOS App Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: ios-real-device-framework
-          # ИСПРАВЛЕНО: Путь к файлам для реального устройства
-          path: composeApp/build/bin/iosArm64/debugFramework/
+          name: ios-app-bundle
+          # Путь к исполняемому файлу и ресурсам
+          path: composeApp/build/bin/iosArm64/debugExe/
