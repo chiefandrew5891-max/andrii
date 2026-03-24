@@ -49,7 +49,7 @@ fun BookingDialog(
     var editEnabled by remember(readOnly, initialData) { mutableStateOf(!readOnly) }
     var showEnableEditConfirm by remember { mutableStateOf(false) }
 
-    // ✅ КЛЮЧ (чтобы поля не “обнулялись” и не тащили старые значения между разными записями)
+    // ✅ КЛЮЧ (чтобы поля не “обнулялись” и не тащили старые значения между разн��ми записями)
     val initKey = remember(time, initialData?.id) { initialData?.id ?: "new:$time" }
 
     // --------- fields ----------
@@ -57,6 +57,15 @@ fun BookingDialog(
     var phone by remember(initKey) { mutableStateOf(initialData?.phone ?: "") }
     var serviceKey by remember(initKey) { mutableStateOf(initialData?.serviceName ?: "") }
     var price by remember(initKey) { mutableStateOf(initialData?.price ?: "") }
+
+    // ✅ режим “Другое” (ручной ввод)
+    val otherKey = "service_other"
+    var serviceIsOther by remember(initKey) {
+        mutableStateOf(serviceKey.isNotBlank() && !serviceKey.startsWith("service_"))
+    }
+    var customServiceText by remember(initKey) {
+        mutableStateOf(if (serviceIsOther) serviceKey else "")
+    }
 
     // --------- start time ----------
     val initialStart = remember(initKey) { initialData?.time ?: time }
@@ -105,7 +114,11 @@ fun BookingDialog(
 
     val nameOk = name.trim().isNotBlank()
     val phoneOk = phone.trim().isNotBlank()
-    val serviceOk = serviceKey.trim().isNotBlank()
+
+    val serviceOk =
+        if (serviceIsOther) customServiceText.trim().isNotBlank()
+        else serviceKey.trim().isNotBlank()
+
     val priceOk = price.trim().isNotBlank()
 
     val endAbs = parseHmToMinutes(endTime)
@@ -273,35 +286,94 @@ fun BookingDialog(
 
                 Spacer(Modifier.height(12.dp))
 
-                var serviceExpanded by remember { mutableStateOf(false) }
-                val services = remember { ServicesCatalog.keys }
+                // --------- SERVICE: dropdown OR manual ----------
+                val services = remember {
+                    // + “Другое” внизу
+                    ServicesCatalog.keys + otherKey
+                }
 
-                ExposedDropdownMenuBox(
-                    expanded = serviceExpanded,
-                    onExpandedChange = { if (editEnabled) serviceExpanded = !serviceExpanded }
-                ) {
-                    val displayText = if (serviceKey.isBlank()) "" else Locales.t(serviceKey)
+                if (!serviceIsOther) {
+                    var serviceExpanded by remember { mutableStateOf(false) }
 
+                    ExposedDropdownMenuBox(
+                        expanded = serviceExpanded,
+                        onExpandedChange = { if (editEnabled) serviceExpanded = !serviceExpanded }
+                    ) {
+                        val displayText = if (serviceKey.isBlank()) "" else Locales.t(serviceKey)
+
+                        OutlinedTextField(
+                            value = displayText,
+                            onValueChange = {},
+                            readOnly = true,
+                            enabled = editEnabled,
+                            label = { Text(Locales.t("service")) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp),
+                            leadingIcon = { Icon(Icons.Default.Brush, null) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = serviceExpanded) },
+                            isError = triedSave && editEnabled && !serviceOk
+                        )
+                        ExposedDropdownMenu(expanded = serviceExpanded, onDismissRequest = { serviceExpanded = false }) {
+                            services.forEach { key ->
+                                DropdownMenuItem(onClick = {
+                                    serviceExpanded = false
+                                    if (key == otherKey) {
+                                        // ✅ включаем ручной ввод
+                                        serviceIsOther = true
+                                        customServiceText = ""
+                                        serviceKey = ""
+                                    } else {
+                                        serviceIsOther = false
+                                        serviceKey = key
+                                    }
+                                }) { Text(Locales.t(key)) }
+                            }
+                        }
+                    }
+                } else {
+                    // ✅ ручной ��вод процедуры
                     OutlinedTextField(
-                        value = displayText,
-                        onValueChange = {},
-                        readOnly = true,
+                        value = customServiceText,
+                        onValueChange = {
+                            customServiceText = it
+                            // если человек “передумал” и очистил поле — вернём выпадающий список
+                            if (it.isBlank()) {
+                                serviceIsOther = false
+                                serviceKey = ""
+                            }
+                        },
                         enabled = editEnabled,
                         label = { Text(Locales.t("service")) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(14.dp),
                         leadingIcon = { Icon(Icons.Default.Brush, null) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = serviceExpanded) },
+                        trailingIcon = {
+                            // кнопка “вернуться к списку”
+                            IconButton(
+                                enabled = editEnabled,
+                                onClick = {
+                                    serviceIsOther = false
+                                    customServiceText = ""
+                                    serviceKey = ""
+                                }
+                            ) {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Back to list")
+                            }
+                        },
                         isError = triedSave && editEnabled && !serviceOk
                     )
-                    ExposedDropdownMenu(expanded = serviceExpanded, onDismissRequest = { serviceExpanded = false }) {
-                        services.forEach { key ->
-                            DropdownMenuItem(onClick = {
-                                serviceKey = key
-                                serviceExpanded = false
-                            }) { Text(Locales.t(key)) }
-                        }
-                    }
+
+                    Text(
+                        text = when (Locales.currentLanguage) {
+                            "ru" -> "Режим “Другое”: введите название процедуры вручную"
+                            "uk" -> "Режим “Інше”: введіть назву процедури вручну"
+                            "it" -> "Modalità “Altro”: inserisci manualmente il nome"
+                            else -> "Other mode: type service name"
+                        },
+                        fontSize = (12 * fontScale).sp,
+                        color = Color.Gray,
+                        modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
+                    )
                 }
 
                 Spacer(Modifier.height(12.dp))
@@ -345,12 +417,16 @@ fun BookingDialog(
                             val durationMinutes = ((parseHmToMinutes(endTime) ?: 0) - startAbsMinutes)
                                 .coerceAtLeast(10)
 
+                            val serviceToStore =
+                                if (serviceIsOther) customServiceText.trim()
+                                else serviceKey.trim()
+
                             onSave(
                                 startTime,
                                 durationMinutes,
                                 name.trim(),
                                 phone.trim(),
-                                serviceKey.trim(),
+                                serviceToStore,
                                 price.trim()
                             )
                         },

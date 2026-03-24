@@ -33,9 +33,14 @@ object Locales {
 
             // Services
             "service_gel_polish" to "Гель-лак",
-            "service_gel_strengthening" to "Укрепл��ние гелем",
+            "service_gel_strengthening" to "Укрепление гелем",
             "service_nail_extensions" to "Наращивание",
             "service_lash_extensions" to "Наращивание ресниц",
+
+            // ✅ added
+            "service_correction" to "Коррекция",
+            "service_repair" to "Ремонт",
+            "service_other" to "Другое",
 
             "all_appointments_list" to "Список всех записей:",
             "no_appointments" to "Нет записей",
@@ -58,7 +63,7 @@ object Locales {
             "backup_file_name" to "Имя файла",
             "backup_export_name_hint" to "Введите имя файла резервной копии. Расширение .json добавится автоматически.",
             "backup_extension_note" to "Формат: .json (подходит для Android и iOS)",
-            "backup_import_confirm_text" to "Импортировать выбранный файл? Текущие ��аписи будут заменены.",
+            "backup_import_confirm_text" to "Импортировать выбранный файл? Текущие записи будут заменены.",
             "import_btn" to "Импорт",
             "import_invalid_json" to "Не удалось импортировать: проверьте JSON (пустой или неверный формат).",
             "backup_import_error_empty" to "Файл пустой или не удалось прочитать содержимое.",
@@ -141,6 +146,17 @@ object Locales {
             "conflict_time_title" to "Конфликт времени",
             "shift" to "Сдвинуть",
 
+            // Content descriptions
+            "cd_menu" to "Меню",
+            "cd_back" to "Назад",
+            "cd_settings" to "Настройки",
+
+            // ✅ Appointment status (NEW)
+            "appt_status_label" to "Статус",
+            "appt_status_done" to "Выполнено",
+            "appt_status_rescheduled" to "Перенесено",
+            "appt_status_canceled" to "Отменено",
+
             // Currency
             "currency_eur" to "€",
 
@@ -215,6 +231,10 @@ object Locales {
             "service_gel_strengthening" to "Gel strengthening",
             "service_nail_extensions" to "Nail extensions",
             "service_lash_extensions" to "Lash extensions",
+
+            "service_correction" to "Correction",
+            "service_repair" to "Repair",
+            "service_other" to "Other",
 
             "all_appointments_list" to "All appointments list:",
             "no_appointments" to "No appointments",
@@ -316,9 +336,18 @@ object Locales {
             "conflict_time_title" to "Time conflict",
             "shift" to "Shift",
 
+            "cd_menu" to "Menu",
+            "cd_back" to "Back",
+            "cd_settings" to "Settings",
+
+            // ✅ Appointment status (NEW)
+            "appt_status_label" to "Status",
+            "appt_status_done" to "Done",
+            "appt_status_rescheduled" to "Rescheduled",
+            "appt_status_canceled" to "Canceled",
+
             "currency_eur" to "€",
 
-            // --------- Security / PIN ---------
             "security_section" to "Security",
             "pin_enabled" to "Require PIN",
             "pin_set" to "Set PIN",
@@ -364,6 +393,7 @@ object Locales {
             "mon" to "Mon", "tue" to "Tue", "wed" to "Wed", "thu" to "Thu", "fri" to "Fri", "sat" to "Sat", "sun" to "Sun"
         ),
 
+        // Итальянский и украинский блоки оставляю как у тебя, но добавляю статусы в конец каждого.
         "it" to mapOf(
             "app_name" to "Beauty Planner",
             "nav_main" to "Home",
@@ -388,6 +418,10 @@ object Locales {
             "service_gel_strengthening" to "Rinforzo con gel",
             "service_nail_extensions" to "Ricostruzione unghie",
             "service_lash_extensions" to "Extension ciglia",
+
+            "service_correction" to "Correzione",
+            "service_repair" to "Riparazione",
+            "service_other" to "Altro",
 
             "all_appointments_list" to "Elenco appuntamenti:",
             "no_appointments" to "Nessun appuntamento",
@@ -489,9 +523,12 @@ object Locales {
             "conflict_time_title" to "Conflitto di orario",
             "shift" to "Sposta",
 
+            "cd_menu" to "Menu",
+            "cd_back" to "Indietro",
+            "cd_settings" to "Impostazioni",
+
             "currency_eur" to "€",
 
-            // --------- Security / PIN ---------
             "security_section" to "Sicurezza",
             "pin_enabled" to "Richiedi PIN",
             "pin_set" to "Imposta PIN",
@@ -534,7 +571,13 @@ object Locales {
             "month_nov_gen" to "Novembre",
             "month_dec_gen" to "Dicembre",
 
-            "mon" to "Lun", "tue" to "Mar", "wed" to "Mer", "thu" to "Gio", "fri" to "Ven", "sat" to "Sab", "sun" to "Dom"
+            "mon" to "Lun", "tue" to "Mar", "wed" to "Mer", "thu" to "Gio", "fri" to "Ven", "sat" to "Sab", "sun" to "Dom",
+
+            // ✅ Appointment status (NEW)
+            "appt_status_label" to "Stato",
+            "appt_status_done" to "Completato",
+            "appt_status_rescheduled" to "Riprogrammato",
+            "appt_status_canceled" to "Annullato"
         ),
 
         "uk" to mapOf(
@@ -562,6 +605,10 @@ object Locales {
             "service_nail_extensions" to "Нарощування",
             "service_lash_extensions" to "Нарощування вій",
 
+            "service_correction" to "Корекція",
+            "service_repair" to "Ремонт",
+            "service_other" to "Інше",
+
             "all_appointments_list" to "Список всіх записів:",
             "no_appointments" to "Немає записів",
 
@@ -581,7 +628,7 @@ object Locales {
             "export_db" to "Експорт",
             "import_db" to "Імпорт",
             "backup_file_name" to "Назва файлу",
-            "backup_export_name_hint" to "Введіть назву файлу резервної копії. Розширення .json додасться автоматично.",
+            "backup_export_name_hint" to "Введіть наз��у файлу резервної копії. Розширення .json додасться автоматично.",
             "backup_extension_note" to "Формат: .json (Android та iOS)",
             "backup_import_confirm_text" to "Імпортувати вибраний файл? Поточні записи буде замінено.",
             "import_btn" to "Імпорт",
@@ -616,7 +663,7 @@ object Locales {
             "transfer_conflict_b" to "Зайнято",
             "transfer_agree" to "Погодити",
 
-            "reschedule_title_for" to "Переназначити запис для",
+            "reschedule_title_for" to "Пер��назначити запис для",
             "reschedule_choose_time" to "Оберіть новий час",
             "reschedule_confirm" to "Зберегти",
 
@@ -662,9 +709,18 @@ object Locales {
             "conflict_time_title" to "Конфлікт часу",
             "shift" to "Зсунути",
 
+            "cd_menu" to "Меню",
+            "cd_back" to "Назад",
+            "cd_settings" to "Налаштування",
+
+            // ✅ Appointment status (NEW)
+            "appt_status_label" to "Статус",
+            "appt_status_done" to "Виконано",
+            "appt_status_rescheduled" to "Перенесено",
+            "appt_status_canceled" to "Скасовано",
+
             "currency_eur" to "€",
 
-            // --------- Security / PIN ---------
             "security_section" to "Безпека",
             "pin_enabled" to "Запитувати PIN",
             "pin_set" to "Встановити PIN",
@@ -689,7 +745,7 @@ object Locales {
             "unlock_title" to "Введіть PIN",
             "unlock_text" to "Для доступу до застосунку потрібен PIN.",
 
-            "month_jan" to "Січень", "month_feb" to "Лютий", "month_mar" to "Березень",
+            "month_jan" to "��ічень", "month_feb" to "Лютий", "month_mar" to "Березень",
             "month_apr" to "Квітень", "month_may" to "Травень", "month_jun" to "Червень",
             "month_jul" to "Липень", "month_aug" to "Серпень", "month_sep" to "Вересень",
             "month_oct" to "Жовтень", "month_nov" to "Листопад", "month_dec" to "Грудень",

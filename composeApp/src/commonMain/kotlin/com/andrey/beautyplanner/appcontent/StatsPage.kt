@@ -6,14 +6,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Appointment
 import com.andrey.beautyplanner.Locales
-import kotlinx.datetime.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.todayIn
+import kotlin.math.roundToInt
 
 private enum class StatsPeriod { DAY, WEEK, MONTH, YEAR }
 
@@ -23,40 +28,57 @@ fun StatsPage(
     today: LocalDate
 ) {
     val fontScale = AppSettings.getFontScale()
+
+    val primaryText = UiColors.primaryText()
+    val secondaryText = UiColors.secondaryText()
+    val hintText = UiColors.hintText()
+
     var period by remember { mutableStateOf(StatsPeriod.MONTH) }
 
-    val tz = TimeZone.currentSystemDefault()
-    val (fromDate, toDateInclusive) = remember(period, today) {
-        when (period) {
-            StatsPeriod.DAY -> today to today
-            StatsPeriod.WEEK -> today.minus(6, DateTimeUnit.DAY) to today
-            StatsPeriod.MONTH -> LocalDate(today.year, today.month, 1) to today
-            StatsPeriod.YEAR -> LocalDate(today.year, 1, 1) to today
+    val (fromDate, toDateInclusive) = remember(today, period) {
+        val to = today
+        val from = when (period) {
+            StatsPeriod.DAY -> to
+            StatsPeriod.WEEK -> to.minus(6, DateTimeUnit.DAY)
+            StatsPeriod.MONTH -> to.minus(30, DateTimeUnit.DAY)
+            StatsPeriod.YEAR -> to.minus(365, DateTimeUnit.DAY)
         }
+        from to to
     }
 
+    // Filter + aggregate
     val filtered = remember(appointments, fromDate, toDateInclusive) {
-        appointments.filter { appt ->
-            val d = runCatching { LocalDate.parse(appt.dateString) }.getOrNull() ?: return@filter false
-            d >= fromDate && d <= toDateInclusive
-        }
+        appointments
+            .asSequence()
+            .mapNotNull { a ->
+                val d = runCatching { LocalDate.parse(a.dateString) }.getOrNull() ?: return@mapNotNull null
+                d to a
+            }
+            .filter { (d, _) -> d >= fromDate && d <= toDateInclusive }
+            .map { it.second }
+            .toList()
     }
 
-    val revenue = remember(filtered) { filtered.sumOf { parsePriceToDouble(it.price) } }
-    val totalHours = remember(filtered) { filtered.sumOf { it.durationHours.coerceAtLeast(0) } }
     val totalCount = filtered.size
+    val totalHours = filtered.sumOf { a -> if (a.durationMinutes > 0) a.durationMinutes / 60.0 else a.durationHours.toDouble() }
+        .roundToInt()
+
+    val revenue = filtered.sumOf { a ->
+        a.price.trim().replace(",", ".").toDoubleOrNull() ?: 0.0
+    }
+
+    data class ServiceStat(val service: String, val count: Int, val revenue: Double)
 
     val byService = remember(filtered) {
         filtered
-            .groupBy { it.serviceName.trim() }
+            .groupBy { a ->
+                val s = a.serviceName
+                if (s.startsWith("service_")) Locales.t(s) else s
+            }
             .map { (service, list) ->
                 val count = list.size
-                val serviceRevenue = list.sumOf { parsePriceToDouble(it.price) }
-                ServiceStat(
-                    service = if (service.isBlank()) Locales.t("stats_unknown_service") else service,
-                    count = count,
-                    revenue = serviceRevenue
-                )
+                val serviceRevenue = list.sumOf { it.price.trim().replace(",", ".").toDoubleOrNull() ?: 0.0 }
+                ServiceStat(service = service, count = count, revenue = serviceRevenue)
             }
             .sortedWith(compareByDescending<ServiceStat> { it.revenue }.thenByDescending { it.count })
     }
@@ -71,7 +93,8 @@ fun StatsPage(
         Text(
             text = Locales.t("nav_stats"),
             fontSize = (22 * fontScale).sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = primaryText
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -82,29 +105,30 @@ fun StatsPage(
         }
 
         Text(
-            text = "${Locales.t("stats_range")}: ${fromDate} — ${toDateInclusive}",
+            text = "${Locales.t("stats_range")}: $fromDate — $toDateInclusive",
             fontSize = (13 * fontScale).sp,
-            color = Color.Gray
+            color = hintText
         )
 
         Divider()
 
-        StatRow(Locales.t("stats_revenue"), formatMoneyEur(revenue))
-        StatRow(Locales.t("stats_count"), totalCount.toString())
-        StatRow(Locales.t("stats_hours"), Locales.hoursCount(totalHours))
+        StatRow(Locales.t("stats_revenue"), formatMoneyEur(revenue), primaryText)
+        StatRow(Locales.t("stats_count"), totalCount.toString(), primaryText)
+        StatRow(Locales.t("stats_hours"), Locales.hoursCount(totalHours), primaryText)
 
         Divider()
 
         Text(
             text = Locales.t("stats_top_services"),
             fontSize = (16 * fontScale).sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            color = primaryText
         )
 
         if (byService.isEmpty()) {
             Text(
                 text = Locales.t("stats_empty"),
-                color = Color.Gray,
+                color = secondaryText,
                 fontSize = (14 * fontScale).sp
             )
         } else {
@@ -112,7 +136,10 @@ fun StatsPage(
                 ServiceRow(
                     service = s.service,
                     count = s.count,
-                    revenue = s.revenue
+                    revenue = s.revenue,
+                    fontScale = fontScale,
+                    primaryText = primaryText,
+                    secondaryText = secondaryText
                 )
             }
         }
@@ -135,44 +162,38 @@ private fun PeriodChip(text: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun StatRow(label: String, value: String) {
+private fun StatRow(label: String, value: String, primaryText: androidx.compose.ui.graphics.Color) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, fontWeight = FontWeight.Medium)
-        Text(value, fontWeight = FontWeight.SemiBold)
+        Text(label, fontWeight = FontWeight.Medium, color = primaryText)
+        Text(value, fontWeight = FontWeight.SemiBold, color = primaryText)
     }
 }
 
 @Composable
-private fun ServiceRow(service: String, count: Int, revenue: Double) {
+private fun ServiceRow(
+    service: String,
+    count: Int,
+    revenue: Double,
+    fontScale: Float,
+    primaryText: androidx.compose.ui.graphics.Color,
+    secondaryText: androidx.compose.ui.graphics.Color
+) {
     Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(service, fontWeight = FontWeight.SemiBold)
-            Text(formatMoneyEur(revenue))
+            Text(service, fontWeight = FontWeight.SemiBold, color = primaryText)
+            Text(formatMoneyEur(revenue), color = primaryText)
         }
         Text(
             text = "${Locales.t("stats_procedures_done")}: $count",
-            color = Color.Gray,
-            fontSize = 13.sp
+            color = secondaryText,
+            fontSize = (13 * fontScale).sp
         )
-        Divider(color = Color.LightGray.copy(alpha = 0.35f))
     }
 }
 
-private data class ServiceStat(val service: String, val count: Int, val revenue: Double)
-
-private fun parsePriceToDouble(price: String): Double {
-    val cleaned = price
-        .trim()
-        .replace(" ", "")
-        .replace("\u00A0", "")
-        .replace(",", ".")
-        .filter { it.isDigit() || it == '.' || it == '-' }
-
-    return cleaned.toDoubleOrNull() ?: 0.0
-}
-
-private fun formatMoneyEur(value: Double): String {
-    val rounded = kotlin.math.round(value * 100) / 100
-    val eur = Locales.t("currency_eur")
-    return "$rounded $eur"
+// Keeps existing format (EUR)
+private fun formatMoneyEur(v: Double): String {
+    val rounded = (v * 100).roundToInt() / 100.0
+    val s = if (rounded % 1.0 == 0.0) rounded.toInt().toString() else rounded.toString()
+    return "$s €"
 }

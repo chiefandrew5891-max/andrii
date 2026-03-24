@@ -6,7 +6,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +19,9 @@ fun FeedbackPage(
 ) {
     val fontScale = AppSettings.getFontScale()
 
+    val primaryText = UiColors.primaryText()
+    val secondaryText = UiColors.secondaryText()
+
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -27,12 +29,13 @@ fun FeedbackPage(
         Text(
             text = Locales.t("nav_feedback"),
             fontSize = (22 * fontScale).sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = primaryText
         )
 
         Text(
             text = Locales.t("support_feedback_text"),
-            color = Color.Gray,
+            color = secondaryText,
             fontSize = (14 * fontScale).sp
         )
 
@@ -40,7 +43,8 @@ fun FeedbackPage(
 
         Text(
             text = "${Locales.t("support_phone_label")}: ${if (phone.isBlank()) Locales.t("support_phone_empty") else phone}",
-            fontSize = (16 * fontScale).sp
+            fontSize = (16 * fontScale).sp,
+            color = primaryText
         )
 
         Button(

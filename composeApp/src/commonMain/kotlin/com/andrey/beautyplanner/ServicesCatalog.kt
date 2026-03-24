@@ -9,6 +9,10 @@ object ServicesCatalog {
         "service_gel_polish",
         "service_gel_strengthening",
         "service_nail_extensions",
-        "service_lash_extensions"
+        "service_lash_extensions",
+
+        // ✅ added
+        "service_correction",
+        "service_repair"
     )
 }

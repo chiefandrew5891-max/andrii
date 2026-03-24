@@ -41,6 +41,16 @@ object AppSettings {
 
     var isDarkMode by mutableStateOf(false)
     var selectedLanguage by mutableStateOf("Русский")
+
+    /**
+     * Stored values:
+     * - "Мелкий"
+     * - "Средний"
+     * - "Крупный"
+     *
+     * Важно: не переименовываем эти строки, чтобы не ломать существующие сохранения.
+     * Мы меняем только коэффициенты (getFontScale()) — это безопасно.
+     */
     var fontSizeMode by mutableStateOf("Средний")
 
     // --- notifications settings ---
@@ -68,10 +78,16 @@ object AppSettings {
         "Українська" to "uk"
     )
 
+    /**
+     * New mapping:
+     * - "Мелкий"  : 0.80
+     * - "Средний" : 1.10
+     * - "Крупный" : 1.22
+     */
     fun getFontScale(): Float = when (fontSizeMode) {
-        "Мелкий" -> 0.85f
-        "Крупный" -> 1.25f
-        else -> 1.0f
+        "Мелкий" -> 0.80f
+        "Крупный" -> 1.22f
+        else -> 1.10f // "Средний"
     }
 
     fun isPinSet(): Boolean = adminPinHash.isNotBlank()
@@ -79,10 +95,6 @@ object AppSettings {
     fun isPinValidFormat(pin: String): Boolean =
         pin.length in 4..8 && pin.all { it.isDigit() }
 
-    /**
-     * Simple stable hash (not crypto-grade, but better than plain PIN in settings).
-     * If you want stronger later: we can add platform Keychain/Keystore.
-     */
     private fun hashPin(pin: String): String {
         // FNV-1a 32-bit
         var hash = 0x811C9DC5.toInt()
@@ -93,7 +105,6 @@ object AppSettings {
             hash *= prime
         }
 
-        // obfuscate a bit with a tiny reversible transform (still deterministic)
         val mixed = hash xor 0x5A5A5A5A
         return mixed.toUInt().toString(16).padStart(8, '0')
     }
@@ -118,10 +129,6 @@ object AppSettings {
         return adminPinHash == hashPin(pin)
     }
 
-    /**
-     * Call once on app startup.
-     * Android: after AndroidAppContext.context is set.
-     */
     fun load() {
         val raw = runCatching { storage.read() }.getOrNull() ?: return
         if (raw.isBlank()) return

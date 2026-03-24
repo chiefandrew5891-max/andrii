@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
@@ -36,6 +37,13 @@ fun SettingsPage(
     val fontOptions = listOf(Locales.t("font_small"), Locales.t("font_medium"), Locales.t("font_large"))
 
     val fontScale = AppSettings.getFontScale()
+
+    val onSurface = MaterialTheme.colors.onSurface
+    val onBg = MaterialTheme.colors.onBackground
+
+    // --- spacing tuning ---
+    val labelSpacingDp = 10.dp
+    val sectionTitlePaddingBottomDp = 10.dp
 
     var daysSlider by remember { mutableStateOf(AppSettings.reminderDaysBefore.toFloat()) }
     var hoursSlider by remember { mutableStateOf(AppSettings.reminderHoursBefore.toFloat()) }
@@ -80,8 +88,6 @@ fun SettingsPage(
     if (showSupportEditConfirm) {
         AlertDialog(
             onDismissRequest = { showSupportEditConfirm = false },
-
-            // ✅ Заголовок меньше, чем основной текст (второстепенный)
             title = {
                 Text(
                     text = Locales.t("support_phone_edit_confirm_title"),
@@ -89,14 +95,15 @@ fun SettingsPage(
                         fontSize = (14 * fontScale).sp,
                         fontWeight = FontWeight.SemiBold
                     ),
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.75f)
+                    color = onSurface.copy(alpha = 0.75f)
                 )
             },
-
-            // основной текст оставляем как есть (можно не трогать вообще)
-            text = { Text(Locales.t("support_phone_edit_confirm_text")) },
-
-            // ✅ Кнопки оставляем теми же (Button + TextButton), меняем только отступы как в PinDialog
+            text = {
+                Text(
+                    Locales.t("support_phone_edit_confirm_text"),
+                    color = onSurface.copy(alpha = 0.85f)
+                )
+            },
             buttons = {
                 Row(
                     modifier = Modifier
@@ -106,7 +113,7 @@ fun SettingsPage(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = { showSupportEditConfirm = false }) {
-                        Text(Locales.t("cancel"))
+                        Text(Locales.t("cancel"), color = onSurface.copy(alpha = 0.85f))
                     }
 
                     Spacer(Modifier.width(15.dp))
@@ -120,7 +127,6 @@ fun SettingsPage(
                     }
                 }
             },
-
             shape = RoundedCornerShape(16.dp)
         )
     }
@@ -132,14 +138,15 @@ fun SettingsPage(
                 showDisablePinConfirm = false
                 pendingPinEnabledValue = AppSettings.pinEnabled
             },
-            title = { Text(Locales.t("security_section")) },
+            title = { Text(Locales.t("security_section"), color = onSurface) },
             text = {
                 Text(
                     "При отключении PIN-кода будут ограничены операции с базой данных:\n" +
                             "• импорт\n" +
                             "• экспорт\n" +
                             "• очистка базы\n\n" +
-                            "Продолжить?"
+                            "Продолжить?",
+                    color = onSurface.copy(alpha = 0.85f)
                 )
             },
             confirmButton = {
@@ -154,11 +161,21 @@ fun SettingsPage(
                 TextButton(onClick = {
                     showDisablePinConfirm = false
                     pendingPinEnabledValue = true
-                }) { Text(Locales.t("cancel")) }
+                }) { Text(Locales.t("cancel"), color = onSurface.copy(alpha = 0.85f)) }
             },
             shape = RoundedCornerShape(16.dp)
         )
     }
+
+    val fieldColors = TextFieldDefaults.outlinedTextFieldColors(
+        textColor = onSurface,
+        cursorColor = MaterialTheme.colors.primary,
+        focusedBorderColor = MaterialTheme.colors.primary,
+        unfocusedBorderColor = onSurface.copy(alpha = 0.25f),
+        focusedLabelColor = MaterialTheme.colors.primary,
+        unfocusedLabelColor = onSurface.copy(alpha = 0.65f),
+        trailingIconColor = onSurface.copy(alpha = 0.75f)
+    )
 
     Column(
         modifier = Modifier
@@ -170,13 +187,16 @@ fun SettingsPage(
         Text(
             text = Locales.t("nav_settings"),
             fontSize = (22 * fontScale).sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = onBg
         )
 
         SettingsDropdown(
             label = Locales.t("language_label"),
             selected = AppSettings.selectedLanguage,
             items = languages,
+            labelSpacing = labelSpacingDp,
+            fieldColors = fieldColors,
             onSelect = { newValue ->
                 if (AppSettings.selectedLanguage != newValue) {
                     AppSettings.selectedLanguage = newValue
@@ -191,6 +211,8 @@ fun SettingsPage(
             label = Locales.t("theme_label"),
             selected = if (AppSettings.isDarkMode) Locales.t("theme_dark") else Locales.t("theme_light"),
             items = themeOptions,
+            labelSpacing = labelSpacingDp,
+            fieldColors = fieldColors,
             onSelect = { newValue ->
                 AppSettings.isDarkMode = (newValue == Locales.t("theme_dark"))
                 AppSettings.persist()
@@ -205,6 +227,8 @@ fun SettingsPage(
                 else -> Locales.t("font_medium")
             },
             items = fontOptions,
+            labelSpacing = labelSpacingDp,
+            fieldColors = fieldColors,
             onSelect = { newValue ->
                 AppSettings.fontSizeMode = when (newValue) {
                     Locales.t("font_small") -> "Мелкий"
@@ -222,9 +246,10 @@ fun SettingsPage(
         Column {
             Text(
                 text = Locales.t("notifications_section"),
-                fontSize = (14 * fontScale).sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
+                fontSize = (16 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface.copy(alpha = 0.85f),
+                modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
             )
 
             Row(
@@ -232,7 +257,11 @@ fun SettingsPage(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = Locales.t("notifications_enabled"), fontSize = (16 * fontScale).sp)
+                Text(
+                    text = Locales.t("notifications_enabled"),
+                    fontSize = (16 * fontScale).sp,
+                    color = onSurface
+                )
                 Switch(
                     checked = AppSettings.notificationsEnabled,
                     onCheckedChange = {
@@ -242,8 +271,8 @@ fun SettingsPage(
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colors.primary,
                         checkedTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.35f),
-                        uncheckedThumbColor = MaterialTheme.colors.onSurface.copy(alpha = 0.45f),
-                        uncheckedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.20f)
+                        uncheckedThumbColor = onSurface.copy(alpha = 0.45f),
+                        uncheckedTrackColor = onSurface.copy(alpha = 0.20f)
                     )
                 )
             }
@@ -260,6 +289,8 @@ fun SettingsPage(
                 selected = soundItems.firstOrNull { it.second == AppSettings.notificationSound }?.first
                     ?: Locales.t("notif_sound_default"),
                 items = soundItems.map { it.first },
+                labelSpacing = labelSpacingDp,
+                fieldColors = fieldColors,
                 onSelect = { selected ->
                     val s = soundItems.firstOrNull { it.first == selected }?.second ?: NotificationSound.DEFAULT
                     AppSettings.notificationSound = s
@@ -269,14 +300,20 @@ fun SettingsPage(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            Text(text = Locales.t("reminders_when"), fontSize = (14 * fontScale).sp, color = Color.Gray)
+            Text(
+                text = Locales.t("reminders_when"),
+                fontSize = (14 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface.copy(alpha = 0.75f)
+            )
 
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = "${Locales.t("remind_days")}: ${Locales.daysCount(AppSettings.reminderDaysBefore)}",
                 fontSize = (15 * fontScale).sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface
             )
 
             Slider(
@@ -291,7 +328,7 @@ fun SettingsPage(
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colors.primary,
                     activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
-                    inactiveTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.20f)
+                    inactiveTrackColor = onSurface.copy(alpha = 0.20f)
                 )
             )
 
@@ -300,7 +337,8 @@ fun SettingsPage(
             Text(
                 text = "${Locales.t("remind_hours")}: ${Locales.hoursCount(AppSettings.reminderHoursBefore)}",
                 fontSize = (15 * fontScale).sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface
             )
 
             Slider(
@@ -315,7 +353,7 @@ fun SettingsPage(
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colors.primary,
                     activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
-                    inactiveTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.20f)
+                    inactiveTrackColor = onSurface.copy(alpha = 0.20f)
                 )
             )
 
@@ -326,7 +364,7 @@ fun SettingsPage(
             Text(
                 text = "${Locales.t("remind_summary")}: $summary",
                 fontSize = (13 * fontScale).sp,
-                color = Color.Gray
+                color = onSurface.copy(alpha = 0.60f)
             )
         }
 
@@ -336,9 +374,10 @@ fun SettingsPage(
         Column {
             Text(
                 text = Locales.t("support_section"),
-                fontSize = (14 * fontScale).sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
+                fontSize = (16 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface.copy(alpha = 0.85f),
+                modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
             )
 
             OutlinedTextField(
@@ -347,13 +386,14 @@ fun SettingsPage(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 enabled = supportEditMode,
-                label = { Text(Locales.t("support_phone_label")) }
+                label = { Text(Locales.t("support_phone_label"), color = onSurface.copy(alpha = 0.65f)) },
+                colors = fieldColors
             )
 
             Text(
                 text = Locales.t("support_phone_hint"),
                 fontSize = (12 * fontScale).sp,
-                color = Color.Gray
+                color = onSurface.copy(alpha = 0.60f)
             )
 
             Spacer(Modifier.height(10.dp))
@@ -364,7 +404,7 @@ fun SettingsPage(
                     modifier = Modifier.fillMaxWidth().height(44.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(Locales.t("support_phone_edit"))
+                    Text(Locales.t("support_phone_edit"), color = onSurface)
                 }
             } else {
                 Button(
@@ -387,10 +427,12 @@ fun SettingsPage(
         Column {
             Text(
                 text = Locales.t("backup_section"),
-                fontSize = (14 * fontScale).sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
+                fontSize = (16 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface.copy(alpha = 0.85f),
+                modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
             )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -414,7 +456,7 @@ fun SettingsPage(
                     modifier = Modifier.weight(0.45f).height(38.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(text = Locales.t("import_db"), fontSize = (14 * fontScale).sp)
+                    Text(text = Locales.t("import_db"), fontSize = (14 * fontScale).sp, color = onSurface)
                 }
             }
 
@@ -434,7 +476,7 @@ fun SettingsPage(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "Чтобы использовать импорт/экспорт/очистку базы, включите PIN и установите его.",
-                    color = Color.Gray,
+                    color = onSurface.copy(alpha = 0.60f),
                     fontSize = (12 * fontScale).sp
                 )
             }
@@ -446,9 +488,10 @@ fun SettingsPage(
         Column {
             Text(
                 text = Locales.t("security_section"),
-                fontSize = (14 * fontScale).sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
+                fontSize = (16 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface.copy(alpha = 0.85f),
+                modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
             )
 
             Row(
@@ -456,18 +499,16 @@ fun SettingsPage(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = Locales.t("pin_enabled"), fontSize = (16 * fontScale).sp)
+                Text(text = Locales.t("pin_enabled"), fontSize = (16 * fontScale).sp, color = onSurface)
 
                 Switch(
                     checked = pendingPinEnabledValue,
                     onCheckedChange = { newValue ->
-                        // Включение: просто включаем
                         if (newValue) {
                             AppSettings.pinEnabled = true
                             AppSettings.persist()
                             pendingPinEnabledValue = true
                         } else {
-                            // Выключение: только через confirm
                             pendingPinEnabledValue = false
                             showDisablePinConfirm = true
                         }
@@ -475,8 +516,8 @@ fun SettingsPage(
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colors.primary,
                         checkedTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.35f),
-                        uncheckedThumbColor = MaterialTheme.colors.onSurface.copy(alpha = 0.45f),
-                        uncheckedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.20f)
+                        uncheckedThumbColor = onSurface.copy(alpha = 0.45f),
+                        uncheckedTrackColor = onSurface.copy(alpha = 0.20f)
                     )
                 )
             }
@@ -501,7 +542,7 @@ fun SettingsPage(
                 shape = RoundedCornerShape(12.dp),
                 enabled = AppSettings.isPinSet()
             ) {
-                Text(Locales.t("pin_remove"))
+                Text(Locales.t("pin_remove"), color = onSurface)
             }
         }
 
@@ -512,7 +553,7 @@ fun SettingsPage(
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text(text = Locales.t("privacy_policy"), fontSize = (16 * fontScale).sp)
+            Text(text = Locales.t("privacy_policy"), fontSize = (16 * fontScale).sp, color = onSurface)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -525,13 +566,25 @@ fun SettingsDropdown(
     label: String,
     selected: String,
     items: List<String>,
-    onSelect: (String) -> Unit
+    onSelect: (String) -> Unit,
+    labelSpacing: Dp = 10.dp,
+    fieldColors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors()
 ) {
     var expanded by remember { mutableStateOf(false) }
     val fontScale = AppSettings.getFontScale()
 
+    val onSurface = MaterialTheme.colors.onSurface
+
     Column {
-        Text(text = label, fontSize = (14 * fontScale).sp, color = Color.Gray)
+        Text(
+            text = label,
+            fontSize = (14 * fontScale).sp,
+            fontWeight = FontWeight.SemiBold,
+            color = onSurface.copy(alpha = 0.85f)
+        )
+
+        Spacer(modifier = Modifier.height(labelSpacing))
+
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
@@ -543,8 +596,10 @@ fun SettingsDropdown(
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                textStyle = TextStyle(fontSize = (16 * fontScale).sp)
+                textStyle = TextStyle(fontSize = (16 * fontScale).sp, color = onSurface),
+                colors = fieldColors
             )
+
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
@@ -554,7 +609,7 @@ fun SettingsDropdown(
                         onSelect(item)
                         expanded = false
                     }) {
-                        Text(text = item, fontSize = (16 * fontScale).sp)
+                        Text(text = item, fontSize = (16 * fontScale).sp, color = onSurface)
                     }
                 }
             }
