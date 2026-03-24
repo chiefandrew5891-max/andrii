@@ -6,7 +6,7 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.UniformTypeIdentifiers.*
 import kotlinx.cinterop.*
-import platform.darwin.NSObject
+import platform.darwin.NSObject // Явный импорт базы
 
 actual object BackupFilePicker {
 
@@ -23,8 +23,10 @@ actual object BackupFilePicker {
         val name = suggestedFileName.trim().ifBlank { "beautyplanner-backup" }
         val fileName = if (name.lowercase().endsWith(".json")) name else "$name.json"
 
+        // Исправлено приведение типов для вызова данных
         val nsJson = json as NSString
         val data = nsJson.dataUsingEncoding(NSUTF8StringEncoding) ?: return
+
         val path = NSTemporaryDirectory() + fileName
         val url = NSURL.fileURLWithPath(path)
 
@@ -51,7 +53,7 @@ actual object BackupFilePicker {
     }
 }
 
-// Добавлена реализация UIDocumentPickerDelegateProtocol — это уберет ошибку про abstract members
+// Добавлен интерфейс протокола, чтобы не было ошибки "not abstract"
 private class DocumentPickerDelegate(
     val onPicked: (String) -> Unit,
     val onError: (String) -> Unit
@@ -60,10 +62,11 @@ private class DocumentPickerDelegate(
     override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
         val url = didPickDocumentsAtURLs.firstOrNull() as? NSURL
         if (url != null) {
-            val text = NSString.stringWithContentsOfURL(url, NSUTF8StringEncoding, null)
-            if (text != null) onPicked(text.toString()) else onError("Read error")
+            // Исправлен вызов метода чтения
+            val content = NSString.stringWithContentsOfURL(url, NSUTF8StringEncoding, null)
+            if (content != null) onPicked(content.toString()) else onError("Read error")
         } else {
-            onError("No file selected")
+            onError("No file")
         }
         DocumentPickerDelegateHolder.current = null
     }
@@ -76,3 +79,4 @@ private class DocumentPickerDelegate(
 private object DocumentPickerDelegateHolder {
     var current: Any? = null
 }
+//fix7

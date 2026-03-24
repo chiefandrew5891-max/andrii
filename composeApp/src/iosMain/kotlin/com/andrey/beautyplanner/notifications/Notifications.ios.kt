@@ -37,7 +37,7 @@ actual object Notifications {
                 if (triggerAt <= nowEpochMillis) return@forEach
 
                 val content = UNMutableNotificationContent().apply {
-                    // Используем сеттеры, так как поля помечены как val в Kotlin
+                    // ИСПОЛЬЗУЕМ СЕТТЕРЫ, так как напрямую менять val нельзя
                     setTitle("Beauty Planner")
                     setBody("${appt.clientName}: ${appt.serviceName} • ${appt.dateString} ${appt.time}")
 
@@ -58,3 +58,4 @@ actual object Notifications {
         }
     }
 }
+// fix 7
