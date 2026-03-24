@@ -37,12 +37,15 @@ actual object Notifications {
                 if (triggerAt <= nowEpochMillis) return@forEach
 
                 val content = UNMutableNotificationContent()
-                content.title = "Beauty Planner"
-                content.body = "${appt.clientName}: ${appt.serviceName} • ${appt.dateString} ${appt.time}"
-                content.sound = when (sound) {
+                // ИСПРАВЛЕНО: Используем сеттеры вместо прямого присваивания
+                content.setTitle("Beauty Planner")
+                content.setBody("${appt.clientName}: ${appt.serviceName} • ${appt.dateString} ${appt.time}")
+
+                val iosSound = when (sound) {
                     NotificationSound.SILENT -> null
                     NotificationSound.DEFAULT -> UNNotificationSound.defaultSound()
                 }
+                content.setSound(iosSound)
 
                 val seconds = ((triggerAt - nowEpochMillis) / 1000.0).coerceAtLeast(1.0)
                 val trigger = UNTimeIntervalNotificationTrigger.triggerWithTimeInterval(seconds, repeats = false)
