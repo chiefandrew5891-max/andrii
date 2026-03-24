@@ -23,10 +23,8 @@ actual object BackupFilePicker {
         val name = suggestedFileName.trim().ifBlank { "beautyplanner-backup" }
         val fileName = if (name.lowercase().endsWith(".json")) name else "$name.json"
 
-        // Исправленный способ работы со строкой для iOS
-        val nsString = json as NSString
-        val data = nsString.dataUsingEncoding(NSUTF8StringEncoding) ?: return
-
+        val nsJson = json as NSString
+        val data = nsJson.dataUsingEncoding(NSUTF8StringEncoding) ?: return
         val path = NSTemporaryDirectory() + fileName
         val url = NSURL.fileURLWithPath(path)
 
@@ -48,26 +46,24 @@ actual object BackupFilePicker {
         picker.delegate = delegate
         picker.modalPresentationStyle = UIModalPresentationFullScreen
 
-        // Удерживаем делегат в памяти
         DocumentPickerDelegateHolder.current = delegate
         vc.presentViewController(picker, animated = true, completion = null)
     }
 }
 
-// ВАЖНО: Добавляем интерфейс протокола UIDocumentPickerDelegateProtocol
+// Добавлена реализация UIDocumentPickerDelegateProtocol — это уберет ошибку про abstract members
 private class DocumentPickerDelegate(
     val onPicked: (String) -> Unit,
     val onError: (String) -> Unit
 ) : NSObject(), UIDocumentPickerDelegateProtocol {
 
     override fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: List<*>) {
-        val url = didPickDocumentsAtURLs.firstOrNull() as? NSURL ?: return
-
-        val content = NSString.stringWithContentsOfURL(url, NSUTF8StringEncoding, null)
-        if (content != null) {
-            onPicked(content.toString())
+        val url = didPickDocumentsAtURLs.firstOrNull() as? NSURL
+        if (url != null) {
+            val text = NSString.stringWithContentsOfURL(url, NSUTF8StringEncoding, null)
+            if (text != null) onPicked(text.toString()) else onError("Read error")
         } else {
-            onError("Failed to read file")
+            onError("No file selected")
         }
         DocumentPickerDelegateHolder.current = null
     }
