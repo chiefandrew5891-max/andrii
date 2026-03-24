@@ -2,30 +2,21 @@
 
 package com.andrey.beautyplanner
 
-import platform.Foundation.NSObject
+import platform.Foundation.NSString
+import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
-import platform.Foundation.NSUTF8StringEncoding
-import platform.Foundation.NSString
-import platform.UIKit.UIApplication
-import platform.UIKit.UIWindow
-import platform.UIKit.UIDocumentPickerDelegateProtocol
-import platform.UIKit.UIDocumentPickerViewController
-import platform.UIKit.UIModalPresentationFullScreen
-import platform.UIKit.UIViewController
+import platform.Foundation.stringWithContentsOfFile
+import platform.Foundation.NSObject
+import platform.UIKit.*
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeJSON
 
 actual object BackupFilePicker {
 
     private fun topViewController(): UIViewController? {
-        val windows = UIApplication.sharedApplication.connectedScenes
-            .flatMap { scene ->
-                val w = scene.valueForKey("windows") as? List<*>
-                w?.filterIsInstance<UIWindow>() ?: emptyList()
-            }
-        val window = windows.firstOrNull { it.isKeyWindow } ?: return null
-        var vc = window.rootViewController
+        val window = UIApplication.sharedApplication.windows.firstOrNull()
+        var vc = window?.rootViewController
         while (vc?.presentedViewController != null) vc = vc.presentedViewController
         return vc
     }
@@ -55,12 +46,10 @@ actual object BackupFilePicker {
         }
 
         val delegate = DocumentPickerDelegate(onPicked, onError)
-
         val picker = UIDocumentPickerViewController(
-            forOpeningContentTypes = listOfNotNull(UTTypeJSON),
+            forOpeningContentTypes = listOf(UTTypeJSON),
             asCopy = true
         )
-
         picker.delegate = delegate
         picker.modalPresentationStyle = UIModalPresentationFullScreen
 
@@ -95,6 +84,21 @@ private class DocumentPickerDelegate(
     override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
         DocumentPickerDelegateHolder.current = null
     }
+
+    // Добавляем все REQUIRED методы ObjC NSObject (заглушки, чтобы компилировалось на CI)
+    override fun isEqual(`object`: Any?): Boolean = super.equals(`object`)
+    override fun hash(): ULong = super.hashCode().toULong()
+    override fun superclass(): ObjCClass? = null
+    override fun description(): String? = null
+    override fun isProxy(): Boolean = false
+    override fun class_(): ObjCClass? = null
+    override fun isKindOfClass(aClass: ObjCClass?): Boolean = false
+    override fun isMemberOfClass(aClass: ObjCClass?): Boolean = false
+    override fun conformsToProtocol(aProtocol: Protocol?): Boolean = false
+    override fun respondsToSelector(aSelector: CPointer<out CPointed>?): Boolean = false
+    override fun performSelector(aSelector: CPointer<out CPointed>?): Any? = null
+    override fun performSelector(aSelector: CPointer<out CPointed>?, withObject: Any?): Any? = null
+    override fun performSelector(aSelector: CPointer<out CPointed>?, withObject: Any?, _withObject: Any?): Any? = null
 }
 
 private object DocumentPickerDelegateHolder {
