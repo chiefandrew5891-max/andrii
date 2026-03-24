@@ -1,4 +1,4 @@
-name: CI (Android + iOS Simulator)
+name: CI (Android + Real iOS Device)
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
           name: android-apk
           path: composeApp/build/outputs/apk/debug/*.apk
 
-  ios-simulator:
+  ios-device:
     runs-on: macos-latest
     steps:
       - name: Checkout
@@ -51,11 +51,13 @@ jobs:
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build iOS Simulator (KMP)
-        run: ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+      - name: Build iOS Device Framework (KMP)
+        # ИСПРАВЛЕНО: Теперь собираем под реальное железо (IosArm64)
+        run: ./gradlew :composeApp:linkDebugFrameworkIosArm64
 
-      - name: Upload iOS framework (simulator)
+      - name: Upload iOS framework (Real Device)
         uses: actions/upload-artifact@v4
         with:
-          name: ios-sim-framework
-          path: composeApp/build/bin/iosSimulatorArm64/debugFramework/*.framework
+          name: ios-real-device-framework
+          # ИСПРАВЛЕНО: Путь к файлам для реального устройства
+          path: composeApp/build/bin/iosArm64/debugFramework/
