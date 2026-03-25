@@ -28,10 +28,13 @@ import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.getCurrentTimeHm
 import com.andrey.beautyplanner.appcontent.AppDialogShape
 import com.andrey.beautyplanner.appcontent.AppDialogTheme
+import com.andrey.beautyplanner.utils.getLiveStatus
+import com.andrey.beautyplanner.utils.LiveStatusKey
+import com.andrey.beautyplanner.utils.parseHmToMinutes
 import kotlinx.coroutines.delay
 import kotlinx.datetime.*
 
-private fun parseHmToMinutes(hm: String): Int? {
+private fun parseHmToMinutesCompat(hm: String): Int? {
     val parts = hm.trim().split(":")
     if (parts.size != 2) return null
     val h = parts[0].toIntOrNull() ?: return null
@@ -62,23 +65,13 @@ private data class Block(
     enum class Kind { FREE, APPOINTMENT }
 }
 
-/**
- * UI-only status scaffold (for now it’s always DONE in the dialog).
- * Later you can store it in Appointment and choose based on actual data.
- */
-private enum class AppointmentStatusKey(val localeKey: String) {
-    DONE("appt_status_done"),
-    RESCHEDULED("appt_status_rescheduled"),
-    CANCELED("appt_status_canceled")
-}
-
 @Composable
 private fun AppointmentViewDialog(
     appt: Appointment,
     startHm: String,
     endHm: String,
     serviceDisplay: String,
-    status: AppointmentStatusKey,
+    status: LiveStatusKey,
     onDismiss: () -> Unit
 ) {
     val fontScale = AppSettings.getFontScale()
@@ -100,22 +93,16 @@ private fun AppointmentViewDialog(
             },
             text = {
                 Column(Modifier.fillMaxWidth()) {
-                    // Time range
                     Text(
                         text = "$startHm–$endHm",
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                     )
-
                     Spacer(Modifier.height(10.dp))
-
-                    // Service
                     Text(
                         text = "${Locales.t("service")}: $serviceDisplay",
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                     )
-
-                    // Price
                     if (priceText.isNotBlank()) {
                         Spacer(Modifier.height(8.dp))
                         Text(
@@ -123,8 +110,6 @@ private fun AppointmentViewDialog(
                             color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                         )
                     }
-
-                    // Status (localized)
                     Spacer(Modifier.height(10.dp))
                     Text(
                         text = "${Locales.t("appt_status_label")}: ${Locales.t(status.localeKey)}",
@@ -154,10 +139,8 @@ fun DayDetailsView(
 ) {
     val fontScale = AppSettings.getFontScale()
 
-    // Today (device local timezone)
     val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
 
-    // Current time (HH:mm) updates each minute, same pattern as in AppRootContent.kt
     var nowTimeHm by remember { mutableStateOf(getCurrentTimeHm()) }
     LaunchedEffect(Unit) {
         while (true) {
@@ -176,7 +159,6 @@ fun DayDetailsView(
     val dayStart = 8 * 60
     val dayEnd = 21 * 60
 
-    // Snapshot to avoid stale recomposition issues
     val apptsSnapshot = appointments.toList()
 
     val dayAppts = remember(apptsSnapshot, date) {
@@ -227,7 +209,6 @@ fun DayDetailsView(
         out
     }
 
-    // unified time layout
     val timeColWidth = 60.dp
     val timeFont = (16 * fontScale).sp
     val timeFontWeight = FontWeight.Bold
@@ -241,7 +222,7 @@ fun DayDetailsView(
     var viewingStartHm by remember { mutableStateOf("") }
     var viewingEndHm by remember { mutableStateOf("") }
     var viewingService by remember { mutableStateOf("") }
-    var viewingStatus by remember { mutableStateOf(AppointmentStatusKey.DONE) }
+    var viewingStatus by remember { mutableStateOf<LiveStatusKey?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -293,17 +274,19 @@ fun DayDetailsView(
                     val apptStartMin = parseHmToMinutes(appt.time) ?: b.startMin
                     val apptEndMin = apptStartMin + durationMin
 
-                    // Past logic: by date OR (today and ended)
-                    val isPastAppt = when {
-                        date < today -> true
-                        date > today -> false
-                        else -> apptEndMin <= nowMin
-                    }
-
                     val cardBg = when {
-                        isPastAppt -> if (AppSettings.isDarkMode) Color(0xFF1F2A36) else Color(0xFFECECEC)
+                        date < today -> if (AppSettings.isDarkMode) Color(0xFF1F2A36) else Color(0xFFECECEC)
+                        date > today -> if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
                         else -> if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
                     }
+
+                    // вычисляем актуальный статус прямо тут!
+                    val liveStatus = getLiveStatus(
+                        appt = appt,
+                        nowDate = today,
+                        nowMinutes = nowMin,
+                        // isCanceled = appt.isCanceled // если добавишь это поле
+                    )
 
                     Card(
                         elevation = 0.dp,
@@ -312,7 +295,6 @@ fun DayDetailsView(
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
                             .height(92.dp)
-                            // ✅ whole card clickable -> opens view dialog
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = LocalIndication.current
@@ -321,7 +303,7 @@ fun DayDetailsView(
                                 viewingStartHm = startHm
                                 viewingEndHm = endHm
                                 viewingService = serviceDisplay
-                                viewingStatus = if (isPastAppt) AppointmentStatusKey.DONE else AppointmentStatusKey.DONE
+                                viewingStatus = liveStatus
                             },
                         backgroundColor = cardBg
                     ) {
@@ -333,7 +315,7 @@ fun DayDetailsView(
                                 modifier = Modifier.width(timeColWidth),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                val timeColor = if (isPastAppt) pastTimeColor else busyTimeColor
+                                val timeColor = if (date < today || apptEndMin <= nowMin) pastTimeColor else busyTimeColor
 
                                 Text(
                                     text = startHm,
@@ -365,7 +347,7 @@ fun DayDetailsView(
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = MaterialTheme.colors.onSurface.copy(alpha = if (isPastAppt) 0.85f else 1f)
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 1f)
                                 )
                                 Text(
                                     text = serviceDisplay,
@@ -385,14 +367,13 @@ fun DayDetailsView(
                                     text = priceText,
                                     fontSize = (14 * fontScale).sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colors.onSurface.copy(alpha = if (isPastAppt) 0.85f else 1f),
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 1f),
                                     modifier = Modifier.padding(end = 8.dp)
                                 )
                             }
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (isPastAppt) {
-                                    // ✅ instead of edit pencil -> check
+                                if (liveStatus == LiveStatusKey.DONE) {
                                     Icon(
                                         imageVector = Icons.Default.CheckCircle,
                                         contentDescription = null,
@@ -405,7 +386,6 @@ fun DayDetailsView(
                                     }
                                 }
 
-                                // ✅ delete stays always (client may not come)
                                 IconButton(onClick = { onDeleteClick(appt) }) {
                                     Icon(Icons.Default.Close, null, tint = Color.Red, modifier = Modifier.size(22.dp))
                                 }
@@ -446,7 +426,6 @@ fun DayDetailsView(
                                     color = freeTimeColor
                                 )
                             }
-
                             Text(
                                 text = Locales.t("free"),
                                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.35f),
@@ -460,14 +439,15 @@ fun DayDetailsView(
     }
 
     val apptToView = viewingAppt
-    if (apptToView != null) {
+    val liveStatusToView = viewingStatus
+    if (apptToView != null && liveStatusToView != null) {
         AppointmentViewDialog(
             appt = apptToView,
             startHm = viewingStartHm,
             endHm = viewingEndHm,
             serviceDisplay = viewingService,
-            status = viewingStatus,
-            onDismiss = { viewingAppt = null }
+            status = liveStatusToView,
+            onDismiss = { viewingAppt = null; viewingStatus = null }
         )
     }
 }

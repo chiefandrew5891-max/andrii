@@ -123,7 +123,9 @@ object Locales {
             "support_phone_empty" to "Не указан",
             "support_feedback_text" to "Если у вас неполадки — позвоните в поддержку по номеру ниже.",
             "support_call" to "Позвонить",
-
+            // User name satting
+            "user_name_label" to "Имя пользователя",
+            "user_name_hint" to "Введите имя",
             // Stats
             "stats_period_day" to "День",
             "stats_period_week" to "Неделя",
@@ -153,8 +155,9 @@ object Locales {
 
             // ✅ Appointment status (NEW)
             "appt_status_label" to "Статус",
+            "appt_status_waiting" to "Ожидается",
+            "appt_status_in_progress" to "Выполняется",
             "appt_status_done" to "Выполнено",
-            "appt_status_rescheduled" to "Перенесено",
             "appt_status_canceled" to "Отменено",
 
             // Currency
@@ -315,6 +318,9 @@ object Locales {
             "support_phone_empty" to "Not set",
             "support_feedback_text" to "If something is not working, call support using the number below.",
             "support_call" to "Call",
+            // User name satting
+            "user_name_label" to "User name",
+            "user_name_hint" to "Enter your name",
 
             "stats_period_day" to "Day",
             "stats_period_week" to "Week",
@@ -342,8 +348,9 @@ object Locales {
 
             // ✅ Appointment status (NEW)
             "appt_status_label" to "Status",
+            "appt_status_waiting" to "Waiting",
+            "appt_status_in_progress" to "In progress",
             "appt_status_done" to "Done",
-            "appt_status_rescheduled" to "Rescheduled",
             "appt_status_canceled" to "Canceled",
 
             "currency_eur" to "€",
@@ -502,6 +509,9 @@ object Locales {
             "support_phone_empty" to "Non impostato",
             "support_feedback_text" to "Se qualcosa non funziona, chiama il supporto usando il numero qui sotto.",
             "support_call" to "Chiama",
+            // User name satting
+            "user_name_label" to "Nome utent",
+            "user_name_hint" to "Inserisci il tuo nome",
 
             "stats_period_day" to "Giorno",
             "stats_period_week" to "Settimana",
@@ -575,8 +585,9 @@ object Locales {
 
             // ✅ Appointment status (NEW)
             "appt_status_label" to "Stato",
+            "appt_status_waiting" to "In attesa",
+            "appt_status_in_progress" to "In corso",
             "appt_status_done" to "Completato",
-            "appt_status_rescheduled" to "Riprogrammato",
             "appt_status_canceled" to "Annullato"
         ),
 
@@ -688,6 +699,9 @@ object Locales {
             "support_phone_empty" to "Не вказано",
             "support_feedback_text" to "Якщо щось не працює — зателефонуйте в підтримку за номером нижче.",
             "support_call" to "Подзвонити",
+            // User name satting
+            "user_name_label" to "Ім’я користувача",
+            "user_name_hint" to "Введіть ім’я",
 
             "stats_period_day" to "День",
             "stats_period_week" to "Тиждень",
@@ -716,7 +730,8 @@ object Locales {
             // ✅ Appointment status (NEW)
             "appt_status_label" to "Статус",
             "appt_status_done" to "Виконано",
-            "appt_status_rescheduled" to "Перенесено",
+            "appt_status_waiting" to "Очікується",
+            "appt_status_in_progress" to "Виконується",
             "appt_status_canceled" to "Скасовано",
 
             "currency_eur" to "€",

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.*
 import com.andrey.beautyplanner.appcontent.*
+import com.andrey.beautyplanner.appcontent.AnimatedSplashScreen
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
@@ -31,6 +32,17 @@ fun AppRootContent(
     state: AppRootState,
     padding: PaddingValues
 ) {
+    var showSplash by remember { mutableStateOf(true) }
+    val ownerName = remember { AppSettings.ownerName ?: "" }
+
+    if (showSplash) {
+        AnimatedSplashScreen(
+            ownerName = if (ownerName.isBlank()) "Evgi" else ownerName,
+            onAnimationFinished = { showSplash = false }
+        )
+        return
+    }
+
     Box(modifier = Modifier.fillMaxSize().padding(padding)) {
         when (state.currentScreen) {
             Screen.SETTINGS -> SettingsPage(
@@ -291,7 +303,6 @@ fun AppRootContent(
             )
         }
 
-        // --- Booking dialog ---
         if (state.showBookingDialog) {
             BookingDialog(
                 time = state.editingAppointment?.time ?: state.selectedTimeSlot,
@@ -304,7 +315,6 @@ fun AppRootContent(
                     state.bookingReadOnly = false
                 },
                 onSave = { startTime, durationMinutes, name, phone, service, price ->
-                    // ✅ Важно: сначала формируем id и целевую дату
                     val id = state.editingAppointment?.id
                         ?: state.transferA?.id
                         ?: Clock.System.now().toEpochMilliseconds().toString()
@@ -323,10 +333,7 @@ fun AppRootContent(
                         durationHours = ((durationMinutes + 59) / 60).coerceAtLeast(1)
                     )
 
-                    // ✅ Убираем старую запись (если была) по id-логике (стабильно для UI)
                     state.transferA?.let { state.appointments.remove(it); state.transferA = null }
-
-                    // ✅ Замена по id (или добавление, если ещё нет)
                     state.replaceById(newAppt)
                     state.saveAll()
 
@@ -343,7 +350,6 @@ fun AppRootContent(
             )
         }
 
-        // --- Transfer pick ---
         if (state.showTransferPickDialog && state.transferA != null) {
             val a = state.transferA!!
             TransferPickDialog(

@@ -41,7 +41,6 @@ fun SettingsPage(
     val onSurface = MaterialTheme.colors.onSurface
     val onBg = MaterialTheme.colors.onBackground
 
-    // --- spacing tuning ---
     val labelSpacingDp = 10.dp
     val sectionTitlePaddingBottomDp = 10.dp
 
@@ -53,23 +52,23 @@ fun SettingsPage(
     val reminderDays = AppSettings.reminderDaysBefore
     val reminderHours = AppSettings.reminderHoursBefore
 
-    // Support phone edit state
     var supportEditMode by remember { mutableStateOf(false) }
     var supportPhoneDraft by remember { mutableStateOf(AppSettings.servicePhone) }
     var showSupportEditConfirm by remember { mutableStateOf(false) }
 
-    // ✅ Confirm disable PIN dialog
     var showDisablePinConfirm by remember { mutableStateOf(false) }
     var pendingPinEnabledValue by remember { mutableStateOf(AppSettings.pinEnabled) }
 
     val dbOpsAllowed = AppSettings.pinEnabled && AppSettings.isPinSet()
 
+    // === Имя пользователя (Добавлен режим редактирования по аналогии) ===
+    var nameEditMode by remember { mutableStateOf(false) }
+    var userNameDraft by remember { mutableStateOf(AppSettings.ownerName) }
+
     LaunchedEffect(notificationsEnabled, notificationSound, reminderDays, reminderHours) {
         delay(600)
-
         val all = runCatching { DataManager.loadFromDatabase() }.getOrNull().orEmpty()
         val mins = AppSettings.reminderMinutesComputed()
-
         runCatching {
             if (AppSettings.notificationsEnabled && mins.isNotEmpty()) {
                 Notifications.rescheduleAll(
@@ -84,7 +83,6 @@ fun SettingsPage(
         }
     }
 
-    // --- Support phone edit confirm dialog (styled) ---
     if (showSupportEditConfirm) {
         AlertDialog(
             onDismissRequest = { showSupportEditConfirm = false },
@@ -115,9 +113,7 @@ fun SettingsPage(
                     TextButton(onClick = { showSupportEditConfirm = false }) {
                         Text(Locales.t("cancel"), color = onSurface.copy(alpha = 0.85f))
                     }
-
                     Spacer(Modifier.width(15.dp))
-
                     Button(onClick = {
                         showSupportEditConfirm = false
                         supportEditMode = true
@@ -131,7 +127,6 @@ fun SettingsPage(
         )
     }
 
-    // ✅ Disable PIN confirmation dialog
     if (showDisablePinConfirm) {
         AlertDialog(
             onDismissRequest = {
@@ -423,6 +418,56 @@ fun SettingsPage(
 
         Divider()
 
+        // ------------- Имя пользователя (С КНОПКОЙ СОХРАНЕНИЯ) -------------
+        Column {
+            Text(
+                text = Locales.t("user_name_label"),
+                fontSize = (16 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface.copy(alpha = 0.85f),
+                modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
+            )
+
+            OutlinedTextField(
+                value = if (nameEditMode) userNameDraft else AppSettings.ownerName,
+                onValueChange = { if (nameEditMode) userNameDraft = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                enabled = nameEditMode,
+                label = { Text(Locales.t("user_name_hint"), color = onSurface.copy(alpha = 0.65f)) },
+                colors = fieldColors
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            if (!nameEditMode) {
+                OutlinedButton(
+                    onClick = {
+                        nameEditMode = true
+                        userNameDraft = AppSettings.ownerName
+                    },
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(Locales.t("support_phone_edit"), color = onSurface)
+                }
+            } else {
+                Button(
+                    onClick = {
+                        AppSettings.ownerName = userNameDraft.trim()
+                        AppSettings.persist()
+                        nameEditMode = false
+                    },
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(Locales.t("support_phone_save"))
+                }
+            }
+        }
+
+        Divider()
+
         // -------------------- Backup --------------------
         Column {
             Text(
@@ -432,7 +477,6 @@ fun SettingsPage(
                 color = onSurface.copy(alpha = 0.85f),
                 modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
             )
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

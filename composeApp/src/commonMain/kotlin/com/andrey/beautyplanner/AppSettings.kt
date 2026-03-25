@@ -22,6 +22,8 @@ private data class SettingsSnapshot(
     val selectedLanguage: String = "Русский",
     val fontSizeMode: String = "Средний",
 
+    val ownerName: String = "Euvgi",
+
     val notificationsEnabled: Boolean = true,
     val notificationSound: String = NotificationSound.DEFAULT.name,
 
@@ -52,6 +54,8 @@ object AppSettings {
      * Мы меняем только коэффициенты (getFontScale()) — это безопасно.
      */
     var fontSizeMode by mutableStateOf("Средний")
+
+    var ownerName by mutableStateOf("Euvgi")
 
     // --- notifications settings ---
     var notificationsEnabled by mutableStateOf(true)
@@ -148,6 +152,7 @@ object AppSettings {
         reminderHoursBefore = snapshot.reminderHoursBefore
 
         servicePhone = snapshot.servicePhone
+        ownerName = snapshot.ownerName
 
         pinEnabled = snapshot.pinEnabled
         adminPinHash = snapshot.adminPinHash
@@ -161,6 +166,7 @@ object AppSettings {
             isDarkMode = isDarkMode,
             selectedLanguage = selectedLanguage,
             fontSizeMode = fontSizeMode,
+            ownerName = ownerName,
 
             notificationsEnabled = notificationsEnabled,
             notificationSound = notificationSound.name,
