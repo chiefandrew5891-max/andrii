@@ -1,28 +1,50 @@
-ios-device:
-    runs-on: macos-latest
+name: Build iOS .ipa
+
+on:
+  workflow_dispatch:     # запуск вручную
+  push:
+    branches: [ main ]   # или свои ветки
+
+jobs:
+  build-ios:
+    runs-on: macos-13
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Set up JDK
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "17"
+          distribution: 'liberica'
+          java-version: '17'
 
-      - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
+      - name: Set up Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.0.1.app # Или актуальная версия на github runners
+        
+      - name: Cache Gradle files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
-      - name: Build iOS
-        run: ./gradlew :composeApp:iosArm64Binaries
+      - name: Grant access to gradlew
+        run: chmod +x ./gradlew
 
-      - name: Upload EVERYTHING from bin
+      - name: Build apple framework for Xcode
+        run: ./gradlew :composeApp:syncFramework
+
+      # Выставь путь к твоему проекту-обёртке iosApp.xcworkspace/iosApp.xcodeproj!
+      - name: Build .ipa
+        run: |
+          cd iosApp
+          xcodebuild -workspace iosApp.xcworkspace -scheme iosApp -configuration Release -sdk iphoneos archive -archivePath ${{github.workspace}}/iosApp/build/ios.xcarchive
+          xcodebuild -exportArchive -archivePath ${{github.workspace}}/iosApp/build/ios.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath ${{github.workspace}}/iosApp/build/export
+
+      # Экспортируй .ipa как артефакт в GitHub Actions
+      - name: Upload .ipa artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-raw-binaries
-          # Берем вообще всё из папки bin, чтобы не промахнуться с путем
-          path: composeApp/build/bin/
-          if-no-files-found: error
+          name: iosApp-ipa
+          path: iosApp/build/export/*.ipa
