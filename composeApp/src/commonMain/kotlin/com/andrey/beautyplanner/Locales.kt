@@ -162,6 +162,7 @@ object Locales {
 
             // Currency
             "currency_eur" to "€",
+            "splash_for" to "для",
 
             // --------- Security / PIN ---------
             "security_section" to "Безопасность",
@@ -354,6 +355,7 @@ object Locales {
             "appt_status_canceled" to "Canceled",
 
             "currency_eur" to "€",
+            "splash_for" to "for",
 
             "security_section" to "Security",
             "pin_enabled" to "Require PIN",
@@ -538,6 +540,7 @@ object Locales {
             "cd_settings" to "Impostazioni",
 
             "currency_eur" to "€",
+            "splash_for" to "per",
 
             "security_section" to "Sicurezza",
             "pin_enabled" to "Richiedi PIN",
@@ -735,6 +738,7 @@ object Locales {
             "appt_status_canceled" to "Скасовано",
 
             "currency_eur" to "€",
+            "splash_for" to "для",
 
             "security_section" to "Безпека",
             "pin_enabled" to "Запитувати PIN",

@@ -4,10 +4,10 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import com.andrey.beautyplanner.Appointment
 import kotlinx.datetime.TimeZone
 
-// НЕ private — чтобы NotificationsPlatform.android.kt видел этот объект
 internal object NotificationsAndroidContext {
     var context: Context? = null
     fun init(appContext: Context) {
@@ -23,10 +23,7 @@ actual object Notifications {
 
     actual suspend fun requestPermissionIfNeeded(): Boolean = true
 
-    actual fun cancelAll() {
-        // MVP: без полного списка requestCode не можем "снести всё".
-        // Перетираем при rescheduleAll() через alarm.cancel(pi)
-    }
+    actual fun cancelAll() { }
 
     actual fun rescheduleAll(
         appointments: List<Appointment>,
@@ -56,9 +53,9 @@ actual object Notifications {
                 val requestCode = stableRequestCode(appt.id, mins)
 
                 val intent = Intent(context, ReminderReceiver::class.java).apply {
-                    putExtra(ReminderReceiver.EXTRA_TITLE, title)
-                    putExtra(ReminderReceiver.EXTRA_BODY, body)
-                    putExtra(ReminderReceiver.EXTRA_NOTIFICATION_ID, requestCode)
+                    putExtra("EXTRA_TITLE", title)
+                    putExtra("EXTRA_BODY", body)
+                    putExtra("EXTRA_NOTIFICATION_ID", requestCode)
                 }
 
                 val pi = PendingIntent.getBroadcast(
@@ -69,14 +66,24 @@ actual object Notifications {
                 )
 
                 alarm.cancel(pi)
-                alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+
+                // ИСПРАВЛЕНИЕ ЛОГИКИ: Безопасная установка времени
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarm.canScheduleExactAlarms()) {
+                        alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+                    } else {
+                        // Если прав нет или версия старая — используем обычный метод, чтобы не было вылета
+                        alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+                    }
+                } catch (e: SecurityException) {
+                    // Последний рубеж защиты от вылета
+                    alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+                }
             }
         }
     }
 
     private fun stableRequestCode(apptId: String, mins: Int): Int {
-        return (apptId.hashCode() * 31 + mins).absoluteValue()
+        return (apptId.hashCode() * 31 + mins).let { if (it < 0) -it else it }
     }
-
-    private fun Int.absoluteValue(): Int = if (this < 0) -this else this
 }
