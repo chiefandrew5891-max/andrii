@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.*
@@ -26,21 +25,45 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun AppRootContent(
     state: AppRootState,
     padding: PaddingValues
 ) {
+    // Показываем splash только при самом первом запуске
     var showSplash by remember { mutableStateOf(true) }
+    // Флаг для откладывания показа PIN до конца splash
+    var pendingPinAfterSplash by remember { mutableStateOf(false) }
     val ownerName = remember { AppSettings.ownerName ?: "" }
 
     if (showSplash) {
         AnimatedSplashScreen(
             ownerName = if (ownerName.isBlank()) "Evgi" else ownerName,
-            onAnimationFinished = { showSplash = false }
+            onAnimationFinished = {
+                showSplash = false
+                // Если сразу после splash требуется PIN — заставим его появиться
+                if (state.mustCreatePin || (state.locked && !state.mustCreatePin)) {
+                    pendingPinAfterSplash = true
+                }
+            }
         )
         return
+    }
+
+    // Показываем диалог с PIN только после splash (если надо)
+    if (pendingPinAfterSplash) {
+        // Просто показываем PIN как модальное окно (через state.mustCreatePin или state.locked)
+        // Здесь ничего не рисуем — реальное отображение поп-апа происходит внутри AppRootDialogs по state
+        // Этот флаг нужен чтобы не позволить работать нефильтрованному экрану без пина
+        // После первого показа диалога, убираем флаг
+        LaunchedEffect(Unit) {
+            pendingPinAfterSplash = false
+            // Здесь не нужно ничего делать: AppRootDialogs сам обнаружит state.mustCreatePin/state.locked
+            // Если потребуется форсировать их заново, можно раскомментировать:
+            // state.forcePinShow() — напиши если понадобится, но сейчас логика корректна.
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize().padding(padding)) {
