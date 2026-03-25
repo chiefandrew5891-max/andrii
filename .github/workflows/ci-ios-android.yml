@@ -1,13 +1,13 @@
-name: Build iOS .ipa
+name: Build iOS ipa
 
 on:
-  workflow_dispatch:     # запуск вручную
+  workflow_dispatch:      # можно запускать вручную с Actions в GitHub UI
   push:
-    branches: [ main ]   # или свои ветки
+    branches: [ main ]    # или другая ветка, по которой собирать
 
 jobs:
   build-ios:
-    runs-on: macos-13
+    runs-on: macos-13  # (!) важное: только Mac-экшен может собирать iOS
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -15,36 +15,57 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'liberica'
+          distribution: temurin
           java-version: '17'
 
-      - name: Set up Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.0.1.app # Или актуальная версия на github runners
-        
-      - name: Cache Gradle files
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
 
-      - name: Grant access to gradlew
-        run: chmod +x ./gradlew
-
-      - name: Build apple framework for Xcode
+      - name: Prepare project for Xcode
         run: ./gradlew :composeApp:syncFramework
 
-      # Выставь путь к твоему проекту-обёртке iosApp.xcworkspace/iosApp.xcodeproj!
-      - name: Build .ipa
+      # ===== КОДОПОДПИСЬ И ПОДГОТОВКА СБОРКИ =====
+
+      # Загрузи нужный .p12 сертификат и provisioning profile через GitHub secrets:
+      #   APPLE_CERTIFICATE (base64), APPLE_CERTIFICATE_PASSWORD, APPLE_PROVISION_PROFILE (base64)
+
+      - name: Decode and save Apple certificate
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+        run: |
+          echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
+
+      - name: Decode and save Provisioning Profile
+        env:
+          APPLE_PROVISION_PROFILE: ${{ secrets.APPLE_PROVISION_PROFILE }}
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$APPLE_PROVISION_PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+
+      - name: Import code-signing certificate
+        env:
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          security create-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -A
+          security list-keychains -d user -s build.keychain
+          security default-keychain -d user -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings build.keychain
+
+      # ===== Сборка Xcode -> .ipa =====
+
+      - name: Build iOS App (ipa)
         run: |
           cd iosApp
-          xcodebuild -workspace iosApp.xcworkspace -scheme iosApp -configuration Release -sdk iphoneos archive -archivePath ${{github.workspace}}/iosApp/build/ios.xcarchive
-          xcodebuild -exportArchive -archivePath ${{github.workspace}}/iosApp/build/ios.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath ${{github.workspace}}/iosApp/build/export
+          xcodebuild -workspace iosApp.xcworkspace -scheme iosApp -configuration Release -sdk iphoneos clean archive -archivePath ${{ github.workspace }}/iosApp/build/App.xcarchive
+          xcodebuild -exportArchive \
+            -archivePath ${{ github.workspace }}/iosApp/build/App.xcarchive \
+            -exportPath ${{ github.workspace }}/iosApp/build/export \
+            -exportOptionsPlist ExportOptions.plist
 
-      # Экспортируй .ipa как артефакт в GitHub Actions
-      - name: Upload .ipa artifact
+      - name: Upload ipa Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iosApp-ipa
+          name: iOS-ipa
           path: iosApp/build/export/*.ipa
