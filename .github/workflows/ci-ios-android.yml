@@ -1,39 +1,4 @@
-name: CI (Android + Real iOS Device)
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-
-jobs:
-  android:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Build Android debug
-        run: ./gradlew :composeApp:assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: composeApp/build/outputs/apk/debug/*.apk
-
-  ios-device:
+ios-device:
     runs-on: macos-latest
     steps:
       - name: Checkout
@@ -51,13 +16,13 @@ jobs:
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build iOS App Binary (Real Device)
-        # Собираем полноценный исполняемый файл вместо фреймворка
+      - name: Build iOS
         run: ./gradlew :composeApp:iosArm64Binaries
 
-      - name: Upload iOS App Bundle
+      - name: Upload EVERYTHING from bin
         uses: actions/upload-artifact@v4
         with:
-          name: ios-app-bundle
-          # Путь к исполняемому файлу и ресурсам
-          path: composeApp/build/bin/iosArm64/debugExe/
+          name: ios-raw-binaries
+          # Берем вообще всё из папки bin, чтобы не промахнуться с путем
+          path: composeApp/build/bin/
+          if-no-files-found: error
