@@ -9,6 +9,7 @@ plugins {
 }
 
 kotlin {
+    // Настройка для Android-части (нужна для теста)
     androidTarget {
         @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -16,6 +17,7 @@ kotlin {
         }
     }
 
+    // Настройка для iPhone (твоя основная цель)
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -33,9 +35,11 @@ kotlin {
                 implementation("org.jetbrains.compose.foundation:foundation:1.6.11")
                 implementation("org.jetbrains.compose.material:material:1.6.11")
                 implementation("org.jetbrains.compose.ui:ui:1.6.11")
-                implementation("org.jetbrains.compose.components:components-resources:1.6.11")
                 implementation("org.jetbrains.compose.components:components-ui-tooling-preview:1.6.11")
                 implementation("org.jetbrains.compose.material:material-icons-extended:1.6.11")
+
+                // ГЛАВНОЕ: Кроссплатформенные ресурсы для iOS и Android
+                implementation("org.jetbrains.compose.components:components-resources:1.6.11")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
@@ -45,39 +49,26 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.androidx.activity.compose)
-
-                // NotificationCompat lives in androidx.core
                 implementation("androidx.core:core-ktx:1.13.1")
-
-                // Preview tooling
                 implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.6.11")
             }
         }
+
+        // iosMain создается автоматически, если нужно добавить специфичные для iPhone штуки
     }
 }
 
+// ЭТОТ БЛОК НЕОБХОДИМ ДЛЯ ПРОВЕРКИ НА АНДРОИДЕ
 android {
     namespace = "com.andrey.beautyplanner"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.andrey.beautyplanner"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk = 24
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
     }
 
     compileOptions {
@@ -86,6 +77,9 @@ android {
     }
 }
 
-dependencies {
-    debugImplementation("org.jetbrains.compose.ui:ui-tooling:1.6.11")
+// ГЕНЕРАЦИЯ ОБЩИХ РЕСУРСОВ ДЛЯ ОБЕИХ ПЛАТФОРМ
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.andrey.beautyplanner.generated.resources"
+    generateResClass = always
 }
