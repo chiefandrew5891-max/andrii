@@ -1,28 +1,71 @@
-ios-device:
-    runs-on: macos-latest
+name: Build iOS ipa
+
+on:
+  workflow_dispatch:      # можно запускать вручную с Actions в GitHub UI
+  push:
+    branches: [ main ]    # или другая ветка, по которой собирать
+
+jobs:
+  build-ios:
+    runs-on: macos-13  # (!) важное: только Mac-экшен может собирать iOS
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Set up JDK
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
-      - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
 
-      - name: Build iOS
-        run: ./gradlew :composeApp:iosArm64Binaries
+      - name: Prepare project for Xcode
+        run: ./gradlew :composeApp:syncFramework
 
-      - name: Upload EVERYTHING from bin
+      # ===== КОДОПОДПИСЬ И ПОДГОТОВКА СБОРКИ =====
+
+      # Загрузи нужный .p12 сертификат и provisioning profile через GitHub secrets:
+      #   APPLE_CERTIFICATE (base64), APPLE_CERTIFICATE_PASSWORD, APPLE_PROVISION_PROFILE (base64)
+
+      - name: Decode and save Apple certificate
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+        run: |
+          echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
+
+      - name: Decode and save Provisioning Profile
+        env:
+          APPLE_PROVISION_PROFILE: ${{ secrets.APPLE_PROVISION_PROFILE }}
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$APPLE_PROVISION_PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+
+      - name: Import code-signing certificate
+        env:
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          security create-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -A
+          security list-keychains -d user -s build.keychain
+          security default-keychain -d user -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings build.keychain
+
+      # ===== Сборка Xcode -> .ipa =====
+
+      - name: Build iOS App (ipa)
+        run: |
+          cd iosApp
+          xcodebuild -workspace iosApp.xcworkspace -scheme iosApp -configuration Release -sdk iphoneos clean archive -archivePath ${{ github.workspace }}/iosApp/build/App.xcarchive
+          xcodebuild -exportArchive \
+            -archivePath ${{ github.workspace }}/iosApp/build/App.xcarchive \
+            -exportPath ${{ github.workspace }}/iosApp/build/export \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Upload ipa Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-raw-binaries
-          # Берем вообще всё из папки bin, чтобы не промахнуться с путем
-          path: composeApp/build/bin/
-          if-no-files-found: error
+          name: iOS-ipa
+          path: iosApp/build/export/*.ipa
