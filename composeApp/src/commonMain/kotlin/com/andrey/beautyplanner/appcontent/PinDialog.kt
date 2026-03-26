@@ -27,13 +27,14 @@ fun PinDialog(
     confirmText: String,
     onDismiss: () -> Unit,
     onConfirmPin: (String) -> Unit,
-    allowDismiss: Boolean = true
+    allowDismiss: Boolean = true // если false — крестик и "Отмена" скрываются
 ) {
+    // --- Блюр по всему фону под PIN-диалогом ---
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.25f))
-            .blur(radius = 24.dp),
+            .background(Color.Black.copy(alpha = 0.25f)) // чуть затемняем фон
+            .blur(radius = 24.dp), // блюр на весь экран (Compose Multiplatform)
         contentAlignment = Alignment.Center
     ) {
         var pin by remember { mutableStateOf("") }
@@ -53,7 +54,7 @@ fun PinDialog(
                             style = MaterialTheme.typography.h6,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(end = if (allowDismiss) 40.dp else 0.dp), // Скорректирован отступ
+                                .padding(end = if (allowDismiss) 44.dp else 0.dp),
                             color = MaterialTheme.colors.onSurface
                         )
 
@@ -62,9 +63,7 @@ fun PinDialog(
                                 onClick = safeDismiss,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
-                                    // Заменили отрицательный offset на положительный padding
-                                    // для предотвращения потенциальных ошибок верстки
-                                    .padding(top = 0.dp, end = 0.dp)
+                                    .offset(x = 14.dp, y = (-5).dp)
                                     .size(36.dp)
                             ) {
                                 Icon(
@@ -134,7 +133,8 @@ fun PinDialog(
                     ) { Text(confirmText) }
                 }
             },
-            shape = RoundedCornerShape(16.dp) // Использован стандартный Shape согласно правилам
+
+            shape = AppDialogShape
         )
     }
 }
