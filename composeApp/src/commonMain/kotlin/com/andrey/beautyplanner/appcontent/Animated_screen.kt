@@ -1,97 +1,146 @@
 package com.andrey.beautyplanner.appcontent
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun AnimatedSplashScreen(
     ownerName: String = "",
     onAnimationFinished: () -> Unit
 ) {
-    val contentAlpha = remember { Animatable(0f) }
-    val mainTitle = "Beauty Planner"
+    val isLight = MaterialTheme.colors.isLight
 
-    // Используем ключ из Locales для мультиязычности
-    val forPrefix = Locales.t("splash_for")
-    val subTitle = if (ownerName.isNotEmpty()) "$forPrefix $ownerName" else ""
+    // Анимации
+    val logoScale = remember { Animatable(0f) }
+    val logoAlpha = remember { Animatable(0f) }
+    val textScale = remember { Animatable(0f) }
+    val textAlpha = remember { Animatable(0f) }
 
-    var displayedTitle by remember { mutableStateOf("") }
-    var displayedForOwner by remember { mutableStateOf("") }
+    // Константы SVG (оставляем без изменений)
+    val logoPaths = remember {
+        val pathData = listOf(
+            "M7386 24708 c-47 -406 -26 -1308 50 -2108 121 -1271 420 -2546 879 -3745 209 -546 406 -976 712 -1555 83 -157 160 -305 173 -329 l22 -44 -34 23 c-100 70 -473 354 -597 457 -567 464 -1139 1042 -1588 1603 -789 988 -1394 2094 -1792 3276 -131 389 -256 852 -286 1054 -10 67 -16 83 -27 72 -11 -11 43 -345 107 -646 159 -756 416 -1592 684 -2223 820 -1936 2161 -3582 3894 -4778 119 -82 215 -150 214 -152 -1 -1 -86 13 -188 32 -2057 377 -4162 1624 -5448 3230 -360 448 -600 832 -860 1376 -51 107 -98 199 -103 204 -15 16 1 -42 33 -115 281 -661 520 -1114 854 -1620 806 -1221 1876 -2197 3227 -2944 307 -170 778 -395 1118 -536 253 -104 416 -160 795 -270 248 -72 524 -162 510 -166 -51 -15 -601 -131 -710 -149 -311 -53 -715 -85 -1065 -85 -1230 0 -2419 330 -3475 963 -446 267 -765 510 -1093 831 -272 267 -204 152 105 -177 1003 -1065 2352 -1796 3803 -2061 1083 -198 2085 -136 3120 193 52 17 95 29 96 28 4 -4 -423 -355 -521 -429 -652 -489 -1445 -875 -2235 -1087 -997 -266 -2118 -276 -3014 -27 -233 65 -193 40 82 -51 814 -268 1746 -378 2652 -312 1427 103 2606 631 3818 1707 88 78 190 174 225 212 62 67 87 84 87 58 0 -16 -197 -377 -283 -518 -753 -1236 -1812 -2120 -3043 -2540 -369 -126 -789 -212 -1219 -251 -273 -24 -270 -27 30 -24 493 5 889 48 1316 145 1349 306 2559 1120 3356 2258 121 173 193 292 330 545 150 276 201 357 227 357 17 0 18 -6 13 -82 -10 -168 -93 -509 -197 -818 -157 -468 -395 -962 -635 -1320 -466 -695 -1090 -1290 -1652 -1578 -78 -40 -145 -77 -148 -82 -21 -35 423 172 649 302 874 501 1590 1255 2040 2148 141 279 232 504 376 930 41 118 77 220 82 227 5 6 23 16 39 22 29 10 31 9 45 -25 18 -43 20 -421 4 -617 -49 -580 -180 -1087 -387 -1501 -70 -139 -142 -260 -204 -343 -43 -57 -45 -63 -26 -63 13 0 95 95 193 225 414 549 680 1248 749 1973 8 86 15 182 15 214 l0 59 -97 46 c-53 24 -133 58 -177 75 -45 16 -151 67 -236 113 -85 45 -245 131 -355 190 -761 409 -1101 651 -1398 994 -279 323 -674 852 -1002 1341 -950 1417 -1679 2989 -2130 4596 -209 745 -387 1643 -445 2244 -15 164 -40 749 -39 924 1 156 -5 208 -15 124z",
+            "M24602 24700 c0 -19 2 -27 5 -17 2 9 2 25 0 35 -3 9 -5 1 -5 -18z",
+            "M21465 24647 c-83 -55 -331 -126 -685 -197 -113 -22 -243 -52 -290 -66 -194 -59 -329 -159 -403 -302 -41 -78 -113 -288 -143 -416 -16 -68 -23 -82 -47 -95 -15 -9 -121 -74 -235 -145 -114 -71 -335 -206 -492 -301 -598 -361 -780 -478 -780 -503 0 -9 5 -56 11 -102 6 -47 14 -164 18 -259 l6 -175 70 60 c39 33 252 213 475 399 451 377 597 502 877 748 l191 169 23 92 c64 263 169 500 271 610 97 106 206 152 688 286 102 29 222 67 267 85 122 49 278 145 235 145 -4 0 -30 -15 -57 -33z",
+            "M24593 24407 c-3 -327 -39 -812 -89 -1207 -198 -1575 -824 -3447 -1686 -5040 -522 -963 -1178 -1925 -1783 -2613 -301 -343 -466 -476 -930 -750 -93 -55 -255 -151 -360 -212 -104 -62 -276 -156 -381 -209 -106 -53 -201 -104 -214 -114 -27 -22 -29 -13 96 -430 137 -453 216 -657 376 -962 497 -949 1294 -1738 2192 -2171 160 -77 458 -200 466 -192 3 3 -2 8 -10 11 -37 12 -294 151 -389 209 -708 436 -1305 1116 -1721 1958 -179 363 -326 765 -419 1145 -67 273 -82 364 -79 452 5 130 25 111 192 -189 168 -302 273 -466 454 -706 810 -1077 2025 -1881 3282 -2171 418 -96 752 -129 1335 -130 251 -1 345 2 360 11 16 10 -15 12 -165 13 -1496 3 -3053 854 -4085 2231 -219 293 -573 873 -660 1083 l-17 39 63 -54 c35 -30 129 -115 208 -189 242 -225 262 -243 367 -332 616 -519 1355 -930 2103 -1172 609 -196 1222 -289 1916 -290 452 0 768 26 1204 100 370 62 981 216 981 246 0 10 -8 10 -50 -2 -128 -38 -497 -99 -770 -127 -236 -24 -828 -24 -1070 0 -660 67 -1230 205 -1825 444 -589 235 -1275 644 -1730 1029 -145 123 -245 218 -220 209 11 -4 68 -25 128 -46 506 -182 1514 -300 2207 -260 1608 93 2983 686 4287 1848 125 111 615 600 657 656 16 21 26 41 22 45 -4 4 -56 -45 -116 -108 -516 -551 -1337 -1080 -2210 -1425 -897 -354 -1891 -514 -2815 -455 -281 19 -725 72 -950 116 -122 23 -455 107 -455 114 0 3 66 23 148 44 465 123 983 306 1442 511 2211 986 3898 2651 4779 4715 43 102 76 192 73 200 -4 8 -20 -15 -42 -60 -196 -406 -620 -1053 -976 -1487 -232 -282 -550 -618 -822 -866 -885 -809 -1971 -1439 -3249 -1885 -426 -149 -869 -275 -1148 -327 -151 -28 -209 -32 -203 -13 2 6 62 53 134 105 71 51 197 142 279 202 674 487 1370 1142 1930 1815 1065 1279 1803 2736 2225 4391 85 332 170 734 215 1005 8 52 18 105 20 118 4 14 1 22 -8 22 -8 0 -19 -31 -31 -87 -9 -49 -44 -191 -76 -318 -403 -1585 -1292 -3190 -2480 -4480 -314 -341 -897 -879 -1299 -1198 -126 -99 -349 -253 -356 -245 -3 2 114 243 258 535 418 843 582 1233 823 1958 499 1501 731 3009 711 4612 -5 377 -8 446 -22 472 -8 17 -17 31 -18 31 -1 0 -3 -78 -4 -173z",
+            "M17957 24010 c-7 -19 -30 -240 -57 -550 -11 -129 -27 -298 -36 -375 -23 -209 -130 -969 -160 -1135 -29 -164 -29 -272 0 -329 27 -52 91 -115 161 -161 68 -44 76 -58 49 -81 -74 -61 -323 152 -324 277 0 16 9 111 21 212 12 100 19 185 16 189 -9 9 -136 -77 -377 -255 -290 -215 -418 -316 -720 -567 -236 -197 -515 -426 -603 -495 -129 -100 -532 -458 -977 -866 -174 -159 -412 -377 -530 -485 -118 -108 -248 -229 -288 -269 l-74 -72 35 -37 c62 -65 141 -317 202 -646 34 -180 38 -323 13 -405 -19 -61 -91 -166 -136 -198 -71 -51 -226 -91 -356 -92 l-68 0 6 -42 c30 -224 32 -1370 2 -1683 -43 -454 -50 -631 -51 -1215 0 -589 4 -683 46 -1050 111 -985 408 -1840 911 -2625 50 -77 269 -406 489 -731 592 -879 877 -1328 1118 -1766 95 -173 331 -647 331 -665 0 -16 213 -107 381 -163 253 -86 524 -143 829 -177 212 -23 656 -23 874 1 422 45 830 142 1191 283 144 56 476 215 493 236 7 9 -29 40 -126 109 -586 416 -1219 1019 -2037 1938 -582 654 -601 677 -687 845 -130 255 -187 507 -188 820 0 312 34 467 224 1030 238 706 477 1270 926 2185 131 267 252 523 268 570 44 126 58 224 43 312 -20 124 -48 182 -221 478 -54 91 -134 230 -180 310 -45 80 -109 185 -141 233 l-59 88 0 107 c0 254 38 600 119 1093 33 200 65 418 72 484 13 131 8 424 -12 710 -14 195 -16 1342 -2 1715 4 129 7 270 5 312 l-4 78 -56 -44 c-98 -74 -162 -97 -216 -76 l-29 11 27 27 c14 16 81 60 147 98 l121 69 -6 250 c-20 790 -111 1392 -291 1930 -63 189 -100 277 -108 255z m-497 -2786 c-47 -48 -217 -180 -360 -279 -47 -33 -272 -199 -500 -370 -823 -615 -1109 -825 -1365 -1000 -257 -176 -479 -336 -490 -355 -7 -12 -45 -14 -45 -2 0 4 309 234 687 512 378 278 874 645 1102 815 229 171 481 358 561 416 154 112 440 309 449 309 3 0 -15 -21 -39 -46z m-35 -636 c-3 -24 -26 -243 -50 -488 -66 -644 -112 -1058 -135 -1200 -29 -178 -74 -375 -220 -960 -70 -283 -144 -591 -164 -685 -42 -199 -72 -297 -155 -497 -236 -571 -476 -970 -751 -1249 -112 -113 -163 -145 -275 -174 -175 -45 -415 17 -556 144 -101 90 -196 262 -239 431 -43 171 -51 422 -25 790 17 243 19 461 4 620 -33 367 -108 661 -233 915 -81 164 -164 281 -278 391 -49 47 -86 90 -81 94 19 17 204 150 278 200 97 66 255 147 301 156 19 3 46 3 60 0 25 -7 25 -8 10 -31 -15 -23 -15 -25 17 -48 44 -33 134 -84 392 -222 472 -252 625 -342 677 -398 100 -108 247 -374 408 -736 166 -375 272 -591 291 -591 22 0 234 859 444 1798 l124 554 -68 91 c-37 51 -137 193 -221 317 -159 234 -220 319 -231 320 -6 0 -52 -27 -252 -150 -37 -23 -78 -45 -90 -48 -12 -3 -53 -26 -92 -52 -38 -25 -109 -70 -158 -99 l-87 -53 21 -26 c11 -15 103 -115 203 -222 224 -239 399 -440 382 -440 -17 0 -348 173 -536 280 -118 68 -255 145 -303 172 l-88 48 -42 -28 c-23 -16 -141 -87 -262 -157 -121 -70 -249 -148 -285 -173 -55 -38 -74 -46 -123 -50 -57 -4 -59 -4 -55 18 3 25 27 41 283 194 143 85 413 236 422 236 3 0 35 22 72 48 88 65 131 91 365 222 110 62 214 122 230 135 50 37 245 155 305 184 31 15 108 61 171 103 271 176 571 358 593 358 5 0 6 -19 2 -42z m868 -4188 c19 -58 56 -170 82 -250 102 -319 89 -533 -49 -808 -44 -88 -161 -269 -211 -327 l-26 -30 14 35 c8 19 62 134 120 255 127 265 157 355 164 485 6 103 17 52 -147 672 -20 76 -25 109 -17 117 13 13 18 2 70 -149z",
+            "M21408 23905 c-192 -38 -333 -168 -571 -525 -304 -455 -320 -469 -799 -694 -64 -30 -193 -95 -285 -144 -92 -50 -310 -158 -484 -241 -362 -171 -603 -291 -737 -364 l-92 -51 1 -220 c1 -122 -2 -248 -6 -280 l-8 -59 34 20 c19 11 57 33 84 49 287 161 1374 871 1798 1173 368 262 395 293 617 696 114 205 190 316 279 405 87 86 164 131 278 162 72 20 107 21 493 25 228 2 434 6 458 9 100 13 24 19 -235 20 -183 0 -333 6 -438 17 -188 20 -294 20 -387 2z",
+            "M27090 23396 c0 -14 5 -28 10 -31 6 -4 10 7 10 24 0 17 -4 31 -10 31 -5 0 -10 -11 -10 -24z",
+            "M14530 22458 c0 -7 70 -96 156 -198 294 -347 508 -625 611 -795 37 -61 65 -97 78 -99 11 -2 46 -9 79 -15 89 -16 188 -71 352 -194 180 -136 249 -179 289 -181 25 -1 30 3 33 24 3 30 -76 132 -289 371 -405 455 -767 767 -1188 1028 -117 72 -121 74 -121 59z",
+            "M15215 21251 c-69 -31 -122 -108 -131 -189 -11 -92 70 -345 146 -458 47 -70 116 -150 149 -174 l29 -20 195 151 c108 83 226 177 262 209 37 33 76 62 86 65 20 7 36 43 22 54 -26 23 -276 213 -318 242 -81 57 -137 87 -218 114 -90 30 -166 32 -222 6z",
+            "M12845 20411 c3 -5 20 -12 38 -16 52 -11 555 -231 777 -341 281 -138 388 -200 437 -250 l42 -43 -2 42 c-2 39 1 43 46 74 69 46 146 72 258 85 l99 12 -80 43 c-88 49 -107 56 -395 149 -394 128 -735 211 -973 239 -144 17 -256 20 -247 6z",
+            "M13500 20030 c27 -97 86 -550 115 -885 18 -218 40 -406 65 -580 28 -187 49 -423 57 -627 l6 -178 51 0 c28 1 99 7 157 13 98 12 110 16 158 51 64 47 94 86 115 152 14 44 15 69 6 190 -15 197 -34 313 -85 519 -64 262 -147 469 -328 825 -74 146 -265 475 -307 530 l-20 25 10 -35z",
+            "M14380 19884 c-64 -17 -130 -58 -184 -113 -39 -40 -39 -40 -33 -102 8 -73 50 -172 85 -200 36 -28 84 -24 124 9 18 15 35 31 37 35 8 19 212 192 299 254 l95 67 -99 33 c-82 28 -112 33 -184 32 -47 0 -110 -7 -140 -15z",
+            "M13375 18810 c-165 -33 -294 -135 -311 -245 -16 -107 48 -215 154 -261 99 -43 232 -68 292 -55 l35 8 -37 15 c-90 39 -81 150 27 317 18 29 24 54 27 124 4 86 4 89 -19 98 -29 11 -112 10 -168 -1z",
+            "M18975 14174 c-33 -14 -99 -44 -147 -66 l-87 -41 5 -116 c12 -295 34 -484 85 -733 109 -540 335 -1029 700 -1513 119 -158 199 -241 158 -162 -7 12 -65 105 -129 207 -131 207 -180 298 -204 383 -9 32 -46 132 -81 223 -88 226 -145 466 -199 844 -49 340 -60 642 -31 805 19 102 20 195 3 194 -7 0 -40 -12 -73 -25z"
+        )
+        pathData.map { PathParser().parsePathString(it).toPath() }
+    }
 
     LaunchedEffect(Unit) {
-        contentAlpha.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 1000)
-        )
+        // Запускаем анимации
+        launch { logoScale.animateTo(1.0f, tween(1200, easing = FastOutSlowInEasing)) }
+        launch { logoAlpha.animateTo(1.0f, tween(1200)) }
 
-        // Эффект печати заголовка
-        mainTitle.forEachIndexed { index, _ ->
-            displayedTitle = mainTitle.substring(0, index + 1)
-            delay(60)
-        }
+        delay(800)
 
-        if (subTitle.isNotEmpty()) {
-            delay(300)
-            subTitle.forEachIndexed { index, _ ->
-                displayedForOwner = subTitle.substring(0, index + 1)
-                delay(50)
-            }
-        }
+        launch { textScale.animateTo(1.0f, tween(1000, easing = FastOutSlowInEasing)) }
+        launch { textAlpha.animateTo(1.0f, tween(1000)) }
 
-        delay(1500)
+        delay(2500)
         onAnimationFinished()
     }
 
-    Box(
+    // ТЕМА: Цвет фона и логотипа
+    val backgroundColor = MaterialTheme.colors.background
+    val logoColor = if (isLight) Color.Black else Color(0xFF4DA8FF)
+
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .alpha(contentAlpha.value)
-                .padding(horizontal = 24.dp)
-        ) {
-            Text(
-                text = displayedTitle,
-                fontSize = 34.sp,
-                // Используем Serif + Italic для эффекта "курсива от руки"
-                fontFamily = FontFamily.Serif,
-                fontStyle = FontStyle.Italic,
-                fontWeight = FontWeight.Normal, // Единый вес шрифта
-                color = Color(0xFF212121),
-                modifier = Modifier.height(45.dp)
-            )
+        val screenWidthDp = maxWidth
 
-            if (displayedForOwner.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Логотип (80% ширины)
+            val logoDisplaySize = screenWidthDp * 0.8f
+
+            Box(
+                modifier = Modifier
+                    .size(logoDisplaySize)
+                    .alpha(logoAlpha.value)
+                    .scale(logoScale.value),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val scaleFactor = size.width / 32000f
+                    withTransform({
+                        scale(scaleFactor, scaleFactor, pivot = Offset(0f, 0f))
+                        scale(1f, -1f, pivot = Offset(0f, 16000f))
+                    }) {
+                        logoPaths.forEach { path ->
+                            drawPath(path = path, color = logoColor)
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(40.dp))
+
+            // Текст
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .alpha(textAlpha.value)
+                    .scale(textScale.value)
+            ) {
                 Text(
-                    text = displayedForOwner,
-                    fontSize = 22.sp,
-                    fontFamily = FontFamily.Serif,
-                    fontStyle = FontStyle.Italic,
-                    fontWeight = FontWeight.Normal, // Такой же вес, как у заголовка
-                    color = Color(0xFF212121), // Такой же цвет
-                    modifier = Modifier.height(30.dp)
+                    text = "Beauty Planner",
+                    fontSize = (32 * AppSettings.getFontScale()).sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colors.onBackground
                 )
+
+                if (ownerName.isNotBlank()) {
+                    Spacer(Modifier.height(8.dp))
+                    val subtitle = try {
+                        Locales.t("splash_for") + " " + ownerName
+                    } catch (e: Exception) {
+                        "for $ownerName"
+                    }
+                    Text(
+                        text = subtitle,
+                        fontSize = (22 * AppSettings.getFontScale()).sp,
+                        color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f)
+                    )
+                }
             }
         }
     }
