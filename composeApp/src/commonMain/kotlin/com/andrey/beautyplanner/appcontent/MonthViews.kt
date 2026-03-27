@@ -152,17 +152,23 @@ fun UpcomingAppointmentCard(
 
                     append("  ")
 
+                    val translatedService = if (appt.serviceName.startsWith("service_"))
+                        Locales.t(appt.serviceName)
+                    else
+                        appt.serviceName
+
                     withStyle(
                         SpanStyle(
                             fontWeight = FontWeight.Normal,
                             fontSize = (13 * fontScale).sp,
                             color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                         )
-                    ) { append("${appt.serviceName} (${appt.durationHours} ч.)") }
+                    ) { append("$translatedService (${appt.durationHours} ч.)") }
                 },
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+
         }
     }
 }

@@ -30,6 +30,7 @@ kotlin {
 
     sourceSets {
         val commonMain by getting {
+            resources.srcDirs("src/commonMain/composeResources")
             dependencies {
                 implementation("org.jetbrains.compose.runtime:runtime:1.6.11")
                 implementation("org.jetbrains.compose.foundation:foundation:1.6.11")
