@@ -1,8 +1,10 @@
 package com.andrey.beautyplanner.appcontent
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,8 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,23 +26,11 @@ import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Appointment
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.getCurrentTimeHm
-import com.andrey.beautyplanner.appcontent.AppDialogShape
-import com.andrey.beautyplanner.appcontent.AppDialogTheme
-import com.andrey.beautyplanner.utils.getLiveStatus
 import com.andrey.beautyplanner.utils.LiveStatusKey
+import com.andrey.beautyplanner.utils.getLiveStatus
 import com.andrey.beautyplanner.utils.parseHmToMinutes
 import kotlinx.coroutines.delay
 import kotlinx.datetime.*
-
-private fun parseHmToMinutesCompat(hm: String): Int? {
-    val parts = hm.trim().split(":")
-    if (parts.size != 2) return null
-    val h = parts[0].toIntOrNull() ?: return null
-    val m = parts[1].toIntOrNull() ?: return null
-    if (h !in 0..23) return null
-    if (m !in 0..59) return null
-    return h * 60 + m
-}
 
 private fun minutesToHm(mins: Int): String {
     val safe = mins.coerceIn(0, 24 * 60 - 1)
@@ -54,6 +42,10 @@ private fun minutesToHm(mins: Int): String {
 private fun nextHourBoundary(mins: Int): Int {
     val mod = mins % 60
     return if (mod == 0) mins + 60 else mins + (60 - mod)
+}
+
+private fun apptDurationMinutesCompat(appt: Appointment): Int {
+    return if (appt.durationMinutes > 0) appt.durationMinutes else appt.durationHours.coerceAtLeast(1) * 60
 }
 
 private data class Block(
@@ -72,10 +64,12 @@ private fun AppointmentViewDialog(
     endHm: String,
     serviceDisplay: String,
     status: LiveStatusKey,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onEditClick: () -> Unit,
+    onTransferClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     val fontScale = AppSettings.getFontScale()
-
     val priceText = appt.price.trim().let { p ->
         if (p.isBlank()) "" else "$p €"
     }
@@ -85,7 +79,7 @@ private fun AppointmentViewDialog(
             onDismissRequest = onDismiss,
             title = {
                 Text(
-                    text = appt.clientName,
+                    text = Locales.t("view_appointment_title"),
                     fontWeight = FontWeight.Bold,
                     fontSize = (18 * fontScale).sp,
                     color = MaterialTheme.colors.onSurface
@@ -94,15 +88,27 @@ private fun AppointmentViewDialog(
             text = {
                 Column(Modifier.fillMaxWidth()) {
                     Text(
+                        text = appt.clientName,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = (18 * fontScale).sp,
+                        color = MaterialTheme.colors.onSurface
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Text(
                         text = "$startHm–$endHm",
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                     )
+
                     Spacer(Modifier.height(10.dp))
+
                     Text(
                         text = "${Locales.t("service")}: $serviceDisplay",
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                     )
+
                     if (priceText.isNotBlank()) {
                         Spacer(Modifier.height(8.dp))
                         Text(
@@ -110,15 +116,50 @@ private fun AppointmentViewDialog(
                             color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                         )
                     }
-                    Spacer(Modifier.height(10.dp))
+
+                    Spacer(Modifier.height(8.dp))
+
                     Text(
                         text = "${Locales.t("appt_status_label")}: ${Locales.t(status.localeKey)}",
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.70f),
                         fontSize = (13 * fontScale).sp
                     )
+
+                    Spacer(Modifier.height(18.dp))
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = onEditClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Text(Locales.t("edit"))
+                        }
+
+                        OutlinedButton(
+                            onClick = onTransferClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Text(Locales.t("transfer_appt"))
+                        }
+
+                        OutlinedButton(
+                            onClick = onDeleteClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                        ) {
+                            Text(Locales.t("delete_btn"), color = Color.Red)
+                        }
+                    }
                 }
             },
-            confirmButton = {
+            confirmButton = {},
+            dismissButton = {
                 TextButton(onClick = onDismiss) {
                     Text(Locales.t("close"))
                 }
@@ -128,6 +169,7 @@ private fun AppointmentViewDialog(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DayDetailsView(
     date: LocalDate,
@@ -135,6 +177,7 @@ fun DayDetailsView(
     onDateChange: (LocalDate) -> Unit,
     onTimeClick: (String) -> Unit,
     onEditClick: (Appointment) -> Unit,
+    onTransferClick: (Appointment) -> Unit,
     onDeleteClick: (Appointment) -> Unit
 ) {
     val fontScale = AppSettings.getFontScale()
@@ -150,11 +193,22 @@ fun DayDetailsView(
     }
     val nowMin = remember(nowTimeHm) { parseHmToMinutes(nowTimeHm) ?: 0 }
 
-    val monthNames = listOf(
-        "января", "февраля", "марта", "апреля", "мая", "июня",
-        "июля", "августа", "сентября", "октября", "ноября", "декабря"
-    )
-    val formattedDate = "${date.dayOfMonth} ${monthNames[date.monthNumber - 1]} ${date.year}"
+    val monthKeyGen = when (date.monthNumber) {
+        1 -> "month_jan_gen"
+        2 -> "month_feb_gen"
+        3 -> "month_mar_gen"
+        4 -> "month_apr_gen"
+        5 -> "month_may_gen"
+        6 -> "month_jun_gen"
+        7 -> "month_jul_gen"
+        8 -> "month_aug_gen"
+        9 -> "month_sep_gen"
+        10 -> "month_oct_gen"
+        11 -> "month_nov_gen"
+        12 -> "month_dec_gen"
+        else -> "month_jan_gen"
+    }
+    val formattedDate = "${date.dayOfMonth} ${Locales.t(monthKeyGen)} ${date.year}"
 
     val dayStart = 8 * 60
     val dayEnd = 21 * 60
@@ -166,7 +220,7 @@ fun DayDetailsView(
             .filter { it.dateString == date.toString() }
             .mapNotNull { a ->
                 val s = parseHmToMinutes(a.time) ?: return@mapNotNull null
-                val d = if (a.durationMinutes > 0) a.durationMinutes else a.durationHours.coerceAtLeast(1) * 60
+                val d = apptDurationMinutesCompat(a)
                 val e = s + d
                 Triple(a, s, e)
             }
@@ -209,20 +263,13 @@ fun DayDetailsView(
         out
     }
 
-    val timeColWidth = 60.dp
-    val timeFont = (16 * fontScale).sp
-    val timeFontWeight = FontWeight.Bold
-
-    val busyTimeColor = MaterialTheme.colors.primary
-    val freeTimeColor = MaterialTheme.colors.onSurface.copy(alpha = 0.55f)
-    val pastTimeColor = MaterialTheme.colors.onSurface.copy(alpha = 0.80f)
-
-    // Dialog view state
     var viewingAppt by remember { mutableStateOf<Appointment?>(null) }
     var viewingStartHm by remember { mutableStateOf("") }
     var viewingEndHm by remember { mutableStateOf("") }
     var viewingService by remember { mutableStateOf("") }
     var viewingStatus by remember { mutableStateOf<LiveStatusKey?>(null) }
+
+    var quickMenuAppt by remember { mutableStateOf<Appointment?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -252,184 +299,159 @@ fun DayDetailsView(
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
             items(blocks.size) { idx ->
-                val b = blocks[idx]
+                val block = blocks[idx]
                 val interactionSource = remember { MutableInteractionSource() }
+                val startHm = minutesToHm(block.startMin)
+                val endHm = minutesToHm(block.endMin)
 
-                val startHm = minutesToHm(b.startMin)
-                val endHm = minutesToHm(b.endMin)
-
-                if (b.kind == Block.Kind.APPOINTMENT && b.appt != null) {
-                    val appt = b.appt
-
+                if (block.kind == Block.Kind.APPOINTMENT && block.appt != null) {
+                    val appt = block.appt
                     val serviceDisplay =
                         if (appt.serviceName.startsWith("service_")) Locales.t(appt.serviceName)
                         else appt.serviceName
 
-                    val durationMin =
-                        if (appt.durationMinutes > 0) appt.durationMinutes else appt.durationHours.coerceAtLeast(1) * 60
-                    val apptStartMin = parseHmToMinutes(appt.time) ?: b.startMin
-                    val apptEndMin = apptStartMin + durationMin
+                    val apptStartMin = parseHmToMinutes(appt.time) ?: block.startMin
+                    val apptEndMin = apptStartMin + apptDurationMinutesCompat(appt)
 
-                    val cardBg = when {
-                        date < today -> if (AppSettings.isDarkMode) Color(0xFF1F2A36) else Color(0xFFECECEC)
-                        date > today -> if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
-                        else -> if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
-                    }
-
-                    // вычисляем актуальный статус прямо тут!
                     val liveStatus = getLiveStatus(
                         appt = appt,
                         nowDate = today,
-                        nowMinutes = nowMin,
-                        // isCanceled = appt.isCanceled // если добавишь это поле
+                        nowMinutes = nowMin
                     )
 
+                    val dateParts = appt.dateString.split("-")
+                    val formattedCardDate =
+                        if (dateParts.size == 3) "${dateParts[2]}.${dateParts[1]}.${dateParts[0]}"
+                        else appt.dateString
+
                     Card(
-                        elevation = 0.dp,
-                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .height(92.dp)
-                            .clickable(
+                            .padding(vertical = 8.dp)
+                            .combinedClickable(
                                 interactionSource = interactionSource,
-                                indication = LocalIndication.current
-                            ) {
-                                viewingAppt = appt
-                                viewingStartHm = startHm
-                                viewingEndHm = endHm
-                                viewingService = serviceDisplay
-                                viewingStatus = liveStatus
-                            },
-                        backgroundColor = cardBg
+                                indication = LocalIndication.current,
+                                onClick = {
+                                    viewingAppt = appt
+                                    viewingStartHm = startHm
+                                    viewingEndHm = endHm
+                                    viewingService = serviceDisplay
+                                    viewingStatus = liveStatus
+                                },
+                                onLongClick = {
+                                    quickMenuAppt = appt
+                                }
+                            ),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = 4.dp,
+                        backgroundColor = MaterialTheme.colors.surface
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.width(timeColWidth),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                        Column(Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                val timeColor = if (date < today || apptEndMin <= nowMin) pastTimeColor else busyTimeColor
+                                val timeColor =
+                                    if (date < today || apptEndMin <= nowMin) {
+                                        MaterialTheme.colors.onSurface.copy(alpha = 0.65f)
+                                    } else {
+                                        MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
+                                    }
 
                                 Text(
-                                    text = startHm,
-                                    fontSize = timeFont,
-                                    fontWeight = timeFontWeight,
-                                    color = timeColor
-                                )
-                                Divider(
-                                    modifier = Modifier
-                                        .padding(vertical = 4.dp)
-                                        .width(30.dp),
-                                    thickness = 1.dp,
-                                    color = timeColor.copy(alpha = 0.35f)
-                                )
-                                Text(
-                                    text = endHm,
-                                    fontSize = timeFont,
-                                    fontWeight = timeFontWeight,
-                                    color = timeColor
-                                )
-                            }
-
-                            Column(
-                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
-                            ) {
-                                Text(
-                                    text = appt.clientName,
-                                    fontSize = (15 * fontScale).sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = MaterialTheme.colors.onSurface.copy(alpha = 1f)
-                                )
-                                Text(
-                                    text = serviceDisplay,
+                                    text = "$formattedCardDate  $startHm–$endHm",
                                     fontSize = (13 * fontScale).sp,
-                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.60f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    fontWeight = FontWeight.Medium,
+                                    color = timeColor
                                 )
-                            }
 
-                            val priceText = appt.price.trim().let { p ->
-                                if (p.isBlank()) "" else "$p €"
-                            }
-
-                            if (priceText.isNotBlank()) {
                                 Text(
-                                    text = priceText,
-                                    fontSize = (14 * fontScale).sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colors.onSurface.copy(alpha = 1f),
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    text = "${appt.price}€",
+                                    fontSize = (13 * fontScale).sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                                 )
                             }
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = appt.clientName,
+                                        fontSize = (15 * fontScale).sp,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = MaterialTheme.colors.onSurface
+                                    )
+
+                                    Spacer(Modifier.height(2.dp))
+
+                                    Text(
+                                        text = serviceDisplay,
+                                        fontSize = (13 * fontScale).sp,
+                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+
                                 if (liveStatus == LiveStatusKey.DONE) {
+                                    Spacer(Modifier.width(10.dp))
                                     Icon(
                                         imageVector = Icons.Default.CheckCircle,
                                         contentDescription = null,
                                         tint = MaterialTheme.colors.primary.copy(alpha = 0.75f),
                                         modifier = Modifier.size(22.dp)
                                     )
-                                } else {
-                                    IconButton(onClick = { onEditClick(appt) }) {
-                                        Icon(Icons.Default.Edit, null, tint = MaterialTheme.colors.primary, modifier = Modifier.size(22.dp))
-                                    }
-                                }
-
-                                IconButton(onClick = { onDeleteClick(appt) }) {
-                                    Icon(Icons.Default.Close, null, tint = Color.Red, modifier = Modifier.size(22.dp))
                                 }
                             }
                         }
                     }
                 } else {
-                    // FREE SLOT
                     Card(
-                        elevation = 0.dp,
-                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .height(78.dp)
-                            .clickable(
+                            .padding(vertical = 8.dp)
+                            .combinedClickable(
                                 interactionSource = interactionSource,
                                 indication = LocalIndication.current,
                                 onClick = { onTimeClick(startHm) }
                             ),
-                        backgroundColor = Color.Transparent,
-                        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = 0.dp,
+                        backgroundColor = MaterialTheme.colors.surface.copy(alpha = if (AppSettings.isDarkMode) 0.22f else 0.45f),
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colors.onSurface.copy(alpha = if (AppSettings.isDarkMode) 0.18f else 0.10f)
+                        )
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier.width(timeColWidth),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = startHm,
-                                    fontSize = timeFont,
-                                    fontWeight = timeFontWeight,
-                                    color = freeTimeColor
-                                )
-                            }
+                        Column(Modifier.padding(14.dp)) {
+                            Text(
+                                text = "$startHm–$endHm",
+                                fontSize = (13 * fontScale).sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.65f)
+                            )
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
                             Text(
                                 text = Locales.t("free"),
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.35f),
-                                fontSize = (14 * fontScale).sp
+                                fontSize = (15 * fontScale).sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.45f)
                             )
                         }
                     }
@@ -447,7 +469,80 @@ fun DayDetailsView(
             endHm = viewingEndHm,
             serviceDisplay = viewingService,
             status = liveStatusToView,
-            onDismiss = { viewingAppt = null; viewingStatus = null }
+            onDismiss = {
+                viewingAppt = null
+                viewingStatus = null
+            },
+            onEditClick = {
+                viewingAppt = null
+                viewingStatus = null
+                onEditClick(apptToView)
+            },
+            onTransferClick = {
+                viewingAppt = null
+                viewingStatus = null
+                onTransferClick(apptToView)
+            },
+            onDeleteClick = {
+                viewingAppt = null
+                viewingStatus = null
+                onDeleteClick(apptToView)
+            }
+        )
+    }
+
+    val quickAppt = quickMenuAppt
+    if (quickAppt != null) {
+        AlertDialog(
+            onDismissRequest = { quickMenuAppt = null },
+            title = { Text(Locales.t("quick_actions_title")) },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            quickMenuAppt = null
+                            onEditClick(quickAppt)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Text(Locales.t("edit"))
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            quickMenuAppt = null
+                            onTransferClick(quickAppt)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Text(Locales.t("transfer_appt"))
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            quickMenuAppt = null
+                            onDeleteClick(quickAppt)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    ) {
+                        Text(Locales.t("delete_btn"), color = Color.Red)
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { quickMenuAppt = null }) {
+                    Text(Locales.t("cancel"))
+                }
+            },
+            shape = AppDialogShape
         )
     }
 }

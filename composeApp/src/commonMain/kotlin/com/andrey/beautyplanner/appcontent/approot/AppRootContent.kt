@@ -14,27 +14,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.*
 import com.andrey.beautyplanner.appcontent.*
-import com.andrey.beautyplanner.appcontent.AnimatedSplashScreen
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
-import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun AppRootContent(
     state: AppRootState,
     padding: PaddingValues
 ) {
-    // Показываем splash только при самом первом запуске
     var showSplash by remember { mutableStateOf(true) }
-    // Флаг для откладывания показа PIN до конца splash
     var pendingPinAfterSplash by remember { mutableStateOf(false) }
     val ownerName = remember { AppSettings.ownerName ?: "" }
 
@@ -43,7 +40,6 @@ fun AppRootContent(
             ownerName = if (ownerName.isBlank()) "Evgi" else ownerName,
             onAnimationFinished = {
                 showSplash = false
-                // Если сразу после splash требуется PIN — заставим его появиться
                 if (state.mustCreatePin || (state.locked && !state.mustCreatePin)) {
                     pendingPinAfterSplash = true
                 }
@@ -52,17 +48,9 @@ fun AppRootContent(
         return
     }
 
-    // Показываем диалог с PIN только после splash (если надо)
     if (pendingPinAfterSplash) {
-        // Просто показываем PIN как модальное окно (через state.mustCreatePin или state.locked)
-        // Здесь ничего не рисуем — реальное отображение поп-апа происходит внутри AppRootDialogs по state
-        // Этот флаг нужен чтобы не позволить работать нефильтрованному экрану без пина
-        // После первого показа диалога, убираем флаг
         LaunchedEffect(Unit) {
             pendingPinAfterSplash = false
-            // Здесь не нужно ничего делать: AppRootDialogs сам обнаружит state.mustCreatePin/state.locked
-            // Если потребуется форсировать их заново, можно раскомментировать:
-            // state.forcePinShow() — напиши если понадобится, но сейчас логика корректна.
         }
     }
 
@@ -142,7 +130,7 @@ fun AppRootContent(
 
                 val listState = rememberLazyListState()
 
-                val upcoming by remember(nowTimeHm, state.today) {
+                val upcoming by remember(nowTimeHm, state.today, state.appointments.size) {
                     derivedStateOf {
                         getUpcomingAppointments(
                             appointments = state.appointments,
@@ -198,6 +186,8 @@ fun AppRootContent(
                         }
                     }
                 }
+
+                var viewingApptMain by remember { mutableStateOf<Appointment?>(null) }
 
                 Column(Modifier.fillMaxSize()) {
                     Row(
@@ -296,13 +286,52 @@ fun AppRootContent(
                         } else {
                             items(upcoming.size) { idx ->
                                 val appt = upcoming[idx]
-                                UpcomingAppointmentCard(appt = appt) {
-                                    state.editingAppointment = appt
-                                    state.bookingReadOnly = true
-                                    state.showBookingDialog = true
-                                }
+                                UpcomingAppointmentCard(
+                                    appt = appt,
+                                    showDate = true, // На главной дату показываем
+                                    onClick = {
+                                        // ВАЖНО: Вместо формы открываем превью
+                                        viewingApptMain = appt
+                                    },
+                                    onEditClick = {
+                                        state.editingAppointment = appt
+                                        state.bookingReadOnly = false
+                                        state.showBookingDialog = true
+                                    },
+                                    onTransferClick = {
+                                        state.transferA = appt
+                                        state.showTransferPickDialog = true
+                                        state.bookingReadOnly = false
+                                    },
+                                    onDeleteClick = {
+                                        state.showDeleteConfirm = appt
+                                    }
+                                )
                             }
                         }
+                    }
+                    // Вызов общего диалога на главной
+                    viewingApptMain?.let { appt ->
+                        AppointmentViewDialog(
+                            appt = appt,
+                            onDismiss = { viewingApptMain = null },
+                            onEditClick = {
+                                viewingApptMain = null
+                                state.editingAppointment = appt
+                                state.bookingReadOnly = false
+                                state.showBookingDialog = true
+                            },
+                            onTransferClick = {
+                                viewingApptMain = null
+                                state.transferA = appt
+                                state.showTransferPickDialog = true
+                                state.bookingReadOnly = false
+                            },
+                            onDeleteClick = {
+                                viewingApptMain = null
+                                state.showDeleteConfirm = appt
+                            }
+                        )
                     }
                 }
             }
@@ -322,7 +351,14 @@ fun AppRootContent(
                     state.bookingReadOnly = false
                     state.showBookingDialog = true
                 },
-                onDeleteClick = { appt -> state.showDeleteConfirm = appt }
+                onTransferClick = { appt ->
+                    state.transferA = appt
+                    state.showTransferPickDialog = true
+                    state.bookingReadOnly = false
+                },
+                onDeleteClick = { appt ->
+                    state.showDeleteConfirm = appt
+                }
             )
         }
 
@@ -356,7 +392,11 @@ fun AppRootContent(
                         durationHours = ((durationMinutes + 59) / 60).coerceAtLeast(1)
                     )
 
-                    state.transferA?.let { state.appointments.remove(it); state.transferA = null }
+                    state.transferA?.let {
+                        state.appointments.remove(it)
+                        state.transferA = null
+                    }
+
                     state.replaceById(newAppt)
                     state.saveAll()
 

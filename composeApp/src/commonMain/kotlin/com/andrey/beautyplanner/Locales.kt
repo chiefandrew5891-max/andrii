@@ -47,6 +47,8 @@ object Locales {
 
             "upcoming_appointments_list" to "Предстоящие записи:",
             "no_upcoming_appointments" to "Нет предстоящих записей",
+            "view_appointment_title" to "Просмотр записи",
+            "quick_actions_title" to "Быстрые действия",
 
             "language_label" to "Язык",
             "theme_label" to "Тема",
@@ -245,6 +247,8 @@ object Locales {
 
             "upcoming_appointments_list" to "Upcoming appointments:",
             "no_upcoming_appointments" to "No upcoming appointments",
+            "view_appointment_title" to "Appointment details",
+            "quick_actions_title" to "Quick actions",
 
             "language_label" to "Language",
             "theme_label" to "Theme",
@@ -437,6 +441,8 @@ object Locales {
 
             "upcoming_appointments_list" to "Prossimi appuntamenti:",
             "no_upcoming_appointments" to "Nessun appuntamento futuro",
+            "view_appointment_title" to "Dettagli appuntamento",
+            "quick_actions_title" to "Azioni rapide",
 
             "language_label" to "Lingua",
             "theme_label" to "Tema",
@@ -628,6 +634,8 @@ object Locales {
 
             "upcoming_appointments_list" to "Майбутні записи:",
             "no_upcoming_appointments" to "Немає майбутніх записів",
+            "view_appointment_title" to "Перегляд запису",
+            "quick_actions_title" to "Швидкі дії",
 
             "language_label" to "Мова",
             "theme_label" to "Тема",

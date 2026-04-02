@@ -28,6 +28,11 @@ kotlin {
         }
     }
 
+    // ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ: Разрешение экспериментальных API для всех sourceSets
+    sourceSets.all {
+        languageSettings.optIn("androidx.compose.foundation.ExperimentalFoundationApi")
+    }
+
     sourceSets {
         val commonMain by getting {
             resources.srcDirs("src/commonMain/composeResources")

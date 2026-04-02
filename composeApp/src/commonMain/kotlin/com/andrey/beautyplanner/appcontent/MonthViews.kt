@@ -1,19 +1,17 @@
 package com.andrey.beautyplanner.appcontent
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,10 +27,10 @@ import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Appointment
 import com.andrey.beautyplanner.Locales
+import com.andrey.beautyplanner.utils.LiveStatusKey
 import kotlinx.datetime.LocalDate
 
-// ------------------------- time helpers -------------------------
-
+// Вспомогательные функции (БЕЗ ИЗМЕНЕНИЙ)
 private fun parseHmToMinutes(hm: String): Int {
     val parts = hm.trim().split(":")
     if (parts.size != 2) return 0
@@ -48,13 +46,15 @@ private fun minutesToHm(minutes: Int): String {
     return "$hPart:$mPart"
 }
 
-private fun endTime(startHm: String, durationHours: Int): String {
-    val startMin = parseHmToMinutes(startHm)
-    val endMin = startMin + (durationHours.coerceAtLeast(1) * 60)
-    return minutesToHm(endMin)
+private fun apptDurationMinutes(appt: Appointment): Int {
+    return if (appt.durationMinutes > 0) appt.durationMinutes else appt.durationHours.coerceAtLeast(1) * 60
 }
 
-// ------------------------- upcoming logic -------------------------
+private fun endTime(appt: Appointment): String {
+    val startMin = parseHmToMinutes(appt.time)
+    val endMin = startMin + apptDurationMinutes(appt)
+    return minutesToHm(endMin)
+}
 
 fun getUpcomingAppointments(
     appointments: List<Appointment>,
@@ -62,118 +62,190 @@ fun getUpcomingAppointments(
     nowTime: String
 ): List<Appointment> {
     val nowMin = parseHmToMinutes(nowTime)
-
     return appointments
         .filter { appt ->
             val apptDate = runCatching { LocalDate.parse(appt.dateString) }.getOrNull()
                 ?: return@filter false
-
             when {
                 apptDate > today -> true
                 apptDate < today -> false
                 else -> {
-                    // сегодня: оставляем те, которые ещё не закончились
-                    val apptEndMin = parseHmToMinutes(endTime(appt.time, appt.durationHours))
+                    val apptEndMin = parseHmToMinutes(endTime(appt))
                     apptEndMin > nowMin
                 }
             }
         }
-        .sortedWith(
-            compareBy<Appointment>(
-                { it.dateString },
-                { parseHmToMinutes(it.time) }
-            )
-        )
+        .sortedWith(compareBy({ it.dateString }, { parseHmToMinutes(it.time) }))
 }
 
+// НОВЫЙ ОБЩИЙ КОМПОНЕНТ (Перенесен из DayDetailsView для унификации)
+@Composable
+fun AppointmentViewDialog(
+    appt: Appointment,
+    onDismiss: () -> Unit,
+    onEditClick: () -> Unit,
+    onTransferClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    val fontScale = AppSettings.getFontScale()
+    val startHm = appt.time
+    val endHm = endTime(appt)
+    val serviceDisplay = if (appt.serviceName.startsWith("service_")) Locales.t(appt.serviceName) else appt.serviceName
+
+    val priceText = appt.price.trim().let { p ->
+        if (p.isBlank()) "" else "$p €"
+    }
+
+    // Твоя тема диалога
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = Locales.t("view_appointment_title"),
+                fontWeight = FontWeight.Bold,
+                fontSize = (18 * fontScale).sp,
+                color = MaterialTheme.colors.onSurface
+            )
+        },
+        text = {
+            Column(Modifier.fillMaxWidth()) {
+                Text(
+                    text = appt.clientName,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = (18 * fontScale).sp,
+                    color = MaterialTheme.colors.onSurface
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "$startHm–$endHm",
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "${Locales.t("service")}: $serviceDisplay",
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
+                )
+                if (priceText.isNotBlank()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "${Locales.t("price")}: $priceText",
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
+                    )
+                }
+                Spacer(Modifier.height(18.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = onEditClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp)
+                    ) { Text(Locales.t("edit")) }
+                    OutlinedButton(
+                        onClick = onTransferClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp)
+                    ) { Text(Locales.t("transfer_appt")) }
+                    OutlinedButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    ) { Text(Locales.t("delete_btn"), color = Color.Red) }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(Locales.t("cancel")) }
+        },
+        shape = RoundedCornerShape(28.dp) // Соответствует AppDialogShape
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun UpcomingAppointmentCard(
     appt: Appointment,
-    onClick: () -> Unit
+    showDate: Boolean = true, // Добавлено для управления отображением
+    onClick: () -> Unit,
+    onEditClick: (() -> Unit)? = null,
+    onTransferClick: (() -> Unit)? = null,
+    onDeleteClick: (() -> Unit)? = null
 ) {
     val fontScale = AppSettings.getFontScale()
     val interactionSource = remember { MutableInteractionSource() }
+    var showQuickMenu by remember { mutableStateOf(false) }
 
     val dateParts = appt.dateString.split("-")
-    val formattedDate =
-        if (dateParts.size == 3) "${dateParts[2]}.${dateParts[1]}.${dateParts[0]}"
-        else appt.dateString
+    val formattedDate = if (dateParts.size == 3) "${dateParts[2]}.${dateParts[1]}.${dateParts[0]}" else appt.dateString
 
     val start = appt.time
-    val end = endTime(appt.time, appt.durationHours)
+    val end = endTime(appt)
+    val translatedService = if (appt.serviceName.startsWith("service_")) Locales.t(appt.serviceName) else appt.serviceName
+    val durationLabel = Locales.hoursCount((apptDurationMinutes(appt) / 60.0).let { kotlin.math.ceil(it).toInt().coerceAtLeast(1) })
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = LocalIndication.current,
-                onClick = onClick
-            ),
-        shape = RoundedCornerShape(16.dp),
-        elevation = 4.dp,
-        backgroundColor = MaterialTheme.colors.surface
-    ) {
-        Column(Modifier.padding(14.dp)) {
-            // верхняя строка: дата + диапазон времени | цена справа
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+    Box {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .combinedClickable(
+                    interactionSource = interactionSource,
+                    indication = LocalIndication.current,
+                    onClick = onClick,
+                    onLongClick = { if (onEditClick != null) showQuickMenu = true }
+                ),
+            shape = RoundedCornerShape(16.dp),
+            elevation = 4.dp,
+            backgroundColor = MaterialTheme.colors.surface
+        ) {
+            Column(Modifier.padding(14.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        // Логика: если showDate=false, выводим только время
+                        text = if (showDate) "$formattedDate  $start–$end" else "$start–$end",
+                        fontSize = (13 * fontScale).sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
+                    )
+                    Text(
+                        text = "${appt.price}€",
+                        fontSize = (13 * fontScale).sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "$formattedDate  $start–$end",
-                    fontSize = (13 * fontScale).sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                )
-
-                Text(
-                    text = "${appt.price}€",
-                    fontSize = (13 * fontScale).sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold, fontSize = (15 * fontScale).sp, color = MaterialTheme.colors.onSurface)) {
+                            append(appt.clientName)
+                        }
+                        append("  ")
+                        withStyle(SpanStyle(fontWeight = FontWeight.Normal, fontSize = (13 * fontScale).sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))) {
+                            append("$translatedService ($durationLabel)")
+                        }
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
+        }
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // вторая строка: Имя (bold) + услуга и длительность
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(
-                        SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = (15 * fontScale).sp,
-                            color = MaterialTheme.colors.onSurface
-                        )
-                    ) { append(appt.clientName) }
-
-                    append("  ")
-
-                    val translatedService = if (appt.serviceName.startsWith("service_"))
-                        Locales.t(appt.serviceName)
-                    else
-                        appt.serviceName
-
-                    withStyle(
-                        SpanStyle(
-                            fontWeight = FontWeight.Normal,
-                            fontSize = (13 * fontScale).sp,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                        )
-                    ) { append("$translatedService (${appt.durationHours} ч.)") }
-                },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
+        DropdownMenu(expanded = showQuickMenu, onDismissRequest = { showQuickMenu = false }) {
+            if (onEditClick != null) DropdownMenuItem(onClick = { showQuickMenu = false; onEditClick() }) { Text(Locales.t("edit")) }
+            if (onTransferClick != null) DropdownMenuItem(onClick = { showQuickMenu = false; onTransferClick() }) { Text(Locales.t("transfer_appt")) }
+            if (onDeleteClick != null) DropdownMenuItem(onClick = { showQuickMenu = false; onDeleteClick() }) { Text(Locales.t("delete_btn"), color = Color.Red) }
         }
     }
 }
-
-// ------------------------- calendar -------------------------
 
 @Composable
 fun MonthCalendarGrid(
@@ -190,14 +262,10 @@ fun MonthCalendarGrid(
         else -> 30
     }
     val firstDayOfMonth = LocalDate(monthDate.year, monthDate.month, 1)
-
-    // MONDAY=0 ... SUNDAY=6
-    val dayOfWeekOffset = firstDayOfMonth.dayOfWeek.ordinal
-
+    val dayOfWeekOffset = (firstDayOfMonth.dayOfWeek.ordinal) % 7
     val days = (1..daysInMonth).toList()
     val fontScale = AppSettings.getFontScale()
 
-    // динамическая высота под 5/6 недель
     val totalCells = dayOfWeekOffset + daysInMonth
     val rows = ((totalCells + 6) / 7).coerceAtLeast(5)
     val rowHeight = 48.dp
@@ -217,31 +285,19 @@ fun MonthCalendarGrid(
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(gridHeight)
+            modifier = Modifier.fillMaxWidth().height(gridHeight),
+            userScrollEnabled = false
         ) {
-            // пустые ячейки делаем квадратами, чтобы сетка не "ехала"
-            items(dayOfWeekOffset) {
-                Box(
-                    modifier = Modifier
-                        .aspectRatio(1f)
-                        .padding(4.dp)
-                )
-            }
-
+            items(dayOfWeekOffset) { Box(modifier = Modifier.aspectRatio(1f).padding(4.dp)) }
             items(days) { day ->
                 val dateForCell = LocalDate(monthDate.year, monthDate.month, day)
                 val isToday = dateForCell == today
                 val isSelected = dateForCell == selectedDate
                 val isPast = dateForCell < today
                 val interactionSource = remember { MutableInteractionSource() }
-
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
@@ -254,7 +310,7 @@ fun MonthCalendarGrid(
                                 else -> Color.Transparent
                             }
                         )
-                        .clickable(
+                        .combinedClickable(
                             interactionSource = interactionSource,
                             indication = LocalIndication.current,
                             onClick = { onDateClick(dateForCell) }
