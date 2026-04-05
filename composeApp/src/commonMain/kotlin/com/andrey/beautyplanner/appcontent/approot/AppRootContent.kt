@@ -187,8 +187,6 @@ fun AppRootContent(
                     }
                 }
 
-                var viewingApptMain by remember { mutableStateOf<Appointment?>(null) }
-
                 Column(Modifier.fillMaxSize()) {
                     Row(
                         modifier = Modifier
@@ -288,10 +286,10 @@ fun AppRootContent(
                                 val appt = upcoming[idx]
                                 UpcomingAppointmentCard(
                                     appt = appt,
-                                    showDate = true, // На главной дату показываем
                                     onClick = {
-                                        // ВАЖНО: Вместо формы открываем превью
-                                        viewingApptMain = appt
+                                        state.editingAppointment = appt
+                                        state.bookingReadOnly = true
+                                        state.showBookingDialog = true
                                     },
                                     onEditClick = {
                                         state.editingAppointment = appt
@@ -309,29 +307,6 @@ fun AppRootContent(
                                 )
                             }
                         }
-                    }
-                    // Вызов общего диалога на главной
-                    viewingApptMain?.let { appt ->
-                        AppointmentViewDialog(
-                            appt = appt,
-                            onDismiss = { viewingApptMain = null },
-                            onEditClick = {
-                                viewingApptMain = null
-                                state.editingAppointment = appt
-                                state.bookingReadOnly = false
-                                state.showBookingDialog = true
-                            },
-                            onTransferClick = {
-                                viewingApptMain = null
-                                state.transferA = appt
-                                state.showTransferPickDialog = true
-                                state.bookingReadOnly = false
-                            },
-                            onDeleteClick = {
-                                viewingApptMain = null
-                                state.showDeleteConfirm = appt
-                            }
-                        )
                     }
                 }
             }

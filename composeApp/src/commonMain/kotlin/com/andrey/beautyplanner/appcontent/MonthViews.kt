@@ -10,7 +10,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,10 +31,8 @@ import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Appointment
 import com.andrey.beautyplanner.Locales
-import com.andrey.beautyplanner.utils.LiveStatusKey
 import kotlinx.datetime.LocalDate
 
-// Вспомогательные функции (БЕЗ ИЗМЕНЕНИЙ)
 private fun parseHmToMinutes(hm: String): Int {
     val parts = hm.trim().split(":")
     if (parts.size != 2) return 0
@@ -62,10 +64,12 @@ fun getUpcomingAppointments(
     nowTime: String
 ): List<Appointment> {
     val nowMin = parseHmToMinutes(nowTime)
+
     return appointments
         .filter { appt ->
             val apptDate = runCatching { LocalDate.parse(appt.dateString) }.getOrNull()
                 ?: return@filter false
+
             when {
                 apptDate > today -> true
                 apptDate < today -> false
@@ -75,101 +79,18 @@ fun getUpcomingAppointments(
                 }
             }
         }
-        .sortedWith(compareBy({ it.dateString }, { parseHmToMinutes(it.time) }))
-}
-
-// НОВЫЙ ОБЩИЙ КОМПОНЕНТ (Перенесен из DayDetailsView для унификации)
-@Composable
-fun AppointmentViewDialog(
-    appt: Appointment,
-    onDismiss: () -> Unit,
-    onEditClick: () -> Unit,
-    onTransferClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    val fontScale = AppSettings.getFontScale()
-    val startHm = appt.time
-    val endHm = endTime(appt)
-    val serviceDisplay = if (appt.serviceName.startsWith("service_")) Locales.t(appt.serviceName) else appt.serviceName
-
-    val priceText = appt.price.trim().let { p ->
-        if (p.isBlank()) "" else "$p €"
-    }
-
-    // Твоя тема диалога
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = Locales.t("view_appointment_title"),
-                fontWeight = FontWeight.Bold,
-                fontSize = (18 * fontScale).sp,
-                color = MaterialTheme.colors.onSurface
+        .sortedWith(
+            compareBy<Appointment>(
+                { it.dateString },
+                { parseHmToMinutes(it.time) }
             )
-        },
-        text = {
-            Column(Modifier.fillMaxWidth()) {
-                Text(
-                    text = appt.clientName,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = (18 * fontScale).sp,
-                    color = MaterialTheme.colors.onSurface
-                )
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    text = "$startHm–$endHm",
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                )
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    text = "${Locales.t("service")}: $serviceDisplay",
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                )
-                if (priceText.isNotBlank()) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = "${Locales.t("price")}: $priceText",
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                    )
-                }
-                Spacer(Modifier.height(18.dp))
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = onEditClick,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp)
-                    ) { Text(Locales.t("edit")) }
-                    OutlinedButton(
-                        onClick = onTransferClick,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp)
-                    ) { Text(Locales.t("transfer_appt")) }
-                    OutlinedButton(
-                        onClick = onDeleteClick,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
-                    ) { Text(Locales.t("delete_btn"), color = Color.Red) }
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(Locales.t("cancel")) }
-        },
-        shape = RoundedCornerShape(28.dp) // Соответствует AppDialogShape
-    )
+        )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun UpcomingAppointmentCard(
     appt: Appointment,
-    showDate: Boolean = true, // Добавлено для управления отображением
     onClick: () -> Unit,
     onEditClick: (() -> Unit)? = null,
     onTransferClick: (() -> Unit)? = null,
@@ -180,12 +101,22 @@ fun UpcomingAppointmentCard(
     var showQuickMenu by remember { mutableStateOf(false) }
 
     val dateParts = appt.dateString.split("-")
-    val formattedDate = if (dateParts.size == 3) "${dateParts[2]}.${dateParts[1]}.${dateParts[0]}" else appt.dateString
+    val formattedDate =
+        if (dateParts.size == 3) "${dateParts[2]}.${dateParts[1]}.${dateParts[0]}"
+        else appt.dateString
 
     val start = appt.time
     val end = endTime(appt)
-    val translatedService = if (appt.serviceName.startsWith("service_")) Locales.t(appt.serviceName) else appt.serviceName
-    val durationLabel = Locales.hoursCount((apptDurationMinutes(appt) / 60.0).let { kotlin.math.ceil(it).toInt().coerceAtLeast(1) })
+
+    val translatedService = if (appt.serviceName.startsWith("service_")) {
+        Locales.t(appt.serviceName)
+    } else {
+        appt.serviceName
+    }
+
+    val durationLabel = Locales.hoursCount((apptDurationMinutes(appt) / 60.0).let {
+        kotlin.math.ceil(it).toInt().coerceAtLeast(1)
+    })
 
     Box {
         Card(
@@ -196,7 +127,11 @@ fun UpcomingAppointmentCard(
                     interactionSource = interactionSource,
                     indication = LocalIndication.current,
                     onClick = onClick,
-                    onLongClick = { if (onEditClick != null) showQuickMenu = true }
+                    onLongClick = {
+                        if (onEditClick != null || onTransferClick != null || onDeleteClick != null) {
+                            showQuickMenu = true
+                        }
+                    }
                 ),
             shape = RoundedCornerShape(16.dp),
             elevation = 4.dp,
@@ -209,12 +144,12 @@ fun UpcomingAppointmentCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        // Логика: если showDate=false, выводим только время
-                        text = if (showDate) "$formattedDate  $start–$end" else "$start–$end",
+                        text = "$formattedDate  $start–$end",
                         fontSize = (13 * fontScale).sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                     )
+
                     Text(
                         text = "${appt.price}€",
                         fontSize = (13 * fontScale).sp,
@@ -222,14 +157,30 @@ fun UpcomingAppointmentCard(
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                     )
                 }
+
                 Spacer(modifier = Modifier.height(6.dp))
+
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(SpanStyle(fontWeight = FontWeight.Bold, fontSize = (15 * fontScale).sp, color = MaterialTheme.colors.onSurface)) {
+                        withStyle(
+                            SpanStyle(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = (15 * fontScale).sp,
+                                color = MaterialTheme.colors.onSurface
+                            )
+                        ) {
                             append(appt.clientName)
                         }
+
                         append("  ")
-                        withStyle(SpanStyle(fontWeight = FontWeight.Normal, fontSize = (13 * fontScale).sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))) {
+
+                        withStyle(
+                            SpanStyle(
+                                fontWeight = FontWeight.Normal,
+                                fontSize = (13 * fontScale).sp,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                            )
+                        ) {
                             append("$translatedService ($durationLabel)")
                         }
                     },
@@ -239,10 +190,36 @@ fun UpcomingAppointmentCard(
             }
         }
 
-        DropdownMenu(expanded = showQuickMenu, onDismissRequest = { showQuickMenu = false }) {
-            if (onEditClick != null) DropdownMenuItem(onClick = { showQuickMenu = false; onEditClick() }) { Text(Locales.t("edit")) }
-            if (onTransferClick != null) DropdownMenuItem(onClick = { showQuickMenu = false; onTransferClick() }) { Text(Locales.t("transfer_appt")) }
-            if (onDeleteClick != null) DropdownMenuItem(onClick = { showQuickMenu = false; onDeleteClick() }) { Text(Locales.t("delete_btn"), color = Color.Red) }
+        DropdownMenu(
+            expanded = showQuickMenu,
+            onDismissRequest = { showQuickMenu = false }
+        ) {
+            if (onEditClick != null) {
+                DropdownMenuItem(onClick = {
+                    showQuickMenu = false
+                    onEditClick()
+                }) {
+                    Text(Locales.t("edit"))
+                }
+            }
+
+            if (onTransferClick != null) {
+                DropdownMenuItem(onClick = {
+                    showQuickMenu = false
+                    onTransferClick()
+                }) {
+                    Text(Locales.t("transfer_appt"))
+                }
+            }
+
+            if (onDeleteClick != null) {
+                DropdownMenuItem(onClick = {
+                    showQuickMenu = false
+                    onDeleteClick()
+                }) {
+                    Text(Locales.t("delete_btn"))
+                }
+            }
         }
     }
 }
@@ -262,7 +239,8 @@ fun MonthCalendarGrid(
         else -> 30
     }
     val firstDayOfMonth = LocalDate(monthDate.year, monthDate.month, 1)
-    val dayOfWeekOffset = (firstDayOfMonth.dayOfWeek.ordinal) % 7
+
+    val dayOfWeekOffset = firstDayOfMonth.dayOfWeek.ordinal
     val days = (1..daysInMonth).toList()
     val fontScale = AppSettings.getFontScale()
 
@@ -285,19 +263,30 @@ fun MonthCalendarGrid(
                 )
             }
         }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
-            modifier = Modifier.fillMaxWidth().height(gridHeight),
-            userScrollEnabled = false
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(gridHeight)
         ) {
-            items(dayOfWeekOffset) { Box(modifier = Modifier.aspectRatio(1f).padding(4.dp)) }
+            items(dayOfWeekOffset) {
+                Box(
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .padding(4.dp)
+                )
+            }
+
             items(days) { day ->
                 val dateForCell = LocalDate(monthDate.year, monthDate.month, day)
                 val isToday = dateForCell == today
                 val isSelected = dateForCell == selectedDate
                 val isPast = dateForCell < today
                 val interactionSource = remember { MutableInteractionSource() }
+
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
