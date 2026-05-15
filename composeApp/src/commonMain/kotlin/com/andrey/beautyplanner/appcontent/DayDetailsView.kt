@@ -3,23 +3,21 @@ package com.andrey.beautyplanner.appcontent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
@@ -57,118 +55,6 @@ private data class Block(
     enum class Kind { FREE, APPOINTMENT }
 }
 
-@Composable
-private fun AppointmentViewDialog(
-    appt: Appointment,
-    startHm: String,
-    endHm: String,
-    serviceDisplay: String,
-    status: LiveStatusKey,
-    onDismiss: () -> Unit,
-    onEditClick: () -> Unit,
-    onTransferClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    val fontScale = AppSettings.getFontScale()
-    val priceText = appt.price.trim().let { p ->
-        if (p.isBlank()) "" else "$p €"
-    }
-
-    AppDialogTheme {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = {
-                Text(
-                    text = Locales.t("view_appointment_title"),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = (18 * fontScale).sp,
-                    color = MaterialTheme.colors.onSurface
-                )
-            },
-            text = {
-                Column(Modifier.fillMaxWidth()) {
-                    Text(
-                        text = appt.clientName,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (18 * fontScale).sp,
-                        color = MaterialTheme.colors.onSurface
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    Text(
-                        text = "$startHm–$endHm",
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    Text(
-                        text = "${Locales.t("service")}: $serviceDisplay",
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                    )
-
-                    if (priceText.isNotBlank()) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            text = "${Locales.t("price")}: $priceText",
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                        )
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Text(
-                        text = "${Locales.t("appt_status_label")}: ${Locales.t(status.localeKey)}",
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.70f),
-                        fontSize = (13 * fontScale).sp
-                    )
-
-                    Spacer(Modifier.height(18.dp))
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = onEditClick,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp)
-                        ) {
-                            Text(Locales.t("edit"))
-                        }
-
-                        OutlinedButton(
-                            onClick = onTransferClick,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp)
-                        ) {
-                            Text(Locales.t("transfer_appt"))
-                        }
-
-                        OutlinedButton(
-                            onClick = onDeleteClick,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
-                        ) {
-                            Text(Locales.t("delete_btn"), color = Color.Red)
-                        }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text(Locales.t("close"))
-                }
-            },
-            shape = AppDialogShape
-        )
-    }
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DayDetailsView(
@@ -176,12 +62,12 @@ fun DayDetailsView(
     appointments: List<Appointment>,
     onDateChange: (LocalDate) -> Unit,
     onTimeClick: (String) -> Unit,
+    onAppointmentLongPress: (Appointment, LiveStatusKey) -> Unit,
     onEditClick: (Appointment) -> Unit,
     onTransferClick: (Appointment) -> Unit,
     onDeleteClick: (Appointment) -> Unit
 ) {
     val fontScale = AppSettings.getFontScale()
-
     val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
 
     var nowTimeHm by remember { mutableStateOf(getCurrentTimeHm()) }
@@ -263,13 +149,11 @@ fun DayDetailsView(
         out
     }
 
+    // ----- view dialog state -----
     var viewingAppt by remember { mutableStateOf<Appointment?>(null) }
     var viewingStartHm by remember { mutableStateOf("") }
     var viewingEndHm by remember { mutableStateOf("") }
-    var viewingService by remember { mutableStateOf("") }
     var viewingStatus by remember { mutableStateOf<LiveStatusKey?>(null) }
-
-    var quickMenuAppt by remember { mutableStateOf<Appointment?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -290,10 +174,18 @@ fun DayDetailsView(
                 val arrowTint = MaterialTheme.colors.primary
 
                 IconButton(onClick = { onDateChange(date.minus(1, DateTimeUnit.DAY)) }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null, tint = arrowTint)
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = null,
+                        tint = arrowTint
+                    )
                 }
                 IconButton(onClick = { onDateChange(date.plus(1, DateTimeUnit.DAY)) }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = arrowTint)
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = arrowTint
+                    )
                 }
             }
         }
@@ -307,14 +199,12 @@ fun DayDetailsView(
             items(blocks.size) { idx ->
                 val block = blocks[idx]
                 val interactionSource = remember { MutableInteractionSource() }
+
                 val startHm = minutesToHm(block.startMin)
                 val endHm = minutesToHm(block.endMin)
 
                 if (block.kind == Block.Kind.APPOINTMENT && block.appt != null) {
                     val appt = block.appt
-                    val serviceDisplay =
-                        if (appt.serviceName.startsWith("service_")) Locales.t(appt.serviceName)
-                        else appt.serviceName
 
                     val apptStartMin = parseHmToMinutes(appt.time) ?: block.startMin
                     val apptEndMin = apptStartMin + apptDurationMinutesCompat(appt)
@@ -325,133 +215,70 @@ fun DayDetailsView(
                         nowMinutes = nowMin
                     )
 
-                    val dateParts = appt.dateString.split("-")
-                    val formattedCardDate =
-                        if (dateParts.size == 3) "${dateParts[2]}.${dateParts[1]}.${dateParts[0]}"
-                        else appt.dateString
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .combinedClickable(
-                                interactionSource = interactionSource,
-                                indication = LocalIndication.current,
-                                onClick = {
-                                    viewingAppt = appt
-                                    viewingStartHm = startHm
-                                    viewingEndHm = endHm
-                                    viewingService = serviceDisplay
-                                    viewingStatus = liveStatus
-                                },
-                                onLongClick = {
-                                    quickMenuAppt = appt
-                                }
-                            ),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = 4.dp,
-                        backgroundColor = MaterialTheme.colors.surface
-                    ) {
-                        Column(Modifier.padding(14.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                val timeColor =
-                                    if (date < today || apptEndMin <= nowMin) {
-                                        MaterialTheme.colors.onSurface.copy(alpha = 0.65f)
-                                    } else {
-                                        MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                                    }
-
-                                Text(
-                                    text = "$formattedCardDate  $startHm–$endHm",
-                                    fontSize = (13 * fontScale).sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = timeColor
-                                )
-
-                                Text(
-                                    text = "${appt.price}€",
-                                    fontSize = (13 * fontScale).sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = appt.clientName,
-                                        fontSize = (15 * fontScale).sp,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colors.onSurface
-                                    )
-
-                                    Spacer(Modifier.height(2.dp))
-
-                                    Text(
-                                        text = serviceDisplay,
-                                        fontSize = (13 * fontScale).sp,
-                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-
-                                if (liveStatus == LiveStatusKey.DONE) {
-                                    Spacer(Modifier.width(10.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colors.primary.copy(alpha = 0.75f),
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-                        }
+                    val cardBg = when {
+                        date < today -> if (AppSettings.isDarkMode) Color(0xFF1F2A36) else Color(0xFFECECEC)
+                        date > today -> if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
+                        else -> if (AppSettings.isDarkMode) Color(0xFF253548) else Color(0xFFF2F2F2)
                     }
+
+                    val isPastOrFinished = (date < today || apptEndMin <= nowMin)
+
+                    AppointmentCard(
+                        appt = appt,
+                        status = liveStatus,
+                        showDateInCard = false,
+                        startHm = startHm,
+                        endHm = endHm,
+                        dayDetailsBackgroundColor = cardBg,
+                        dayDetailsIsPastOrFinished = isPastOrFinished,
+                        onClick = {
+                            viewingAppt = appt
+                            viewingStartHm = startHm
+                            viewingEndHm = endHm
+                            viewingStatus = liveStatus
+                        },
+                        onLongClick = {
+                            onAppointmentLongPress(appt, liveStatus)
+                        }
+                    )
                 } else {
+                    // FREE SLOT (как было)
                     Card(
+                        elevation = 0.dp,
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 6.dp)
+                            .height(78.dp)
                             .combinedClickable(
                                 interactionSource = interactionSource,
                                 indication = LocalIndication.current,
                                 onClick = { onTimeClick(startHm) }
                             ),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = 0.dp,
-                        backgroundColor = MaterialTheme.colors.surface.copy(alpha = if (AppSettings.isDarkMode) 0.22f else 0.45f),
-                        border = BorderStroke(
-                            1.dp,
-                            MaterialTheme.colors.onSurface.copy(alpha = if (AppSettings.isDarkMode) 0.18f else 0.10f)
-                        )
+                        backgroundColor = Color.Transparent,
+                        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
                     ) {
-                        Column(Modifier.padding(14.dp)) {
-                            Text(
-                                text = "$startHm–$endHm",
-                                fontSize = (13 * fontScale).sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.65f)
-                            )
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.width(60.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = startHm,
+                                    fontSize = (16 * fontScale).sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.55f)
+                                )
+                            }
                             Text(
                                 text = Locales.t("free"),
-                                fontSize = (15 * fontScale).sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.45f)
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.35f),
+                                fontSize = (14 * fontScale).sp
                             )
                         }
                     }
@@ -460,15 +287,15 @@ fun DayDetailsView(
         }
     }
 
+    // ----- common details dialog -----
     val apptToView = viewingAppt
-    val liveStatusToView = viewingStatus
-    if (apptToView != null && liveStatusToView != null) {
-        AppointmentViewDialog(
+    val statusToView = viewingStatus
+    if (apptToView != null && statusToView != null) {
+        AppointmentDetailsDialog(
             appt = apptToView,
             startHm = viewingStartHm,
             endHm = viewingEndHm,
-            serviceDisplay = viewingService,
-            status = liveStatusToView,
+            status = statusToView,
             onDismiss = {
                 viewingAppt = null
                 viewingStatus = null
@@ -488,61 +315,6 @@ fun DayDetailsView(
                 viewingStatus = null
                 onDeleteClick(apptToView)
             }
-        )
-    }
-
-    val quickAppt = quickMenuAppt
-    if (quickAppt != null) {
-        AlertDialog(
-            onDismissRequest = { quickMenuAppt = null },
-            title = { Text(Locales.t("quick_actions_title")) },
-            text = {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            quickMenuAppt = null
-                            onEditClick(quickAppt)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Text(Locales.t("edit"))
-                    }
-
-                    OutlinedButton(
-                        onClick = {
-                            quickMenuAppt = null
-                            onTransferClick(quickAppt)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Text(Locales.t("transfer_appt"))
-                    }
-
-                    OutlinedButton(
-                        onClick = {
-                            quickMenuAppt = null
-                            onDeleteClick(quickAppt)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
-                    ) {
-                        Text(Locales.t("delete_btn"), color = Color.Red)
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { quickMenuAppt = null }) {
-                    Text(Locales.t("cancel"))
-                }
-            },
-            shape = AppDialogShape
         )
     }
 }

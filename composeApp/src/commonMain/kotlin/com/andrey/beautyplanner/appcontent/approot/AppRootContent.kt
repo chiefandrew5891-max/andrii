@@ -3,13 +3,7 @@ package com.andrey.beautyplanner.appcontent.approot
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Divider
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,12 +13,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.*
 import com.andrey.beautyplanner.appcontent.*
+import com.andrey.beautyplanner.utils.LiveStatusKey
+import com.andrey.beautyplanner.utils.getLiveStatus
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+import kotlinx.datetime.todayIn
+
+private enum class ApptAction { EDIT, TRANSFER, DELETE }
 
 @Composable
 fun AppRootContent(
@@ -49,8 +49,44 @@ fun AppRootContent(
     }
 
     if (pendingPinAfterSplash) {
-        LaunchedEffect(Unit) {
-            pendingPinAfterSplash = false
+        LaunchedEffect(Unit) { pendingPinAfterSplash = false }
+    }
+
+    // ===== Unified dropdown + confirmations (shared for Upcoming + DayDetails) =====
+    var menuAppt by remember { mutableStateOf<Appointment?>(null) }
+    var menuStatus by remember { mutableStateOf<LiveStatusKey?>(null) }
+    var showMenu by remember { mutableStateOf(false) }
+
+    var pendingAction by remember { mutableStateOf<ApptAction?>(null) }
+    var showConfirm by remember { mutableStateOf(false) }
+
+    fun openApptMenu(appt: Appointment, status: LiveStatusKey) {
+        menuAppt = appt
+        menuStatus = status
+        showMenu = true
+    }
+
+    fun requestAction(action: ApptAction) {
+        pendingAction = action
+        showMenu = false
+        showConfirm = true
+    }
+
+    fun applyAction(appt: Appointment, action: ApptAction) {
+        when (action) {
+            ApptAction.EDIT -> {
+                state.editingAppointment = appt
+                state.bookingReadOnly = false
+                state.showBookingDialog = true
+            }
+            ApptAction.TRANSFER -> {
+                state.transferA = appt
+                state.showTransferPickDialog = true
+                state.bookingReadOnly = false
+            }
+            ApptAction.DELETE -> {
+                state.showDeleteConfirm = appt
+            }
         }
     }
 
@@ -84,9 +120,7 @@ fun AppRootContent(
                         )
                     }
                 },
-                onSetOrChangePin = {
-                    state.showSetPinDialog = true
-                },
+                onSetOrChangePin = { state.showSetPinDialog = true },
                 onRemovePin = {
                     state.runProtected(
                         title = Locales.t("pin_required"),
@@ -120,6 +154,8 @@ fun AppRootContent(
             )
 
             Screen.MONTH -> {
+                val today = state.today
+
                 var nowTimeHm by remember { mutableStateOf(getCurrentTimeHm()) }
                 LaunchedEffect(Unit) {
                     while (true) {
@@ -127,6 +163,7 @@ fun AppRootContent(
                         delay(60_000)
                     }
                 }
+                val nowMin = remember(nowTimeHm) { com.andrey.beautyplanner.utils.parseHmToMinutes(nowTimeHm) }
 
                 val listState = rememberLazyListState()
 
@@ -214,9 +251,9 @@ fun AppRootContent(
                                 enabled = arrowsEnabled,
                                 onClick = { state.calendarViewDate = state.calendarViewDate.minus(1, DateTimeUnit.MONTH) }
                             ) {
-                                androidx.compose.material.Icon(
-                                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                    null,
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                    contentDescription = null,
                                     tint = arrowTint
                                 )
                             }
@@ -225,9 +262,9 @@ fun AppRootContent(
                                 enabled = arrowsEnabled,
                                 onClick = { state.calendarViewDate = state.calendarViewDate.plus(1, DateTimeUnit.MONTH) }
                             ) {
-                                androidx.compose.material.Icon(
-                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    null,
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
                                     tint = arrowTint
                                 )
                             }
@@ -284,25 +321,23 @@ fun AppRootContent(
                         } else {
                             items(upcoming.size) { idx ->
                                 val appt = upcoming[idx]
-                                UpcomingAppointmentCard(
+
+                                val status = getLiveStatus(
                                     appt = appt,
+                                    nowDate = today,
+                                    nowMinutes = nowMin
+                                )
+
+                                UpcomingAppointmentItem(
+                                    appt = appt,
+                                    status = status,
                                     onClick = {
                                         state.editingAppointment = appt
                                         state.bookingReadOnly = true
                                         state.showBookingDialog = true
                                     },
-                                    onEditClick = {
-                                        state.editingAppointment = appt
-                                        state.bookingReadOnly = false
-                                        state.showBookingDialog = true
-                                    },
-                                    onTransferClick = {
-                                        state.transferA = appt
-                                        state.showTransferPickDialog = true
-                                        state.bookingReadOnly = false
-                                    },
-                                    onDeleteClick = {
-                                        state.showDeleteConfirm = appt
+                                    onLongClick = {
+                                        openApptMenu(appt, status)
                                     }
                                 )
                             }
@@ -321,6 +356,9 @@ fun AppRootContent(
                     state.bookingReadOnly = false
                     state.showBookingDialog = true
                 },
+                onAppointmentLongPress = { appt, status ->
+                    openApptMenu(appt, status)
+                },
                 onEditClick = { appt ->
                     state.editingAppointment = appt
                     state.bookingReadOnly = false
@@ -334,6 +372,83 @@ fun AppRootContent(
                 onDeleteClick = { appt ->
                     state.showDeleteConfirm = appt
                 }
+            )
+        }
+
+        // ===== DropdownMenu anchored "in overlay" (единый) =====
+        // Технически это menu без якоря (как в твоем Upcoming было через DropdownMenu у карточки),
+        // но дизайн карточек не трогаем; меню — единое и вызывается одинаково.
+        val appt = menuAppt
+        val status = menuStatus
+        if (appt != null && status != null) {
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
+                val editTransferEnabled = status != LiveStatusKey.DONE
+
+                DropdownMenuItem(
+                    enabled = editTransferEnabled,
+                    onClick = { requestAction(ApptAction.EDIT) }
+                ) { Text(Locales.t("edit")) }
+
+                DropdownMenuItem(
+                    enabled = editTransferEnabled,
+                    onClick = { requestAction(ApptAction.TRANSFER) }
+                ) { Text(Locales.t("transfer_appt")) }
+
+                DropdownMenuItem(
+                    onClick = { requestAction(ApptAction.DELETE) }
+                ) { Text(Locales.t("delete_btn")) }
+            }
+        }
+
+        // ===== Confirm AlertDialog for menu actions =====
+        if (showConfirm && menuAppt != null && pendingAction != null) {
+            val appt0 = menuAppt!!
+            val act = pendingAction!!
+
+            val title = when (act) {
+                ApptAction.EDIT -> Locales.t("edit_appointment_title")
+                ApptAction.TRANSFER -> Locales.t("transfer_title")
+                ApptAction.DELETE -> Locales.t("delete_title")
+            }
+
+            val text = when (act) {
+                ApptAction.EDIT -> Locales.t("edit_appointment_confirm")
+                ApptAction.TRANSFER -> Locales.t("transfer_conflict_text") // максимально близкий существующий текст
+                ApptAction.DELETE -> {
+                    val client = appt0.clientName
+                    val time = appt0.time
+                    "${Locales.t("delete_confirm_prefix")} $client ${Locales.t("delete_confirm_at")} $time. ${Locales.t("continue_question")}"
+                }
+            }
+
+            AlertDialog(
+                onDismissRequest = {
+                    showConfirm = false
+                    pendingAction = null
+                },
+                title = { Text(title) },
+                text = { Text(text) },
+                confirmButton = {
+                    Button(onClick = {
+                        showConfirm = false
+                        pendingAction = null
+                        applyAction(appt0, act)
+                    }) {
+                        Text(Locales.t("confirm"))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showConfirm = false
+                        pendingAction = null
+                    }) {
+                        Text(Locales.t("cancel"))
+                    }
+                },
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
             )
         }
 

@@ -10,27 +10,20 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Appointment
-import com.andrey.beautyplanner.Locales
 import kotlinx.datetime.LocalDate
 
 private fun parseHmToMinutes(hm: String): Int {
@@ -89,139 +82,26 @@ fun getUpcomingAppointments(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun UpcomingAppointmentCard(
+fun UpcomingAppointmentItem(
     appt: Appointment,
+    status: com.andrey.beautyplanner.utils.LiveStatusKey,
     onClick: () -> Unit,
-    onEditClick: (() -> Unit)? = null,
-    onTransferClick: (() -> Unit)? = null,
-    onDeleteClick: (() -> Unit)? = null
+    onLongClick: () -> Unit
 ) {
-    val fontScale = AppSettings.getFontScale()
     val interactionSource = remember { MutableInteractionSource() }
-    var showQuickMenu by remember { mutableStateOf(false) }
-
-    val dateParts = appt.dateString.split("-")
-    val formattedDate =
-        if (dateParts.size == 3) "${dateParts[2]}.${dateParts[1]}.${dateParts[0]}"
-        else appt.dateString
-
-    val start = appt.time
     val end = endTime(appt)
 
-    val translatedService = if (appt.serviceName.startsWith("service_")) {
-        Locales.t(appt.serviceName)
-    } else {
-        appt.serviceName
-    }
-
-    val durationLabel = Locales.hoursCount((apptDurationMinutes(appt) / 60.0).let {
-        kotlin.math.ceil(it).toInt().coerceAtLeast(1)
-    })
-
-    Box {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .combinedClickable(
-                    interactionSource = interactionSource,
-                    indication = LocalIndication.current,
-                    onClick = onClick,
-                    onLongClick = {
-                        if (onEditClick != null || onTransferClick != null || onDeleteClick != null) {
-                            showQuickMenu = true
-                        }
-                    }
-                ),
-            shape = RoundedCornerShape(16.dp),
-            elevation = 4.dp,
-            backgroundColor = MaterialTheme.colors.surface
-        ) {
-            Column(Modifier.padding(14.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "$formattedDate  $start–$end",
-                        fontSize = (13 * fontScale).sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                    )
-
-                    Text(
-                        text = "${appt.price}€",
-                        fontSize = (13 * fontScale).sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(
-                            SpanStyle(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = (15 * fontScale).sp,
-                                color = MaterialTheme.colors.onSurface
-                            )
-                        ) {
-                            append(appt.clientName)
-                        }
-
-                        append("  ")
-
-                        withStyle(
-                            SpanStyle(
-                                fontWeight = FontWeight.Normal,
-                                fontSize = (13 * fontScale).sp,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                            )
-                        ) {
-                            append("$translatedService ($durationLabel)")
-                        }
-                    },
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-
-        DropdownMenu(
-            expanded = showQuickMenu,
-            onDismissRequest = { showQuickMenu = false }
-        ) {
-            if (onEditClick != null) {
-                DropdownMenuItem(onClick = {
-                    showQuickMenu = false
-                    onEditClick()
-                }) {
-                    Text(Locales.t("edit"))
-                }
-            }
-
-            if (onTransferClick != null) {
-                DropdownMenuItem(onClick = {
-                    showQuickMenu = false
-                    onTransferClick()
-                }) {
-                    Text(Locales.t("transfer_appt"))
-                }
-            }
-
-            if (onDeleteClick != null) {
-                DropdownMenuItem(onClick = {
-                    showQuickMenu = false
-                    onDeleteClick()
-                }) {
-                    Text(Locales.t("delete_btn"))
-                }
-            }
-        }
-    }
+    // Используем общий AppointmentCard, но он сохраняет старую вёрстку Upcoming
+    // (showDateInCard = true)
+    AppointmentCard(
+        appt = appt,
+        status = status,
+        showDateInCard = true,
+        startHm = appt.time,
+        endHm = end,
+        onClick = onClick,
+        onLongClick = onLongClick
+    )
 }
 
 @Composable
@@ -254,7 +134,7 @@ fun MonthCalendarGrid(
             val weekdays = listOf("mon", "tue", "wed", "thu", "fri", "sat", "sun")
             weekdays.forEach { day ->
                 Text(
-                    text = Locales.t(day),
+                    text = com.andrey.beautyplanner.Locales.t(day),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                     fontSize = (12 * fontScale).sp,
