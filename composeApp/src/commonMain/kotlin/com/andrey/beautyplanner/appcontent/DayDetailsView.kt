@@ -13,6 +13,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -175,14 +178,14 @@ fun DayDetailsView(
 
                 IconButton(onClick = { onDateChange(date.minus(1, DateTimeUnit.DAY)) }) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        imageVector = Icons.Filled.KeyboardArrowLeft,
                         contentDescription = null,
                         tint = arrowTint
                     )
                 }
                 IconButton(onClick = { onDateChange(date.plus(1, DateTimeUnit.DAY)) }) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        imageVector = Icons.Filled.KeyboardArrowRight,
                         contentDescription = null,
                         tint = arrowTint
                     )
