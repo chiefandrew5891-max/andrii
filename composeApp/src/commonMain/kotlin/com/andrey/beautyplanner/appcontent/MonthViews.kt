@@ -1,15 +1,15 @@
 package com.andrey.beautyplanner.appcontent
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -18,20 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Appointment
-import com.andrey.beautyplanner.Locales
 import kotlinx.datetime.LocalDate
-
-// ------------------------- time helpers -------------------------
 
 private fun parseHmToMinutes(hm: String): Int {
     val parts = hm.trim().split(":")
@@ -48,13 +41,15 @@ private fun minutesToHm(minutes: Int): String {
     return "$hPart:$mPart"
 }
 
-private fun endTime(startHm: String, durationHours: Int): String {
-    val startMin = parseHmToMinutes(startHm)
-    val endMin = startMin + (durationHours.coerceAtLeast(1) * 60)
-    return minutesToHm(endMin)
+private fun apptDurationMinutes(appt: Appointment): Int {
+    return if (appt.durationMinutes > 0) appt.durationMinutes else appt.durationHours.coerceAtLeast(1) * 60
 }
 
-// ------------------------- upcoming logic -------------------------
+private fun endTime(appt: Appointment): String {
+    val startMin = parseHmToMinutes(appt.time)
+    val endMin = startMin + apptDurationMinutes(appt)
+    return minutesToHm(endMin)
+}
 
 fun getUpcomingAppointments(
     appointments: List<Appointment>,
@@ -72,8 +67,7 @@ fun getUpcomingAppointments(
                 apptDate > today -> true
                 apptDate < today -> false
                 else -> {
-                    // сегодня: оставляем те, которые ещё не закончились
-                    val apptEndMin = parseHmToMinutes(endTime(appt.time, appt.durationHours))
+                    val apptEndMin = parseHmToMinutes(endTime(appt))
                     apptEndMin > nowMin
                 }
             }
@@ -86,94 +80,29 @@ fun getUpcomingAppointments(
         )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun UpcomingAppointmentCard(
+fun UpcomingAppointmentItem(
     appt: Appointment,
-    onClick: () -> Unit
+    status: com.andrey.beautyplanner.utils.LiveStatusKey,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
 ) {
-    val fontScale = AppSettings.getFontScale()
     val interactionSource = remember { MutableInteractionSource() }
+    val end = endTime(appt)
 
-    val dateParts = appt.dateString.split("-")
-    val formattedDate =
-        if (dateParts.size == 3) "${dateParts[2]}.${dateParts[1]}.${dateParts[0]}"
-        else appt.dateString
-
-    val start = appt.time
-    val end = endTime(appt.time, appt.durationHours)
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = LocalIndication.current,
-                onClick = onClick
-            ),
-        shape = RoundedCornerShape(16.dp),
-        elevation = 4.dp,
-        backgroundColor = MaterialTheme.colors.surface
-    ) {
-        Column(Modifier.padding(14.dp)) {
-            // верхняя строка: дата + диапазон времени | цена справа
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "$formattedDate  $start–$end",
-                    fontSize = (13 * fontScale).sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                )
-
-                Text(
-                    text = "${appt.price}€",
-                    fontSize = (13 * fontScale).sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // вторая строка: Имя (bold) + услуга и длительность
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(
-                        SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = (15 * fontScale).sp,
-                            color = MaterialTheme.colors.onSurface
-                        )
-                    ) { append(appt.clientName) }
-
-                    append("  ")
-
-                    val translatedService = if (appt.serviceName.startsWith("service_"))
-                        Locales.t(appt.serviceName)
-                    else
-                        appt.serviceName
-
-                    withStyle(
-                        SpanStyle(
-                            fontWeight = FontWeight.Normal,
-                            fontSize = (13 * fontScale).sp,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                        )
-                    ) { append("$translatedService (${appt.durationHours} ч.)") }
-                },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-        }
-    }
+    // Используем общий AppointmentCard, но он сохраняет старую вёрстку Upcoming
+    // (showDateInCard = true)
+    AppointmentCard(
+        appt = appt,
+        status = status,
+        showDateInCard = true,
+        startHm = appt.time,
+        endHm = end,
+        onClick = onClick,
+        onLongClick = onLongClick
+    )
 }
-
-// ------------------------- calendar -------------------------
 
 @Composable
 fun MonthCalendarGrid(
@@ -191,13 +120,10 @@ fun MonthCalendarGrid(
     }
     val firstDayOfMonth = LocalDate(monthDate.year, monthDate.month, 1)
 
-    // MONDAY=0 ... SUNDAY=6
     val dayOfWeekOffset = firstDayOfMonth.dayOfWeek.ordinal
-
     val days = (1..daysInMonth).toList()
     val fontScale = AppSettings.getFontScale()
 
-    // динамическая высота под 5/6 недель
     val totalCells = dayOfWeekOffset + daysInMonth
     val rows = ((totalCells + 6) / 7).coerceAtLeast(5)
     val rowHeight = 48.dp
@@ -208,7 +134,7 @@ fun MonthCalendarGrid(
             val weekdays = listOf("mon", "tue", "wed", "thu", "fri", "sat", "sun")
             weekdays.forEach { day ->
                 Text(
-                    text = Locales.t(day),
+                    text = com.andrey.beautyplanner.Locales.t(day),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                     fontSize = (12 * fontScale).sp,
@@ -226,7 +152,6 @@ fun MonthCalendarGrid(
                 .fillMaxWidth()
                 .height(gridHeight)
         ) {
-            // пустые ячейки делаем квадратами, чтобы сетка не "ехала"
             items(dayOfWeekOffset) {
                 Box(
                     modifier = Modifier
@@ -254,7 +179,7 @@ fun MonthCalendarGrid(
                                 else -> Color.Transparent
                             }
                         )
-                        .clickable(
+                        .combinedClickable(
                             interactionSource = interactionSource,
                             indication = LocalIndication.current,
                             onClick = { onDateClick(dateForCell) }
