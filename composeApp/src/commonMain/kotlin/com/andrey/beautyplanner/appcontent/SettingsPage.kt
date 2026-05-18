@@ -692,99 +692,101 @@ fun SettingsPage(
             fontSize = (11 * fontScale).sp,
             textDecoration = TextDecoration.Underline
         )
-        Divider()
+        if (AppSettings.SHOW_DEVELOPER_PREMIUM_TOOLS) {
+            Divider()
 
-        Column {
-            Text(
-                text = "Developer Access Test",
-                fontSize = (16 * fontScale).sp,
-                fontWeight = FontWeight.SemiBold,
-                color = onSurface.copy(alpha = 0.85f),
-                modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
-            )
+            Column {
+                Text(
+                    text = "Developer Access Test",
+                    fontSize = (16 * fontScale).sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = onSurface.copy(alpha = 0.85f),
+                    modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
+                )
 
-            val tierText = when (accessState.tier) {
-                AccessTier.TRIAL -> "TRIAL"
-                AccessTier.FREE_LIMITED -> "FREE_LIMITED"
-                AccessTier.PREMIUM -> "PREMIUM"
-            }
+                val tierText = when (accessState.tier) {
+                    AccessTier.TRIAL -> "TRIAL"
+                    AccessTier.FREE_LIMITED -> "FREE_LIMITED"
+                    AccessTier.PREMIUM -> "PREMIUM"
+                }
 
-            Text(
-                text = "Current tier: $tierText",
-                color = onSurface,
-                fontSize = (14 * fontScale).sp
-            )
+                Text(
+                    text = "Current tier: $tierText",
+                    color = onSurface,
+                    fontSize = (14 * fontScale).sp
+                )
 
-            Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(6.dp))
 
-            Text(
-                text = "Trial active: ${accessState.isTrialActive}",
-                color = onSurface.copy(alpha = 0.80f),
-                fontSize = (13 * fontScale).sp
-            )
+                Text(
+                    text = "Trial active: ${accessState.isTrialActive}",
+                    color = onSurface.copy(alpha = 0.80f),
+                    fontSize = (13 * fontScale).sp
+                )
 
-            Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(4.dp))
 
-            Text(
-                text = "Trial days left: ${accessState.trialDaysLeft}",
-                color = onSurface.copy(alpha = 0.80f),
-                fontSize = (13 * fontScale).sp
-            )
+                Text(
+                    text = "Trial days left: ${accessState.trialDaysLeft}",
+                    color = onSurface.copy(alpha = 0.80f),
+                    fontSize = (13 * fontScale).sp
+                )
 
-            Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(4.dp))
 
-            Text(
-                text = "Trial started at: ${AppSettings.trialStartedAtMillis}",
-                color = onSurface.copy(alpha = 0.65f),
-                fontSize = (12 * fontScale).sp
-            )
+                Text(
+                    text = "Trial started at: ${AppSettings.trialStartedAtMillis}",
+                    color = onSurface.copy(alpha = 0.65f),
+                    fontSize = (12 * fontScale).sp
+                )
 
-            Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(4.dp))
 
-            Text(
-                text = "Premium unlocked: ${AppSettings.premiumUnlocked}",
-                color = onSurface.copy(alpha = 0.65f),
-                fontSize = (12 * fontScale).sp
-            )
+                Text(
+                    text = "Premium unlocked: ${AppSettings.premiumUnlocked}",
+                    color = onSurface.copy(alpha = 0.65f),
+                    fontSize = (12 * fontScale).sp
+                )
 
-            Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
 
-            Button(
-                onClick = onEnablePremiumForTesting,
-                modifier = Modifier.fillMaxWidth().height(44.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Enable Premium (test)")
-            }
+                Button(
+                    onClick = onEnablePremiumForTesting,
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Enable Premium (test)")
+                }
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp))
 
-            OutlinedButton(
-                onClick = onDisablePremiumForTesting,
-                modifier = Modifier.fillMaxWidth().height(44.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Disable Premium", color = onSurface)
-            }
+                OutlinedButton(
+                    onClick = onDisablePremiumForTesting,
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Disable Premium", color = onSurface)
+                }
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp))
 
-            OutlinedButton(
-                onClick = onResetTrialForTesting,
-                modifier = Modifier.fillMaxWidth().height(44.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Reset Trial to Now", color = onSurface)
-            }
+                OutlinedButton(
+                    onClick = onResetTrialForTesting,
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Reset Trial to Now", color = onSurface)
+                }
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp))
 
-            OutlinedButton(
-                onClick = onExpireTrialForTesting,
-                modifier = Modifier.fillMaxWidth().height(44.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Expire Trial", color = onSurface)
+                OutlinedButton(
+                    onClick = onExpireTrialForTesting,
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Expire Trial", color = onSurface)
+                }
             }
         }
 

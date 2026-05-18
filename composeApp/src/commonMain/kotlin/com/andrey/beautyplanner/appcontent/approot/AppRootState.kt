@@ -8,6 +8,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.*
+import com.andrey.beautyplanner.billing.*
 import com.andrey.beautyplanner.notifications.Notifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -23,11 +24,19 @@ class AppRootState(
     val drawerState: DrawerState,
     private val scope: CoroutineScope,
 ) {
+    private val billingManager = BillingManager()
+
     var currentScreen by mutableStateOf(Screen.MONTH)
 
     var accessState by mutableStateOf(
         AccessManager.getAccessState(
             nowMillis = Clock.System.now().toEpochMilliseconds()
+        )
+    )
+
+    var billingUiState by mutableStateOf(
+        BillingUiState(
+            ownedPremium = AppSettings.premiumUnlocked
         )
     )
 
@@ -40,20 +49,16 @@ class AppRootState(
     var editingAppointment by mutableStateOf<Appointment?>(null)
     var bookingReadOnly by mutableStateOf(false)
 
-    // перенос: инициатор (A)
     var transferA by mutableStateOf<Appointment?>(null)
     var showTransferPickDialog by mutableStateOf(false)
 
-    // подтверждение "занято" (A на слот B)
     var showTransferConflictConfirm by mutableStateOf(false)
     var conflictB by mutableStateOf<Appointment?>(null)
     var pendingTargetDate by mutableStateOf<LocalDate?>(null)
     var pendingTargetTime by mutableStateOf("")
 
-    // перенос: модалка для переназначения клиента B
     var showRescheduleBDialog by mutableStateOf(false)
 
-    // Backup flow
     var showExportNameDialog by mutableStateOf(false)
     var exportFileName by mutableStateOf("beautyplanner-backup")
 
@@ -62,7 +67,6 @@ class AppRootState(
     var showImportError by mutableStateOf<String?>(null)
     var premiumRequiredMessage by mutableStateOf("")
 
-    // --------- PIN / Security flow ---------
     var mustCreatePin by mutableStateOf(!AppSettings.isPinSet())
     var locked by mutableStateOf(AppSettings.pinEnabled && AppSettings.isPinSet())
 
@@ -79,17 +83,14 @@ class AppRootState(
     var showClearDbBackupPrompt by mutableStateOf(false)
     var showClearDbFinalConfirm by mutableStateOf(false)
 
-    // Save error dialog
     var showSaveError by mutableStateOf<String?>(null)
 
-    // auto-shift chain confirm (when overlap on save)
     data class ShiftItem(val apptId: String, val newStartMin: Int)
     var showAutoShiftConfirm by mutableStateOf(false)
     var pendingNewAppt by mutableStateOf<Appointment?>(null)
     var shiftChain by mutableStateOf<List<ShiftItem>>(emptyList())
     var shiftBlockedApptId by mutableStateOf<String?>(null)
 
-    // ---- theme ----
     val colors: Colors
         get() = if (AppSettings.isDarkMode) {
             darkColors(
@@ -117,11 +118,151 @@ class AppRootState(
             h6 = TextStyle(fontSize = (20 * fontScale).sp, fontWeight = FontWeight.Bold),
             subtitle1 = TextStyle(fontSize = (14 * fontScale).sp)
         )
+
     fun refreshAccessState(nowMillis: Long = Clock.System.now().toEpochMilliseconds()) {
         accessState = AccessManager.getAccessState(nowMillis)
+        billingUiState = billingUiState.copy(
+            ownedPremium = AppSettings.premiumUnlocked
+        )
     }
+
     fun openDrawer() = scope.launch { drawerState.open() }
     fun closeDrawer() = scope.launch { drawerState.close() }
+
+    fun initBilling() {
+        scope.launch {
+            billingUiState = billingUiState.copy(
+                status = BillingStatus.CONNECTING,
+                errorMessage = null
+            )
+
+            val connected = billingManager.startConnection()
+            if (!connected) {
+                billingUiState = billingUiState.copy(
+                    status = BillingStatus.ERROR,
+                    errorMessage = Locales.t("premium_store_unavailable"),
+                    ownedPremium = AppSettings.premiumUnlocked
+                )
+                return@launch
+            }
+
+            billingUiState = billingUiState.copy(
+                status = BillingStatus.READY,
+                errorMessage = null
+            )
+
+            loadBillingProducts()
+            restorePremium(silent = true)
+        }
+    }
+
+    private suspend fun loadBillingProducts() {
+        billingUiState = billingUiState.copy(
+            status = BillingStatus.LOADING_PRODUCTS,
+            errorMessage = null
+        )
+
+        val products = billingManager.loadProducts(
+            listOf(PREMIUM_LIFETIME_PRODUCT_ID)
+        )
+
+        billingUiState = billingUiState.copy(
+            status = BillingStatus.READY,
+            products = products,
+            errorMessage = if (products.isEmpty()) Locales.t("premium_product_not_found") else null,
+            ownedPremium = AppSettings.premiumUnlocked
+        )
+    }
+
+    fun buyPremium() {
+        scope.launch {
+            val product = billingUiState.products.firstOrNull {
+                it.productId == PREMIUM_LIFETIME_PRODUCT_ID
+            }
+
+            if (product == null) {
+                billingUiState = billingUiState.copy(
+                    status = BillingStatus.ERROR,
+                    errorMessage = Locales.t("premium_product_not_found")
+                )
+                return@launch
+            }
+
+            billingUiState = billingUiState.copy(
+                status = BillingStatus.PURCHASING,
+                errorMessage = null
+            )
+
+            when (val result = billingManager.purchasePremium(product.productId)) {
+                is PurchaseResult.Success -> {
+                    refreshAccessState()
+                    billingUiState = billingUiState.copy(
+                        status = BillingStatus.PURCHASED,
+                        errorMessage = null,
+                        ownedPremium = true
+                    )
+                }
+
+                is PurchaseResult.Cancelled -> {
+                    billingUiState = billingUiState.copy(
+                        status = BillingStatus.READY,
+                        errorMessage = Locales.t("premium_purchase_cancelled"),
+                        ownedPremium = AppSettings.premiumUnlocked
+                    )
+                }
+
+                is PurchaseResult.Error -> {
+                    billingUiState = billingUiState.copy(
+                        status = BillingStatus.ERROR,
+                        errorMessage = result.message.ifBlank {
+                            Locales.t("premium_purchase_failed")
+                        },
+                        ownedPremium = AppSettings.premiumUnlocked
+                    )
+                }
+            }
+        }
+    }
+
+    fun restorePremium(silent: Boolean = false) {
+        scope.launch {
+            if (!silent) {
+                billingUiState = billingUiState.copy(
+                    status = BillingStatus.RESTORING,
+                    errorMessage = null
+                )
+            }
+
+            when (val result = billingManager.restorePurchases()) {
+                is RestoreResult.Restored -> {
+                    refreshAccessState()
+                    billingUiState = billingUiState.copy(
+                        status = BillingStatus.READY,
+                        errorMessage = if (silent) null else Locales.t("premium_restored"),
+                        ownedPremium = true
+                    )
+                }
+
+                is RestoreResult.NothingToRestore -> {
+                    billingUiState = billingUiState.copy(
+                        status = BillingStatus.READY,
+                        errorMessage = if (silent) null else Locales.t("premium_nothing_to_restore"),
+                        ownedPremium = AppSettings.premiumUnlocked
+                    )
+                }
+
+                is RestoreResult.Error -> {
+                    billingUiState = billingUiState.copy(
+                        status = if (silent) BillingStatus.READY else BillingStatus.ERROR,
+                        errorMessage = if (silent) null else result.message.ifBlank {
+                            Locales.t("premium_restore_failed")
+                        },
+                        ownedPremium = AppSettings.premiumUnlocked
+                    )
+                }
+            }
+        }
+    }
 
     fun runProtected(title: String, text: String, confirmText: String, action: () -> Unit) {
         if (!AppSettings.isPinSet()) {
@@ -139,6 +280,7 @@ class AppRootState(
         pinDialogOnSuccess = action
         showPinDialog = true
     }
+
     fun showPremiumRequired(message: String) {
         premiumRequiredMessage = message
         currentScreen = Screen.PREMIUM_ACCESS
@@ -268,6 +410,10 @@ class AppRootState(
             replaceById(updated)
         }
     }
+
+    fun dispose() {
+        billingManager.dispose()
+    }
 }
 
 @Composable
@@ -295,6 +441,13 @@ fun rememberAppRootState(): AppRootState {
             }
 
         state.refreshAccessState(nowMillis)
+        state.initBilling()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            state.dispose()
+        }
     }
 
     return state

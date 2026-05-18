@@ -58,6 +58,7 @@ kotlin {
                 implementation("androidx.core:core-ktx:1.13.1")
                 implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.6.11")
                 implementation("androidx.browser:browser:1.8.0")
+                implementation(libs.googlePlayBilling)
             }
         }
 

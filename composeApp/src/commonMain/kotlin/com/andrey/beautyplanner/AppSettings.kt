@@ -34,43 +34,38 @@ private data class SettingsSnapshot(
 
     val trialStartedAtMillis: Long = 0L,
     val premiumUnlocked: Boolean = false,
+    val premiumProductId: String = "",
+    val premiumPurchaseToken: String = "",
 
     // --- security ---
     val pinEnabled: Boolean = false,
-    val adminPinHash: String = "" // stored hash, not pin
+    val adminPinHash: String = ""
 )
+
 object AppSettings {
 
+    const val SHOW_DEVELOPER_PREMIUM_TOOLS = false
     private val storage: SettingsStorage by lazy { createSettingsStorage() }
 
     var isDarkMode by mutableStateOf(false)
     var selectedLanguage by mutableStateOf("Русский")
 
-    /**
-     * Stored values:
-     * - "Мелкий"
-     * - "Средний"
-     * - "Крупный"
-     *
-     * Важно: не переименовываем эти строки, чтобы не ломать существующие сохранения.
-     * Мы меняем только коэффициенты (getFontScale()) — это безопасно.
-     */
     var fontSizeMode by mutableStateOf("Средний")
 
     var ownerName by mutableStateOf("Euvgi")
 
-    // --- notifications settings ---
     var notificationsEnabled by mutableStateOf(true)
     var notificationSound by mutableStateOf(NotificationSound.DEFAULT)
 
-    var reminderDaysBefore by mutableStateOf(0)   // 0..3
-    var reminderHoursBefore by mutableStateOf(1)  // 0..12
+    var reminderDaysBefore by mutableStateOf(0)
+    var reminderHoursBefore by mutableStateOf(1)
 
     var servicePhone by mutableStateOf("")
     var trialStartedAtMillis by mutableStateOf(0L)
     var premiumUnlocked by mutableStateOf(false)
+    var premiumProductId by mutableStateOf("")
+    var premiumPurchaseToken by mutableStateOf("")
 
-    // --- security ---
     var pinEnabled by mutableStateOf(false)
     private var adminPinHash by mutableStateOf("")
 
@@ -86,16 +81,10 @@ object AppSettings {
         "Українська" to "uk"
     )
 
-    /**
-     * New mapping:
-     * - "Мелкий"  : 0.80
-     * - "Средний" : 1.10
-     * - "Крупный" : 1.22
-     */
     fun getFontScale(): Float = when (fontSizeMode) {
         "Мелкий" -> 0.80f
         "Крупный" -> 1.22f
-        else -> 1.10f // "Средний"
+        else -> 1.10f
     }
 
     fun isPinSet(): Boolean = adminPinHash.isNotBlank()
@@ -104,7 +93,6 @@ object AppSettings {
         pin.length in 4..8 && pin.all { it.isDigit() }
 
     private fun hashPin(pin: String): String {
-        // FNV-1a 32-bit
         var hash = 0x811C9DC5.toInt()
         val prime = 0x01000193
         val bytes = pin.encodeToByteArray()
@@ -160,6 +148,8 @@ object AppSettings {
 
         trialStartedAtMillis = snapshot.trialStartedAtMillis
         premiumUnlocked = snapshot.premiumUnlocked
+        premiumProductId = snapshot.premiumProductId
+        premiumPurchaseToken = snapshot.premiumPurchaseToken
 
         pinEnabled = snapshot.pinEnabled
         adminPinHash = snapshot.adminPinHash
@@ -185,6 +175,8 @@ object AppSettings {
 
             trialStartedAtMillis = trialStartedAtMillis,
             premiumUnlocked = premiumUnlocked,
+            premiumProductId = premiumProductId,
+            premiumPurchaseToken = premiumPurchaseToken,
 
             pinEnabled = pinEnabled,
             adminPinHash = adminPinHash

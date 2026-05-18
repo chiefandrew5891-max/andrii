@@ -459,11 +459,15 @@ fun AppRootContent(
             Screen.PREMIUM_ACCESS -> PremiumAccessScreen(
                 accessState = state.accessState,
                 message = state.premiumRequiredMessage,
+                billingUiState = state.billingUiState,
                 onContinueFree = {
                     state.currentScreen = Screen.SETTINGS
                 },
                 onUnlockPremium = {
-                    state.premiumRequiredMessage = Locales.t("premium_billing_coming_soon")
+                    state.buyPremium()
+                },
+                onRestorePurchases = {
+                    state.restorePremium()
                 }
             )
         }

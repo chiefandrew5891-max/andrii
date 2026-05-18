@@ -24,13 +24,18 @@ import com.andrey.beautyplanner.AccessState
 import com.andrey.beautyplanner.AccessTier
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
+import com.andrey.beautyplanner.billing.BillingStatus
+import com.andrey.beautyplanner.billing.BillingUiState
+import com.andrey.beautyplanner.billing.PREMIUM_LIFETIME_PRODUCT_ID
 
 @Composable
 fun PremiumAccessScreen(
     accessState: AccessState,
     message: String,
+    billingUiState: BillingUiState,
     onContinueFree: () -> Unit,
-    onUnlockPremium: () -> Unit
+    onUnlockPremium: () -> Unit,
+    onRestorePurchases: () -> Unit
 ) {
     val fontScale = AppSettings.getFontScale()
 
@@ -45,6 +50,29 @@ fun PremiumAccessScreen(
         AccessTier.FREE_LIMITED -> Locales.t("premium_free_limited_subtitle")
         AccessTier.PREMIUM -> Locales.t("premium_active_subtitle")
     }
+
+    val premiumProduct = billingUiState.products.firstOrNull {
+        it.productId == PREMIUM_LIFETIME_PRODUCT_ID
+    }
+
+    val buyButtonText = when {
+        billingUiState.ownedPremium || accessState.tier == AccessTier.PREMIUM ->
+            Locales.t("premium_already_owned")
+        premiumProduct != null && premiumProduct.formattedPrice.isNotBlank() ->
+            "${Locales.t("premium_buy_btn")} • ${premiumProduct.formattedPrice}"
+        billingUiState.status == BillingStatus.LOADING_PRODUCTS ||
+                billingUiState.status == BillingStatus.CONNECTING ->
+            Locales.t("premium_loading_price")
+        else ->
+            Locales.t("premium_buy_btn")
+    }
+
+    val buyEnabled =
+        !billingUiState.ownedPremium &&
+                accessState.tier != AccessTier.PREMIUM &&
+                billingUiState.status != BillingStatus.PURCHASING &&
+                billingUiState.status != BillingStatus.RESTORING &&
+                premiumProduct != null
 
     Column(
         modifier = Modifier
@@ -74,12 +102,20 @@ fun PremiumAccessScreen(
 
         if (message.isNotBlank()) {
             Spacer(modifier = Modifier.padding(top = 18.dp))
-
             Text(
                 text = message,
                 fontSize = (15 * fontScale).sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colors.onBackground
+            )
+        }
+
+        if (!billingUiState.errorMessage.isNullOrBlank()) {
+            Spacer(modifier = Modifier.padding(top = 16.dp))
+            Text(
+                text = billingUiState.errorMessage.orEmpty(),
+                fontSize = (14 * fontScale).sp,
+                color = MaterialTheme.colors.error
             )
         }
 
@@ -103,12 +139,26 @@ fun PremiumAccessScreen(
 
         Button(
             onClick = onUnlockPremium,
+            enabled = buyEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp)
         ) {
             Text(
-                text = Locales.t("premium_unlock_btn"),
+                text = buyButtonText,
+                fontSize = (15 * fontScale).sp
+            )
+        }
+
+        Spacer(modifier = Modifier.padding(top = 10.dp))
+
+        OutlinedButton(
+            onClick = onRestorePurchases,
+            enabled = billingUiState.status != BillingStatus.PURCHASING,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = Locales.t("premium_restore_btn"),
                 fontSize = (15 * fontScale).sp
             )
         }
