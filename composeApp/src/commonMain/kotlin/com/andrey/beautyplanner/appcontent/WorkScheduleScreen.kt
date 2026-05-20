@@ -65,7 +65,11 @@ fun WorkScheduleScreen() {
         }
     }
 
-    val intervals = AppSettings.getActiveWeeklyBlockedIntervals()
+    val intervals = AppSettings
+        .getActiveWeeklyBlockedIntervals()
+        .sortedWith(
+            compareBy<WeeklyBlockedInterval>({ it.dayOfWeek }, { it.startTime }, { it.endTime })
+        )
 
     Column(
         modifier = Modifier
@@ -137,7 +141,10 @@ fun WorkScheduleScreen() {
                         )
                     )
                 }
+
                 selectedDays = emptySet()
+                startTime = "08:00"
+                endTime = "09:00"
             },
             enabled = selectedDays.isNotEmpty(),
             modifier = Modifier.fillMaxWidth()

@@ -137,12 +137,24 @@ object AppSettings {
 
     fun upsertWeeklyBlockedInterval(interval: WeeklyBlockedInterval) {
         val idx = weeklyBlockedIntervals.indexOfFirst { it.id == interval.id }
+
         weeklyBlockedIntervals =
             if (idx >= 0) {
                 weeklyBlockedIntervals.toMutableList().apply { set(idx, interval) }
             } else {
-                weeklyBlockedIntervals + interval
+                val duplicateExists = weeklyBlockedIntervals.any {
+                    it.dayOfWeek == interval.dayOfWeek &&
+                            it.startTime == interval.startTime &&
+                            it.endTime == interval.endTime
+                }
+
+                if (duplicateExists) {
+                    weeklyBlockedIntervals
+                } else {
+                    weeklyBlockedIntervals + interval
+                }
             }
+
         persist()
     }
 
