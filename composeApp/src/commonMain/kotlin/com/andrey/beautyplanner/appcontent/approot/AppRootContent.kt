@@ -31,6 +31,10 @@ import kotlinx.datetime.plus
 import androidx.compose.material.Button
 import com.andrey.beautyplanner.appcontent.ServiceTemplatesScreen
 import com.andrey.beautyplanner.appcontent.WorkScheduleScreen
+import com.andrey.beautyplanner.appcontent.AppearanceSettingsScreen
+import com.andrey.beautyplanner.appcontent.DeveloperAccessScreen
+import com.andrey.beautyplanner.appcontent.BackupSettingsScreen
+
 
 @Composable
 fun AppRootContent(
@@ -69,51 +73,6 @@ fun AppRootContent(
         when (state.currentScreen) {
             Screen.SETTINGS -> SettingsPage(
                 accessState = state.accessState,
-                onExport = {
-                    val nowMillis = Clock.System.now().toEpochMilliseconds()
-                    if (!AccessManager.hasFeature(PremiumFeature.BACKUP_EXPORT, nowMillis)) {
-                        state.showPremiumRequired(
-                            message = Locales.t("premium_required_export"),
-                            returnTo = Screen.SETTINGS
-                        )
-                        return@SettingsPage
-                    }
-
-                    state.runProtected(
-                        title = Locales.t("pin_required"),
-                        text = Locales.t("export_requires_pin"),
-                        confirmText = Locales.t("confirm")
-                    ) {
-                        state.exportFileName = "beautyplanner-backup"
-                        state.showExportNameDialog = true
-                    }
-                },
-                onImport = {
-                    val nowMillis = Clock.System.now().toEpochMilliseconds()
-                    if (!AccessManager.hasFeature(PremiumFeature.BACKUP_IMPORT, nowMillis)) {
-                        state.showPremiumRequired(
-                            message = Locales.t("premium_required_import"),
-                            returnTo = Screen.SETTINGS
-                        )
-                        return@SettingsPage
-                    }
-
-                    state.runProtected(
-                        title = Locales.t("pin_required"),
-                        text = Locales.t("import_requires_pin"),
-                        confirmText = Locales.t("confirm")
-                    ) {
-                        BackupFilePicker.importJson(
-                            onPicked = { jsonText ->
-                                state.pendingImportText = jsonText
-                                state.showImportConfirm = true
-                            },
-                            onError = { errorText ->
-                                state.showImportError = errorText
-                            }
-                        )
-                    }
-                },
                 onSetOrChangePin = {
                     state.showSetPinDialog = true
                 },
@@ -126,41 +85,8 @@ fun AppRootContent(
                         state.showRemovePinConfirm = true
                     }
                 },
-                onClearDatabase = {
-                    state.runProtected(
-                        title = Locales.t("clear_db_title"),
-                        text = Locales.t("clear_db_requires_pin"),
-                        confirmText = Locales.t("confirm")
-                    ) {
-                        state.showClearDbBackupPrompt = true
-                    }
-                },
                 onOpenPrivacyPolicy = {
-                    state.currentScreen = Screen.PRIVACY_POLICY
-                },
-                onEnablePremiumForTesting = {
-                    AppSettings.premiumUnlocked = true
-                    AppSettings.persist()
-                    state.refreshAccessState()
-                },
-                onDisablePremiumForTesting = {
-                    AppSettings.premiumUnlocked = false
-                    AppSettings.persist()
-                    state.refreshAccessState()
-                },
-                onResetTrialForTesting = {
-                    AppSettings.trialStartedAtMillis = Clock.System.now().toEpochMilliseconds()
-                    AppSettings.premiumUnlocked = false
-                    AppSettings.persist()
-                    state.refreshAccessState()
-                },
-                onExpireTrialForTesting = {
-                    val now = Clock.System.now().toEpochMilliseconds()
-                    val fifteenDaysMillis = 15L * 24L * 60L * 60L * 1000L
-                    AppSettings.trialStartedAtMillis = now - fifteenDaysMillis
-                    AppSettings.premiumUnlocked = false
-                    AppSettings.persist()
-                    state.refreshAccessState()
+                    state.navigateTo(Screen.PRIVACY_POLICY)
                 },
                 onOpenPremiumScreen = {
                     state.showPremiumRequired(
@@ -178,7 +104,7 @@ fun AppRootContent(
                         return@SettingsPage
                     }
 
-                    state.currentScreen = Screen.SERVICE_TEMPLATES
+                    state.navigateTo(Screen.SERVICE_TEMPLATES)
                 },
                 onOpenWorkSchedule = {
                     val nowMillis = Clock.System.now().toEpochMilliseconds()
@@ -190,8 +116,17 @@ fun AppRootContent(
                         return@SettingsPage
                     }
 
-                    state.currentScreen = Screen.WORK_SCHEDULE
+                    state.navigateTo(Screen.WORK_SCHEDULE)
                 },
+                onOpenAppearanceSettings = {
+                    state.navigateTo(Screen.APPEARANCE_SETTINGS)
+                },
+                onOpenBackupSettings = {
+                    state.navigateTo(Screen.BACKUP_SETTINGS)
+                },
+                onOpenDeveloperAccess = {
+                    state.navigateTo(Screen.DEVELOPER_ACCESS)
+                }
             )
 
             Screen.STATS -> {
@@ -372,7 +307,7 @@ fun AppRootContent(
                                 selectedDate = state.selectedDate
                             ) { date ->
                                 state.selectedDate = date
-                                state.currentScreen = Screen.DAY_DETAILS
+                                state.navigateTo(Screen.DAY_DETAILS)
                             }
                         }
 
@@ -433,6 +368,8 @@ fun AppRootContent(
                                     showDateInCard = true,
                                     startHm = appt.time,
                                     endHm = endHm,
+                                    nowDate = state.today,
+                                    nowMinutes = nowMin,
                                     onClick = {
                                         viewingAppt = appt
                                         viewingStartHm = appt.time
@@ -493,7 +430,7 @@ fun AppRootContent(
             Screen.PRIVACY_POLICY -> PrivacyPolicyScreen(
                 languageCode = Locales.currentLanguage,
                 onBack = {
-                    state.currentScreen = Screen.SETTINGS
+                    state.navigateBack()
                 }
             )
             Screen.PREMIUM_ACCESS -> PremiumAccessScreen(
@@ -513,8 +450,97 @@ fun AppRootContent(
                     state.restorePremium()
                 }
             )
+            Screen.BACKUP_SETTINGS -> BackupSettingsScreen(
+                onExport = {
+                    val nowMillis = Clock.System.now().toEpochMilliseconds()
+                    if (!AccessManager.hasFeature(PremiumFeature.BACKUP_EXPORT, nowMillis)) {
+                        state.showPremiumRequired(
+                            message = Locales.t("premium_required_export"),
+                            returnTo = Screen.BACKUP_SETTINGS
+                        )
+                        return@BackupSettingsScreen
+                    }
+
+                    state.runProtected(
+                        title = Locales.t("pin_required"),
+                        text = Locales.t("export_requires_pin"),
+                        confirmText = Locales.t("confirm")
+                    ) {
+                        state.exportFileName = "beautyplanner-backup"
+                        state.showExportNameDialog = true
+                    }
+                },
+                onImport = {
+                    val nowMillis = Clock.System.now().toEpochMilliseconds()
+                    if (!AccessManager.hasFeature(PremiumFeature.BACKUP_IMPORT, nowMillis)) {
+                        state.showPremiumRequired(
+                            message = Locales.t("premium_required_import"),
+                            returnTo = Screen.BACKUP_SETTINGS
+                        )
+                        return@BackupSettingsScreen
+                    }
+
+                    state.runProtected(
+                        title = Locales.t("pin_required"),
+                        text = Locales.t("import_requires_pin"),
+                        confirmText = Locales.t("confirm")
+                    ) {
+                        BackupFilePicker.importJson(
+                            onPicked = { jsonText ->
+                                state.pendingImportText = jsonText
+                                state.showImportConfirm = true
+                            },
+                            onError = { errorText ->
+                                state.showImportError = errorText
+                            }
+                        )
+                    }
+                },
+                onClearDatabase = {
+                    state.runProtected(
+                        title = Locales.t("clear_db_title"),
+                        text = Locales.t("clear_db_requires_pin"),
+                        confirmText = Locales.t("confirm")
+                    ) {
+                        state.showClearDbBackupPrompt = true
+                    }
+                },
+                dbOpsAllowed = AppSettings.pinEnabled && AppSettings.isPinSet()
+            )
+            Screen.DEVELOPER_ACCESS -> DeveloperAccessScreen(
+                accessState = state.accessState,
+                onEnablePremium = {
+                    AppSettings.premiumUnlocked = true
+                    AppSettings.persist()
+                    state.refreshAccessState()
+                },
+                onDisablePremium = {
+                    AppSettings.premiumUnlocked = false
+                    AppSettings.persist()
+                    state.refreshAccessState()
+                },
+                onResetTrial = {
+                    AppSettings.trialStartedAtMillis = Clock.System.now().toEpochMilliseconds()
+                    AppSettings.premiumUnlocked = false
+                    AppSettings.persist()
+                    state.refreshAccessState()
+                },
+                onExpireTrial = {
+                    val now = Clock.System.now().toEpochMilliseconds()
+                    val fifteenDaysMillis = 15L * 24L * 60L * 60L * 1000L
+                    AppSettings.trialStartedAtMillis = now - fifteenDaysMillis
+                    AppSettings.premiumUnlocked = false
+                    AppSettings.persist()
+                    state.refreshAccessState()
+                },
+                onLogoutDeveloperMode = {
+                    AppSettings.lockDeveloperMode()
+                    state.navigateBack()
+                }
+            )
             Screen.SERVICE_TEMPLATES -> ServiceTemplatesScreen()
             Screen.WORK_SCHEDULE -> WorkScheduleScreen()
+            Screen.APPEARANCE_SETTINGS -> AppearanceSettingsScreen()
         }
 
         if (state.showBookingDialog) {

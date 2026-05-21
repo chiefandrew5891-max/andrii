@@ -1,21 +1,55 @@
 package com.andrey.beautyplanner.appcontent
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Slider
+import androidx.compose.material.SliderDefaults
+import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.TextFieldColors
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.AlertDialog
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.andrey.beautyplanner.AccessState
+import com.andrey.beautyplanner.AccessTier
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.DataManager
 import com.andrey.beautyplanner.Locales
@@ -24,31 +58,20 @@ import com.andrey.beautyplanner.notifications.Notifications
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlin.math.roundToInt
-import com.andrey.beautyplanner.AccessState
-import com.andrey.beautyplanner.AccessTier
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SettingsPage(
     accessState: AccessState,
-    onExport: () -> Unit,
-    onImport: () -> Unit,
     onSetOrChangePin: () -> Unit,
     onRemovePin: () -> Unit,
-    onClearDatabase: () -> Unit,
     onOpenPrivacyPolicy: () -> Unit,
     onOpenPremiumScreen: () -> Unit,
     onOpenServiceTemplates: () -> Unit,
     onOpenWorkSchedule: () -> Unit,
-    onEnablePremiumForTesting: () -> Unit,
-    onDisablePremiumForTesting: () -> Unit,
-    onResetTrialForTesting: () -> Unit,
-    onExpireTrialForTesting: () -> Unit
+    onOpenAppearanceSettings: () -> Unit,
+    onOpenBackupSettings: () -> Unit,
+    onOpenDeveloperAccess: () -> Unit
 ) {
-    val languages = AppSettings.languageCodes.keys.toList()
-    val themeOptions = listOf(Locales.t("theme_light"), Locales.t("theme_dark"))
-    val fontOptions = listOf(Locales.t("font_small"), Locales.t("font_medium"), Locales.t("font_large"))
-
     val fontScale = AppSettings.getFontScale()
 
     val onSurface = MaterialTheme.colors.onSurface
@@ -72,10 +95,12 @@ fun SettingsPage(
     var showDisablePinConfirm by remember { mutableStateOf(false) }
     var pendingPinEnabledValue by remember { mutableStateOf(AppSettings.pinEnabled) }
 
-    val dbOpsAllowed = AppSettings.pinEnabled && AppSettings.isPinSet()
+    var securityTapCount by remember { mutableStateOf(0) }
+    var showDeveloperPasswordDialog by remember { mutableStateOf(false) }
+    var developerPasswordInput by remember { mutableStateOf("") }
+    var developerPasswordError by remember { mutableStateOf(false) }
 
-    var nameEditMode by remember { mutableStateOf(false) }
-    var userNameDraft by remember { mutableStateOf(AppSettings.ownerName) }
+    val dbOpsAllowed = AppSettings.pinEnabled && AppSettings.isPinSet()
 
     LaunchedEffect(notificationsEnabled, notificationSound, reminderDays, reminderHours) {
         delay(600)
@@ -126,11 +151,13 @@ fun SettingsPage(
                         Text(Locales.t("cancel"), color = onSurface.copy(alpha = 0.85f))
                     }
                     Spacer(Modifier.width(15.dp))
-                    Button(onClick = {
-                        showSupportEditConfirm = false
-                        supportEditMode = true
-                        supportPhoneDraft = AppSettings.servicePhone
-                    }) {
+                    Button(
+                        onClick = {
+                            showSupportEditConfirm = false
+                            supportEditMode = true
+                            supportPhoneDraft = AppSettings.servicePhone
+                        }
+                    ) {
                         Text(Locales.t("support_phone_edit_confirm_yes"))
                     }
                 }
@@ -148,33 +175,103 @@ fun SettingsPage(
             title = { Text(Locales.t("security_section"), color = onSurface) },
             text = {
                 Text(
-                    "При отключении PIN-кода будут ограничены операции с базой данных:\n" +
-                            "• импорт\n" +
-                            "• экспорт\n" +
-                            "• очистка базы\n\n" +
-                            "Продолжить?",
+                    Locales.t("pin_disable_warning"),
                     color = onSurface.copy(alpha = 0.85f)
                 )
             },
             confirmButton = {
-                Button(onClick = {
-                    AppSettings.pinEnabled = false
-                    AppSettings.persist()
-                    pendingPinEnabledValue = false
-                    showDisablePinConfirm = false
-                }) { Text(Locales.t("confirm")) }
+                Button(
+                    onClick = {
+                        AppSettings.pinEnabled = false
+                        AppSettings.persist()
+                        pendingPinEnabledValue = false
+                        showDisablePinConfirm = false
+                    }
+                ) {
+                    Text(Locales.t("confirm"))
+                }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showDisablePinConfirm = false
-                    pendingPinEnabledValue = true
-                }) { Text(Locales.t("cancel"), color = onSurface.copy(alpha = 0.85f)) }
+                TextButton(
+                    onClick = {
+                        showDisablePinConfirm = false
+                        pendingPinEnabledValue = true
+                    }
+                ) {
+                    Text(Locales.t("cancel"), color = onSurface.copy(alpha = 0.85f))
+                }
             },
             shape = RoundedCornerShape(16.dp)
         )
     }
 
-    val fieldColors = TextFieldDefaults.outlinedTextFieldColors(
+    if (showDeveloperPasswordDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeveloperPasswordDialog = false
+                developerPasswordInput = ""
+                developerPasswordError = false
+            },
+            title = {
+                Text(Locales.t("developer_password_title"), color = onSurface)
+            },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = developerPasswordInput,
+                        onValueChange = {
+                            developerPasswordInput = it
+                            developerPasswordError = false
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text(Locales.t("developer_password_hint")) },
+                        isError = developerPasswordError
+                    )
+
+                    if (developerPasswordError) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = Locales.t("developer_password_invalid"),
+                            color = MaterialTheme.colors.error,
+                            fontSize = (12 * fontScale).sp
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (AppSettings.verifyDeveloperPassword(developerPasswordInput)) {
+                            AppSettings.unlockDeveloperMode()
+                            securityTapCount = 0
+                            showDeveloperPasswordDialog = false
+                            developerPasswordInput = ""
+                            developerPasswordError = false
+                        } else {
+                            developerPasswordError = true
+                        }
+                    }
+                ) {
+                    Text(Locales.t("developer_unlock"))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeveloperPasswordDialog = false
+                        developerPasswordInput = ""
+                        developerPasswordError = false
+                    }
+                ) {
+                    Text(Locales.t("cancel"), color = onSurface.copy(alpha = 0.85f))
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    val fieldColors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         textColor = onSurface,
         cursorColor = MaterialTheme.colors.primary,
         focusedBorderColor = MaterialTheme.colors.primary,
@@ -198,53 +295,34 @@ fun SettingsPage(
             color = onBg
         )
 
-        SettingsDropdown(
-            label = Locales.t("language_label"),
-            selected = AppSettings.selectedLanguage,
-            items = languages,
-            labelSpacing = labelSpacingDp,
-            fieldColors = fieldColors,
-            onSelect = { newValue ->
-                if (AppSettings.selectedLanguage != newValue) {
-                    AppSettings.selectedLanguage = newValue
-                    val code = AppSettings.languageCodes[newValue] ?: "en"
-                    Locales.currentLanguage = code
-                    AppSettings.persist()
-                }
-            }
-        )
+        Column {
+            Text(
+                text = Locales.t("appearance_settings"),
+                fontSize = (16 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface.copy(alpha = 0.85f),
+                modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
+            )
 
-        SettingsDropdown(
-            label = Locales.t("theme_label"),
-            selected = if (AppSettings.isDarkMode) Locales.t("theme_dark") else Locales.t("theme_light"),
-            items = themeOptions,
-            labelSpacing = labelSpacingDp,
-            fieldColors = fieldColors,
-            onSelect = { newValue ->
-                AppSettings.isDarkMode = (newValue == Locales.t("theme_dark"))
-                AppSettings.persist()
-            }
-        )
+            Text(
+                text = Locales.t("appearance_settings_hint"),
+                fontSize = (13 * fontScale).sp,
+                color = onSurface.copy(alpha = 0.70f),
+                lineHeight = (19 * fontScale).sp
+            )
 
-        SettingsDropdown(
-            label = Locales.t("font_size_label"),
-            selected = when (AppSettings.fontSizeMode) {
-                "Мелкий" -> Locales.t("font_small")
-                "Крупный" -> Locales.t("font_large")
-                else -> Locales.t("font_medium")
-            },
-            items = fontOptions,
-            labelSpacing = labelSpacingDp,
-            fieldColors = fieldColors,
-            onSelect = { newValue ->
-                AppSettings.fontSizeMode = when (newValue) {
-                    Locales.t("font_small") -> "Мелкий"
-                    Locales.t("font_large") -> "Крупный"
-                    else -> "Средний"
-                }
-                AppSettings.persist()
+            Spacer(Modifier.height(12.dp))
+
+            Button(
+                onClick = onOpenAppearanceSettings,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(Locales.t("appearance_settings"))
             }
-        )
+        }
 
         Divider()
 
@@ -340,6 +418,7 @@ fun SettingsPage(
         }
 
         Divider()
+
         Column {
             Text(
                 text = Locales.t("work_schedule"),
@@ -418,10 +497,10 @@ fun SettingsPage(
                     ?: Locales.t("notif_sound_default"),
                 items = soundItems.map { it.first },
                 labelSpacing = labelSpacingDp,
-                fieldColors = fieldColors,
                 onSelect = { selected ->
-                    val s = soundItems.firstOrNull { it.first == selected }?.second ?: NotificationSound.DEFAULT
-                    AppSettings.notificationSound = s
+                    val sound =
+                        soundItems.firstOrNull { it.first == selected }?.second ?: NotificationSound.DEFAULT
+                    AppSettings.notificationSound = sound
                     AppSettings.persist()
                 }
             )
@@ -486,8 +565,11 @@ fun SettingsPage(
             )
 
             val totalMinutes = AppSettings.reminderDaysBefore * 24 * 60 + AppSettings.reminderHoursBefore * 60
-            val summary = if (totalMinutes <= 0) Locales.t("remind_off")
-            else "${Locales.daysCount(AppSettings.reminderDaysBefore)} • ${Locales.hoursCount(AppSettings.reminderHoursBefore)}"
+            val summary = if (totalMinutes <= 0) {
+                Locales.t("remind_off")
+            } else {
+                "${Locales.daysCount(AppSettings.reminderDaysBefore)} • ${Locales.hoursCount(AppSettings.reminderHoursBefore)}"
+            }
 
             Text(
                 text = "${Locales.t("remind_summary")}: $summary",
@@ -513,7 +595,12 @@ fun SettingsPage(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 enabled = supportEditMode,
-                label = { Text(Locales.t("support_phone_label"), color = onSurface.copy(alpha = 0.65f)) },
+                label = {
+                    Text(
+                        Locales.t("support_phone_label"),
+                        color = onSurface.copy(alpha = 0.65f)
+                    )
+                },
                 colors = fieldColors
             )
 
@@ -528,7 +615,9 @@ fun SettingsPage(
             if (!supportEditMode) {
                 OutlinedButton(
                     onClick = { showSupportEditConfirm = true },
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(Locales.t("support_phone_edit"), color = onSurface)
@@ -540,7 +629,9 @@ fun SettingsPage(
                         AppSettings.persist()
                         supportEditMode = false
                     },
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(Locales.t("support_phone_save"))
@@ -552,104 +643,36 @@ fun SettingsPage(
 
         Column {
             Text(
-                text = Locales.t("user_name_label"),
+                text = Locales.t("backup_settings_title"),
                 fontSize = (16 * fontScale).sp,
                 fontWeight = FontWeight.SemiBold,
                 color = onSurface.copy(alpha = 0.85f),
                 modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
             )
 
-            OutlinedTextField(
-                value = if (nameEditMode) userNameDraft else AppSettings.ownerName,
-                onValueChange = { if (nameEditMode) userNameDraft = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                enabled = nameEditMode,
-                label = { Text(Locales.t("user_name_hint"), color = onSurface.copy(alpha = 0.65f)) },
-                colors = fieldColors
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            if (!nameEditMode) {
-                OutlinedButton(
-                    onClick = {
-                        nameEditMode = true
-                        userNameDraft = AppSettings.ownerName
-                    },
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(Locales.t("support_phone_edit"), color = onSurface)
-                }
-            } else {
-                Button(
-                    onClick = {
-                        AppSettings.ownerName = userNameDraft.trim()
-                        AppSettings.persist()
-                        nameEditMode = false
-                    },
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(Locales.t("support_phone_save"))
-                }
-            }
-        }
-
-        Divider()
-
-        Column {
             Text(
-                text = Locales.t("backup_section"),
-                fontSize = (16 * fontScale).sp,
-                fontWeight = FontWeight.SemiBold,
-                color = onSurface.copy(alpha = 0.85f),
-                modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
+                text = Locales.t("backup_settings_hint"),
+                fontSize = (13 * fontScale).sp,
+                color = onSurface.copy(alpha = 0.70f),
+                lineHeight = (19 * fontScale).sp
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = onExport,
-                    enabled = dbOpsAllowed,
-                    modifier = Modifier.weight(0.45f).height(38.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = ButtonDefaults.elevation(0.dp, 0.dp)
-                ) {
-                    Text(text = Locales.t("export_db"), fontSize = (14 * fontScale).sp)
-                }
-
-                Spacer(modifier = Modifier.weight(0.1f))
-
-                OutlinedButton(
-                    onClick = onImport,
-                    enabled = dbOpsAllowed,
-                    modifier = Modifier.weight(0.45f).height(38.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(text = Locales.t("import_db"), fontSize = (14 * fontScale).sp, color = onSurface)
-                }
-            }
 
             Spacer(Modifier.height(12.dp))
 
-            OutlinedButton(
-                onClick = onClearDatabase,
-                enabled = dbOpsAllowed,
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+            Button(
+                onClick = onOpenBackupSettings,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Text(Locales.t("clear_db"), color = Color.Red, fontWeight = FontWeight.SemiBold)
+                Text(Locales.t("backup_settings_open"))
             }
 
             if (!dbOpsAllowed) {
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "Чтобы использовать импорт/экспорт/очистку базы, включите PIN и установите его.",
+                    text = Locales.t("backup_pin_required_hint"),
                     color = onSurface.copy(alpha = 0.60f),
                     fontSize = (12 * fontScale).sp
                 )
@@ -664,7 +687,22 @@ fun SettingsPage(
                 fontSize = (16 * fontScale).sp,
                 fontWeight = FontWeight.SemiBold,
                 color = onSurface.copy(alpha = 0.85f),
-                modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
+                modifier = Modifier
+                    .padding(bottom = sectionTitlePaddingBottomDp)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember {
+                            androidx.compose.foundation.interaction.MutableInteractionSource()
+                        }
+                    ) {
+                        securityTapCount += 1
+                        if (securityTapCount >= 10) {
+                            securityTapCount = 0
+                            developerPasswordInput = ""
+                            developerPasswordError = false
+                            showDeveloperPasswordDialog = true
+                        }
+                    }
             )
 
             Row(
@@ -711,7 +749,9 @@ fun SettingsPage(
 
                 Button(
                     onClick = onSetOrChangePin,
-                    modifier = Modifier.weight(0.45f).height(38.dp),
+                    modifier = Modifier
+                        .weight(0.45f)
+                        .height(38.dp),
                     shape = RoundedCornerShape(12.dp),
                     enabled = true,
                     elevation = ButtonDefaults.elevation(0.dp, 0.dp),
@@ -728,7 +768,9 @@ fun SettingsPage(
 
                 OutlinedButton(
                     onClick = onRemovePin,
-                    modifier = Modifier.weight(0.45f).height(38.dp),
+                    modifier = Modifier
+                        .weight(0.45f)
+                        .height(38.dp),
                     shape = RoundedCornerShape(12.dp),
                     enabled = AppSettings.isPinSet(),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
@@ -739,6 +781,39 @@ fun SettingsPage(
                         fontSize = (13 * fontScale).sp,
                         maxLines = 1
                     )
+                }
+            }
+        }
+
+        if (AppSettings.developerModeUnlocked) {
+            Divider()
+
+            Column {
+                Text(
+                    text = Locales.t("developer_mode_title"),
+                    fontSize = (16 * fontScale).sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = onSurface.copy(alpha = 0.85f),
+                    modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
+                )
+
+                Text(
+                    text = Locales.t("developer_mode_hint"),
+                    fontSize = (13 * fontScale).sp,
+                    color = onSurface.copy(alpha = 0.70f),
+                    lineHeight = (19 * fontScale).sp
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Button(
+                    onClick = onOpenDeveloperAccess,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(Locales.t("developer_mode_open"))
                 }
             }
         }
@@ -755,122 +830,22 @@ fun SettingsPage(
             fontSize = (11 * fontScale).sp,
             textDecoration = TextDecoration.Underline
         )
-        if (AppSettings.SHOW_DEVELOPER_PREMIUM_TOOLS) {
-            Divider()
-
-            Column {
-                Text(
-                    text = "Developer Access Test",
-                    fontSize = (16 * fontScale).sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = onSurface.copy(alpha = 0.85f),
-                    modifier = Modifier.padding(bottom = sectionTitlePaddingBottomDp)
-                )
-
-                val tierText = when (accessState.tier) {
-                    AccessTier.TRIAL -> "TRIAL"
-                    AccessTier.FREE_LIMITED -> "FREE_LIMITED"
-                    AccessTier.PREMIUM -> "PREMIUM"
-                }
-
-                Text(
-                    text = "Current tier: $tierText",
-                    color = onSurface,
-                    fontSize = (14 * fontScale).sp
-                )
-
-                Spacer(Modifier.height(6.dp))
-
-                Text(
-                    text = "Trial active: ${accessState.isTrialActive}",
-                    color = onSurface.copy(alpha = 0.80f),
-                    fontSize = (13 * fontScale).sp
-                )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = "Trial days left: ${accessState.trialDaysLeft}",
-                    color = onSurface.copy(alpha = 0.80f),
-                    fontSize = (13 * fontScale).sp
-                )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = "Trial started at: ${AppSettings.trialStartedAtMillis}",
-                    color = onSurface.copy(alpha = 0.65f),
-                    fontSize = (12 * fontScale).sp
-                )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = "Premium unlocked: ${AppSettings.premiumUnlocked}",
-                    color = onSurface.copy(alpha = 0.65f),
-                    fontSize = (12 * fontScale).sp
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                Button(
-                    onClick = onEnablePremiumForTesting,
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Enable Premium (test)")
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                OutlinedButton(
-                    onClick = onDisablePremiumForTesting,
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Disable Premium", color = onSurface)
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                OutlinedButton(
-                    onClick = onResetTrialForTesting,
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Reset Trial to Now", color = onSurface)
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                OutlinedButton(
-                    onClick = onExpireTrialForTesting,
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Expire Trial", color = onSurface)
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SettingsDropdown(
     label: String,
     selected: String,
     items: List<String>,
     onSelect: (String) -> Unit,
-    labelSpacing: Dp = 10.dp,
-    fieldColors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors()
+    labelSpacing: Dp = 10.dp
 ) {
     var expanded by remember { mutableStateOf(false) }
     val fontScale = AppSettings.getFontScale()
-
     val onSurface = MaterialTheme.colors.onSurface
+    val interactionSource =
+        remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
 
     Column {
         Text(
@@ -882,31 +857,63 @@ fun SettingsDropdown(
 
         Spacer(modifier = Modifier.height(labelSpacing))
 
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
-        ) {
-            OutlinedTextField(
-                value = selected,
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier.fillMaxWidth(),
+        Box {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = LocalIndication.current
+                    ) {
+                        expanded = true
+                    },
                 shape = RoundedCornerShape(12.dp),
-                textStyle = TextStyle(fontSize = (16 * fontScale).sp, color = onSurface),
-                colors = fieldColors
-            )
+                elevation = 0.dp,
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    onSurface.copy(alpha = 0.25f)
+                ),
+                backgroundColor = MaterialTheme.colors.surface
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = selected,
+                        fontSize = (16 * fontScale).sp,
+                        color = onSurface,
+                        maxLines = 1
+                    )
 
-            ExposedDropdownMenu(
+                    Text(
+                        text = "▼",
+                        fontSize = (12 * fontScale).sp,
+                        color = onSurface.copy(alpha = 0.65f)
+                    )
+                }
+            }
+
+            DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
                 items.forEach { item ->
-                    DropdownMenuItem(onClick = {
-                        onSelect(item)
-                        expanded = false
-                    }) {
-                        Text(text = item, fontSize = (16 * fontScale).sp, color = onSurface)
+                    DropdownMenuItem(
+                        onClick = {
+                            onSelect(item)
+                            expanded = false
+                        }
+                    ) {
+                        Text(
+                            text = item,
+                            fontSize = (16 * fontScale).sp,
+                            color = onSurface
+                        )
                     }
                 }
             }

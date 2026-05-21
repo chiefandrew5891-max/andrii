@@ -26,6 +26,19 @@ import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Appointment
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.utils.LiveStatusKey
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import com.andrey.beautyplanner.utils.parseHmToMinutes
+import kotlin.math.PI
+import kotlin.math.sin
 
 private fun ddMMyyyy(dateString: String): String {
     val p = dateString.split("-")
@@ -34,6 +47,39 @@ private fun ddMMyyyy(dateString: String): String {
 
 private fun apptServiceDisplay(appt: Appointment): String =
     if (appt.serviceName.startsWith("service_")) Locales.t(appt.serviceName) else appt.serviceName
+
+private fun weekdayShortKey(date: LocalDate): String = when (date.dayOfWeek) {
+    kotlinx.datetime.DayOfWeek.MONDAY -> "mon"
+    kotlinx.datetime.DayOfWeek.TUESDAY -> "tue"
+    kotlinx.datetime.DayOfWeek.WEDNESDAY -> "wed"
+    kotlinx.datetime.DayOfWeek.THURSDAY -> "thu"
+    kotlinx.datetime.DayOfWeek.FRIDAY -> "fri"
+    kotlinx.datetime.DayOfWeek.SATURDAY -> "sat"
+    kotlinx.datetime.DayOfWeek.SUNDAY -> "sun"
+    else -> "mon"
+}
+
+private fun minutesUntilAppointment(
+    appt: Appointment,
+    today: LocalDate,
+    nowMinutes: Int
+): Int? {
+    val apptDate = runCatching { LocalDate.parse(appt.dateString) }.getOrNull() ?: return null
+    val apptStart = parseHmToMinutes(appt.time)
+
+    val dayDiff = apptDate.toEpochDays() - today.toEpochDays()
+    return dayDiff * 24 * 60 + (apptStart - nowMinutes)
+}
+
+private fun urgencyPulseSpec(minutesLeft: Int): Pair<Int, Float> {
+    return when {
+        minutesLeft <= 60 -> 850 to 0.30f
+        minutesLeft <= 3 * 60 -> 1200 to 0.24f
+        minutesLeft <= 6 * 60 -> 1600 to 0.19f
+        minutesLeft <= 12 * 60 -> 2100 to 0.15f
+        else -> 2700 to 0.11f
+    }
+}
 
 /**
  * Единая карточка записи для разных экранов, но с сохранением "золотого стандарта" дизайна:
@@ -46,9 +92,10 @@ fun AppointmentCard(
     appt: Appointment,
     status: LiveStatusKey,
     showDateInCard: Boolean,
-    // Для DayDetails: передаем уже вычисленные значения (чтобы не ломать вёрстку)
     startHm: String,
     endHm: String,
+    nowDate: LocalDate? = null,
+    nowMinutes: Int? = null,
     // Для DayDetails: цвета/фон уже были "канонические" — даём передать снаружи
     dayDetailsBackgroundColor: Color? = null,
     dayDetailsIsPastOrFinished: Boolean = false,
@@ -62,8 +109,55 @@ fun AppointmentCard(
     val priceText = appt.price.trim().let { p -> if (p.isBlank()) "" else "$p€" }
 
     if (showDateInCard) {
-        // ====== EXACT UpcomingAppointmentCard DESIGN (старый) ======
         val formattedDate = ddMMyyyy(appt.dateString)
+        val parsedDate = runCatching { LocalDate.parse(appt.dateString) }.getOrNull()
+        val weekdayText = parsedDate?.let { Locales.t(weekdayShortKey(it)) }.orEmpty()
+
+        val today = nowDate ?: Clock.System.todayIn(TimeZone.currentSystemDefault())
+        val currentMinutes = nowMinutes ?: 0
+        val minutesLeft = minutesUntilAppointment(appt, today, currentMinutes)
+
+        val shouldPulse = minutesLeft != null && minutesLeft in 0..(24 * 60)
+
+        val (pulseDuration, maxAlpha) = if (shouldPulse) {
+            urgencyPulseSpec(minutesLeft!!)
+        } else {
+            2400 to 0f
+        }
+
+        val infiniteTransition = rememberInfiniteTransition(label = "upcomingUrgency")
+        val cycleProgress = infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = pulseDuration,
+                    easing = androidx.compose.animation.core.LinearEasing
+                ),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "upcomingUrgencyCycle"
+        )
+
+        val wave = ((sin(cycleProgress.value * 2.0 * PI - PI / 2.0) + 1.0) / 2.0).toFloat()
+        val animatedStrength = (maxAlpha * wave).coerceIn(0f, 1f)
+
+        val urgentTint = if (MaterialTheme.colors.isLight) {
+            Color(0xFFE86C8E)
+        } else {
+            Color(0xFFB85C7A)
+        }
+
+        val cardBackground =
+            if (shouldPulse) {
+                androidx.compose.ui.graphics.lerp(
+                    MaterialTheme.colors.surface,
+                    urgentTint,
+                    animatedStrength
+                )
+            } else {
+                MaterialTheme.colors.surface
+            }
 
         Card(
             modifier = Modifier
@@ -77,7 +171,7 @@ fun AppointmentCard(
                 ),
             shape = RoundedCornerShape(16.dp),
             elevation = 4.dp,
-            backgroundColor = MaterialTheme.colors.surface
+            backgroundColor = cardBackground
         ) {
             Column(Modifier.padding(14.dp)) {
                 Row(
@@ -85,12 +179,24 @@ fun AppointmentCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "$formattedDate  $startHm–$endHm",
-                        fontSize = (13 * fontScale).sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (weekdayText.isNotBlank()) {
+                            Text(
+                                text = weekdayText,
+                                fontSize = (13 * fontScale).sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.92f)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                        }
+
+                        Text(
+                            text = "$formattedDate  $startHm–$endHm",
+                            fontSize = (13 * fontScale).sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
+                        )
+                    }
 
                     Text(
                         text = "${appt.price}€",

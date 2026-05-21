@@ -39,7 +39,6 @@ class AppRootState(
             ownedPremium = AppSettings.premiumUnlocked
         )
     )
-
     var calendarViewDate by mutableStateOf(LocalDate(today.year, today.month, 1))
     var selectedDate by mutableStateOf(today)
 
@@ -125,6 +124,28 @@ class AppRootState(
         billingUiState = billingUiState.copy(
             ownedPremium = AppSettings.premiumUnlocked
         )
+    }
+    var screenHistory by mutableStateOf(listOf<Screen>())
+    fun navigateTo(screen: Screen) {
+        if (currentScreen != screen) {
+            screenHistory = screenHistory + currentScreen
+            currentScreen = screen
+        }
+    }
+
+    fun navigateBack() {
+        if (screenHistory.isNotEmpty()) {
+            val previous = screenHistory.last()
+            screenHistory = screenHistory.dropLast(1)
+            currentScreen = previous
+        } else {
+            currentScreen = Screen.MONTH
+        }
+    }
+
+    fun navigateHome() {
+        screenHistory = emptyList()
+        currentScreen = Screen.MONTH
     }
 
     fun openDrawer() = scope.launch { drawerState.open() }

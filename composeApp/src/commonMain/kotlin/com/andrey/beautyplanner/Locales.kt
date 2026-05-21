@@ -31,6 +31,24 @@ object Locales {
             "price" to "Стоимость",
             "free" to "Свободно",
             "unavailable" to "Недоступно",
+            //Developer screen
+            "developer_mode_title" to "Режим разработчика",
+            "developer_mode_hint" to "Внутренние инструменты разработчика и тестовый доступ.",
+            "developer_mode_open" to "Открыть режим разработчика",
+            "developer_password_title" to "Пароль разработчика",
+            "developer_password_hint" to "Введите пароль разработчика",
+            "developer_password_invalid" to "Неверный пароль",
+            "developer_unlock" to "Разблокировать",
+            "developer_logout" to "Выйти из режима разработчика",
+            "developer_current_tier" to "Текущий уровень доступа",
+            "developer_trial_active" to "Пробный период активен",
+            "developer_trial_days_left" to "Осталось дней пробного периода",
+            "developer_trial_started_at" to "Пробный период начат",
+            "developer_premium_unlocked" to "Premium разблокирован",
+            "developer_enable_premium" to "Включить Premium",
+            "developer_disable_premium" to "Отключить Premium",
+            "developer_reset_trial" to "Сбросить Trial на сейчас",
+            "developer_expire_trial" to "Завершить Trial",
 
             // Premium screen
             "premium_buy_btn" to "Купить Premium",
@@ -103,6 +121,9 @@ object Locales {
             "font_medium" to "Средний",
             "font_large" to "Крупный",
 
+            "backup_settings_title" to "Резервное копирование",
+            "backup_settings_hint" to "Экспорт и импорт базы данных.",
+            "backup_settings_open" to "Открыть резервное копирование",
             "backup_section" to "Резервное копирование",
             "export_db" to "Экспорт",
             "import_db" to "Импорт",
@@ -235,8 +256,13 @@ object Locales {
             // Currency
             "currency_eur" to "€",
             "splash_for" to "для",
+            //Settings
+            "appearance_settings" to "Настройка оформления и темы",
+            "appearance_settings_hint" to "Язык, тема, размер шрифта и имя пользователя.",
 
             // --------- Security / PIN ---------
+            "pin_disable_warning" to "При отключении PIN-кода будут ограничены операции с базой данных:\n• импорт\n• экспорт\n• очистка базы\n\nПродолжить?",
+            "backup_pin_required_hint" to "Чтобы использовать импорт, экспорт и очистку базы, включите PIN и установите его.",
             "security_section" to "Безопасность",
             "pin_enabled" to "Запрашивать PIN",
             "pin_set" to "Установить PIN",
@@ -296,6 +322,24 @@ object Locales {
             "close" to "Close",
             "confirm" to "Confirm",
             "yes" to "Yes",
+            //Developer screen
+            "developer_mode_title" to "Developer Mode",
+            "developer_mode_hint" to "Internal developer tools and test access.",
+            "developer_mode_open" to "Open developer mode",
+            "developer_password_title" to "Developer password",
+            "developer_password_hint" to "Enter developer password",
+            "developer_password_invalid" to "Invalid password",
+            "developer_unlock" to "Unlock",
+            "developer_logout" to "Exit developer mode",
+            "developer_current_tier" to "Current access tier",
+            "developer_trial_active" to "Trial active",
+            "developer_trial_days_left" to "Trial days left",
+            "developer_trial_started_at" to "Trial started at",
+            "developer_premium_unlocked" to "Premium unlocked",
+            "developer_enable_premium" to "Enable Premium",
+            "developer_disable_premium" to "Disable Premium",
+            "developer_reset_trial" to "Reset Trial to now",
+            "developer_expire_trial" to "Expire Trial",
 
             // Premium screen
             "premium_buy_btn" to "Buy Premium",
@@ -373,6 +417,9 @@ object Locales {
             "font_medium" to "Medium",
             "font_large" to "Large",
 
+            "backup_settings_title" to "Backup",
+            "backup_settings_hint" to "Export and import database backups.",
+            "backup_settings_open" to "Open backup settings",
             "backup_section" to "Backup",
             "export_db" to "Export",
             "import_db" to "Import",
@@ -500,7 +547,15 @@ object Locales {
 
             "currency_eur" to "€",
             "splash_for" to "for",
-
+            //Settings
+            "appearance_settings" to "Appearance & Theme",
+            "appearance_settings_hint" to "Language, theme, font size, and user name.",
+            //Settings
+            "appearance_settings" to "Aspetto e tema",
+            "appearance_settings_hint" to "Lingua, tema, dimensione del carattere e nome utente.",
+            //Settings
+            "pin_disable_warning" to "If you disable the PIN code, database operations will be restricted:\n• import\n• export\n• clear database\n\nContinue?",
+            "backup_pin_required_hint" to "To use import, export, and database clearing, enable PIN and set it up.",
             "security_section" to "Security",
             "pin_enabled" to "Require PIN",
             "pin_set" to "Set PIN",
@@ -560,6 +615,24 @@ object Locales {
             "close" to "Chiudi",
             "confirm" to "Conferma",
             "yes" to "Sì",
+            //Developer screen
+            "developer_mode_title" to "Modalità sviluppatore",
+            "developer_mode_hint" to "Strumenti interni per sviluppatore e accesso di test.",
+            "developer_mode_open" to "Apri modalità sviluppatore",
+            "developer_password_title" to "Password sviluppatore",
+            "developer_password_hint" to "Inserisci la password sviluppatore",
+            "developer_password_invalid" to "Password non valida",
+            "developer_unlock" to "Sblocca",
+            "developer_logout" to "Esci dalla modalità sviluppatore",
+            "developer_current_tier" to "Livello di accesso corrente",
+            "developer_trial_active" to "Periodo di prova attivo",
+            "developer_trial_days_left" to "Giorni di prova rimanenti",
+            "developer_trial_started_at" to "Periodo di prova iniziato",
+            "developer_premium_unlocked" to "Premium sbloccato",
+            "developer_enable_premium" to "Attiva Premium",
+            "developer_disable_premium" to "Disattiva Premium",
+            "developer_reset_trial" to "Reimposta Trial a ora",
+            "developer_expire_trial" to "Termina Trial",
 
             // Premium screen
             "premium_buy_btn" to "Acquista Premium",
@@ -637,6 +710,9 @@ object Locales {
             "font_medium" to "Medio",
             "font_large" to "Grande",
 
+            "backup_settings_title" to "Backup",
+            "backup_settings_hint" to "Esporta e importa i backup del database.",
+            "backup_settings_open" to "Apri backup",
             "backup_section" to "Backup",
             "export_db" to "Esporta",
             "import_db" to "Importa",
@@ -756,7 +832,12 @@ object Locales {
 
             "currency_eur" to "€",
             "splash_for" to "per",
+            //Settings
+            "appearance_settings" to "Aspetto e tema",
+            "appearance_settings_hint" to "Lingua, tema, dimensione del carattere e nome utente.",
 
+            "pin_disable_warning" to "Se disattivi il codice PIN, le operazioni sul database saranno limitate:\n• importazione\n• esportazione\n• cancellazione del database\n\nContinuare?",
+            "backup_pin_required_hint" to "Per usare importazione, esportazione e cancellazione del database, abilita il PIN e configurarlo.",
             "security_section" to "Sicurezza",
             "pin_enabled" to "Richiedi PIN",
             "pin_set" to "Imposta PIN",
@@ -823,6 +904,24 @@ object Locales {
             "close" to "Закрити",
             "confirm" to "Підтвердити",
             "yes" to "Так",
+            //Developer screen
+            "developer_mode_title" to "Режим розробника",
+            "developer_mode_hint" to "Внутрішні інструменти розробника та тестовий доступ.",
+            "developer_mode_open" to "Відкрити режим розробника",
+            "developer_password_title" to "Пароль розробника",
+            "developer_password_hint" to "Введіть пароль розробника",
+            "developer_password_invalid" to "Невірний пароль",
+            "developer_unlock" to "Розблокувати",
+            "developer_logout" to "Вийти з режиму розробника",
+            "developer_current_tier" to "Поточний рівень доступу",
+            "developer_trial_active" to "Пробний період активний",
+            "developer_trial_days_left" to "Залишилось днів пробного періоду",
+            "developer_trial_started_at" to "Пробний період розпочато",
+            "developer_premium_unlocked" to "Premium розблоковано",
+            "developer_enable_premium" to "Увімкнути Premium",
+            "developer_disable_premium" to "Вимкнути Premium",
+            "developer_reset_trial" to "Скинути Trial на зараз",
+            "developer_expire_trial" to "Завершити Trial",
 
             // Premium screen
             "premium_buy_btn" to "Купити Premium",
@@ -900,6 +999,9 @@ object Locales {
             "font_medium" to "Середній",
             "font_large" to "Великий",
 
+            "backup_settings_title" to "Резервне копіювання",
+            "backup_settings_hint" to "Експорт та імпорт бази даних.",
+            "backup_settings_open" to "Відкрити резервне копіювання",
             "backup_section" to "Резервне копіювання",
             "export_db" to "Експорт",
             "import_db" to "Імпорт",
@@ -1027,7 +1129,12 @@ object Locales {
 
             "currency_eur" to "€",
             "splash_for" to "для",
+            //Settings
+            "appearance_settings" to "Налаштування оформлення і теми",
+            "appearance_settings_hint" to "Мова, тема, розмір шрифту та ім’я користувача.",
 
+            "pin_disable_warning" to "Якщо вимкнути PIN-код, операції з базою даних будуть обмежені:\n• імпорт\n• експорт\n• очищення бази\n\nПродовжити?",
+            "backup_pin_required_hint" to "Щоб використовувати імпорт, експорт і очищення бази, увімкніть PIN і встановіть його.",
             "security_section" to "Безпека",
             "pin_enabled" to "Запитувати PIN",
             "pin_set" to "Встановити PIN",

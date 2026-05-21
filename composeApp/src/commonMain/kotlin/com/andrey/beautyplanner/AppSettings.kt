@@ -15,6 +15,7 @@ private val settingsJson = Json {
     encodeDefaults = true
     prettyPrint = true
 }
+
 private fun defaultServiceTemplates(): List<ServiceTemplate> = listOf(
     ServiceTemplate(
         id = "service_gel_polish",
@@ -53,6 +54,7 @@ private fun defaultServiceTemplates(): List<ServiceTemplate> = listOf(
         isActive = true
     )
 )
+
 @Serializable
 private data class SettingsSnapshot(
     val isDarkMode: Boolean = false,
@@ -80,10 +82,13 @@ private data class SettingsSnapshot(
 
     // --- security ---
     val pinEnabled: Boolean = false,
-    val adminPinHash: String = ""
+    val adminPinHash: String = "",
+    val developerModeUnlocked: Boolean = false
 )
 
 object AppSettings {
+
+    private const val DEVELOPER_ACCESS_PASSWORD = "221290"
 
     const val SHOW_DEVELOPER_PREMIUM_TOOLS = true
     private val storage: SettingsStorage by lazy { createSettingsStorage() }
@@ -113,6 +118,7 @@ object AppSettings {
 
     var pinEnabled by mutableStateOf(false)
     private var adminPinHash by mutableStateOf("")
+    var developerModeUnlocked by mutableStateOf(false)
 
     fun getActiveServiceTemplates(): List<ServiceTemplate> =
         serviceTemplates.filter { it.isActive }
@@ -132,6 +138,7 @@ object AppSettings {
         serviceTemplates = serviceTemplates.filterNot { it.id == id }
         persist()
     }
+
     fun getActiveWeeklyBlockedIntervals(): List<WeeklyBlockedInterval> =
         weeklyBlockedIntervals.filter { it.isActive }
 
@@ -229,6 +236,20 @@ object AppSettings {
         return adminPinHash == hashPin(pin)
     }
 
+    fun verifyDeveloperPassword(password: String): Boolean {
+        return password.trim() == DEVELOPER_ACCESS_PASSWORD
+    }
+
+    fun unlockDeveloperMode() {
+        developerModeUnlocked = true
+        persist()
+    }
+
+    fun lockDeveloperMode() {
+        developerModeUnlocked = false
+        persist()
+    }
+
     fun load() {
         val raw = runCatching { storage.read() }.getOrNull() ?: return
         if (raw.isBlank()) return
@@ -266,6 +287,7 @@ object AppSettings {
 
         pinEnabled = snapshot.pinEnabled
         adminPinHash = snapshot.adminPinHash
+        developerModeUnlocked = snapshot.developerModeUnlocked
 
         val code = languageCodes[selectedLanguage] ?: "en"
         Locales.currentLanguage = code
@@ -296,7 +318,8 @@ object AppSettings {
             scheduleDateOverrides = scheduleDateOverrides,
 
             pinEnabled = pinEnabled,
-            adminPinHash = adminPinHash
+            adminPinHash = adminPinHash,
+            developerModeUnlocked = developerModeUnlocked
         )
 
         runCatching {
