@@ -39,6 +39,16 @@ class AppRootState(
             ownedPremium = AppSettings.premiumUnlocked
         )
     )
+    var backupEncryptEnabled by mutableStateOf(true)
+    var backupPassword by mutableStateOf("")
+    var backupPasswordConfirm by mutableStateOf("")
+    var backupPasswordError by mutableStateOf<String?>(null)
+
+    var pendingEncryptedImportText by mutableStateOf<String?>(null)
+    var showImportPasswordDialog by mutableStateOf(false)
+    var importPassword by mutableStateOf("")
+    var importPasswordError by mutableStateOf<String?>(null)
+
     var calendarViewDate by mutableStateOf(LocalDate(today.year, today.month, 1))
     var selectedDate by mutableStateOf(today)
 

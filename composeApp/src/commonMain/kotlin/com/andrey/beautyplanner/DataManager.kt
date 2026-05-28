@@ -33,12 +33,20 @@ object DataManager {
         }
     }
 
-    fun exportBackup(data: List<Appointment>): String =
-        try { jsonConfig.encodeToString(data) } catch (_: Exception) { "" }
+    fun exportBackupPayload(data: List<Appointment>): String =
+        try {
+            jsonConfig.encodeToString(data)
+        } catch (_: Exception) {
+            ""
+        }
 
-    fun importBackup(json: String): List<Appointment> {
+    fun importBackupPayload(json: String): List<Appointment> {
         if (json.isBlank()) return emptyList()
-        return try { jsonConfig.decodeFromString<List<Appointment>>(json) } catch (_: Exception) { emptyList() }
+        return try {
+            jsonConfig.decodeFromString<List<Appointment>>(json)
+        } catch (_: Exception) {
+            emptyList()
+        }
     }
 }
 

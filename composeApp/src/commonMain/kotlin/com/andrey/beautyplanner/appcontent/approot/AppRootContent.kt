@@ -34,6 +34,7 @@ import com.andrey.beautyplanner.appcontent.WorkScheduleScreen
 import com.andrey.beautyplanner.appcontent.AppearanceSettingsScreen
 import com.andrey.beautyplanner.appcontent.DeveloperAccessScreen
 import com.andrey.beautyplanner.appcontent.BackupSettingsScreen
+import androidx.compose.runtime.saveable.rememberSaveable
 
 
 @Composable
@@ -41,8 +42,8 @@ fun AppRootContent(
     state: AppRootState,
     padding: PaddingValues
 ) {
-    var showSplash by remember { mutableStateOf(true) }
-    var pendingPinAfterSplash by remember { mutableStateOf(false) }
+    var showSplash by rememberSaveable { mutableStateOf(true) }
+    var pendingPinAfterSplash by rememberSaveable { mutableStateOf(false) }
     val ownerName = remember { AppSettings.ownerName ?: "" }
 
     var viewingAppt by remember { mutableStateOf<Appointment?>(null) }
@@ -629,6 +630,7 @@ fun AppRootContent(
                 endHm = viewingEndHm,
                 status = statusToView,
                 actionsEnabled = actionsEnabled,
+                allowDeletePast = AppSettings.developerModeUnlocked,
                 onDismiss = {
                     viewingAppt = null
                     viewingStatus = null
@@ -650,7 +652,9 @@ fun AppRootContent(
                     state.bookingReadOnly = false
                 },
                 onDeleteClick = {
-                    if (!actionsEnabled) return@AppointmentDetailsDialog
+                    if (!(actionsEnabled || AppSettings.developerModeUnlocked)) {
+                        return@AppointmentDetailsDialog
+                    }
                     viewingAppt = null
                     viewingStatus = null
                     state.showDeleteConfirm = apptToView

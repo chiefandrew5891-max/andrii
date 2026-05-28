@@ -362,6 +362,7 @@ fun AppointmentDetailsDialog(
     endHm: String,
     status: LiveStatusKey,
     actionsEnabled: Boolean = true,
+    allowDeletePast: Boolean = false,
     onDismiss: () -> Unit,
     onEditClick: () -> Unit,
     onTransferClick: () -> Unit,
@@ -376,7 +377,7 @@ fun AppointmentDetailsDialog(
     val timeTextColor = MaterialTheme.colors.onSurface.copy(alpha = 0.72f)
 
     val editTransferEnabled = actionsEnabled && status != LiveStatusKey.DONE
-    val deleteEnabled = actionsEnabled
+    val deleteEnabled = actionsEnabled || allowDeletePast
 
     val disabledButtonTextColor = MaterialTheme.colors.onSurface.copy(alpha = 0.35f)
     val enabledDeleteColor = Color.Red
@@ -453,7 +454,16 @@ fun AppointmentDetailsDialog(
                         fontSize = (13 * fontScale).sp
                     )
 
-                    if (!actionsEnabled) {
+                    if (!actionsEnabled && !allowDeletePast) {
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            text = Locales.t("past_date_actions_disabled"),
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.65f),
+                            fontSize = (12 * fontScale).sp
+                        )
+                    }
+
+                    if (!actionsEnabled && allowDeletePast) {
                         Spacer(Modifier.height(10.dp))
                         Text(
                             text = Locales.t("past_date_actions_disabled"),

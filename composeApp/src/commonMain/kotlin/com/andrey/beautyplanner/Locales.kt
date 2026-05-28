@@ -12,6 +12,16 @@ object Locales {
 
     private val strings = mapOf(
         "ru" to mapOf(
+            //Backup and restore
+            "backup_encrypt_toggle" to "Зашифровать резервную копию",
+            "backup_password" to "Пароль резервной копии",
+            "backup_password_confirm" to "Подтвердите пароль",
+            "backup_password_mismatch" to "Пароли не совпадают",
+            "backup_password_too_short" to "Пароль должен содержать минимум 6 символов",
+            "backup_import_password_title" to "Пароль резервной копии",
+            "backup_import_password_hint" to "Введите пароль для расшифровки файла",
+            "backup_import_password_invalid" to "Не удалось расшифровать файл. Проверьте пароль.",
+
             "app_name" to "Beauty Planner",
             "nav_main" to "Главная",
             "nav_settings" to "Настройки",
@@ -310,6 +320,16 @@ object Locales {
         ),
 
         "en" to mapOf(
+            //Backup and restore
+            "backup_encrypt_toggle" to "Encrypt backup",
+            "backup_password" to "Backup password",
+            "backup_password_confirm" to "Confirm password",
+            "backup_password_mismatch" to "Passwords do not match",
+            "backup_password_too_short" to "Password must be at least 6 characters",
+            "backup_import_password_title" to "Backup password",
+            "backup_import_password_hint" to "Enter password to decrypt the file",
+            "backup_import_password_invalid" to "Could not decrypt file. Check the password.",
+
             "app_name" to "Beauty Planner",
             "nav_main" to "Main",
             "nav_settings" to "Settings",
@@ -603,6 +623,16 @@ object Locales {
 
         // Итальянский и украинский блоки оставляю как у тебя, но добавляю статусы в конец каждого.
         "it" to mapOf(
+            //Backup and restore
+            "backup_encrypt_toggle" to "Crittografa backup",
+            "backup_password" to "Password del backup",
+            "backup_password_confirm" to "Conferma password",
+            "backup_password_mismatch" to "Le password non coincidono",
+            "backup_password_too_short" to "La password deve contenere almeno 6 caratteri",
+            "backup_import_password_title" to "Password del backup",
+            "backup_import_password_hint" to "Inserisci la password per decifrare il file",
+            "backup_import_password_invalid" to "Impossibile decifrare il file. Controlla la password.",
+
             "app_name" to "Beauty Planner",
             "nav_main" to "Home",
             "nav_settings" to "Impostazioni",
@@ -892,6 +922,16 @@ object Locales {
         ),
 
         "uk" to mapOf(
+            //Backup and restore
+            "backup_encrypt_toggle" to "Зашифрувати резервну копію",
+            "backup_password" to "Пароль резервної копії",
+            "backup_password_confirm" to "Підтвердіть пароль",
+            "backup_password_mismatch" to "Паролі не збігаються",
+            "backup_password_too_short" to "Пароль має містити щонайменше 6 символів",
+            "backup_import_password_title" to "Пароль резервної копії",
+            "backup_import_password_hint" to "Введіть пароль для розшифрування файлу",
+            "backup_import_password_invalid" to "Не вдалося розшифрувати файл. Перевірте пароль.",
+
             "app_name" to "Beauty Planner",
             "nav_main" to "Головна",
             "nav_settings" to "Налаштування",

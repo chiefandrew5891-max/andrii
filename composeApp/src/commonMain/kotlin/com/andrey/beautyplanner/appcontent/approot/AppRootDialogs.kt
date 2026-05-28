@@ -1,45 +1,71 @@
 package com.andrey.beautyplanner.appcontent.approot
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Switch
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.andrey.beautyplanner.*
-import com.andrey.beautyplanner.appcontent.*
+import com.andrey.beautyplanner.AppSettings
+import com.andrey.beautyplanner.BackupCodec
+import com.andrey.beautyplanner.BackupFilePicker
+import com.andrey.beautyplanner.DataManager
+import com.andrey.beautyplanner.Locales
+import com.andrey.beautyplanner.ParsedBackupFile
+import com.andrey.beautyplanner.appcontent.AppDialogShape
+import com.andrey.beautyplanner.appcontent.AppDialogTheme
+import com.andrey.beautyplanner.appcontent.PinDialog
+import com.andrey.beautyplanner.appcontent.RescheduleClientBDialog
 import kotlinx.datetime.LocalDate
-import androidx.compose.ui.Modifier
-
 
 @Composable
 fun AppRootDialogs(state: AppRootState) {
 
-    // --- Save error dialog (оставляем как было, не входит в “3 попапа”) ---
     if (state.showSaveError != null) {
         AlertDialog(
             onDismissRequest = { state.showSaveError = null },
             title = { Text(Locales.t("import_db")) },
             text = { Text(state.showSaveError ?: "") },
             confirmButton = {
-                TextButton(onClick = { state.showSaveError = null }) { Text(Locales.t("close")) }
+                TextButton(onClick = { state.showSaveError = null }) {
+                    Text(Locales.t("close"))
+                }
             },
             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
         )
     }
 
-    // --------- Mandatory PIN creation on first run ---------
     if (state.mustCreatePin) {
-        // PinDialog внутри себя AlertDialog, поэтому оборачиваем его “снаружи” стилем
         AppDialogTheme {
             PinDialog(
                 title = Locales.t("pin_set"),
                 text = Locales.t("pin_invalid_format"),
                 confirmText = Locales.t("save"),
-                onDismiss = { /* cannot dismiss */ },
+                onDismiss = { },
                 onConfirmPin = { newPin ->
                     if (AppSettings.setPin(newPin)) {
                         state.mustCreatePin = false
@@ -50,7 +76,6 @@ fun AppRootDialogs(state: AppRootState) {
         }
     }
 
-    // --------- PIN action dialog (for protected actions) ---------
     if (state.showPinDialog) {
         AppDialogTheme {
             PinDialog(
@@ -77,14 +102,13 @@ fun AppRootDialogs(state: AppRootState) {
         }
     }
 
-    // --------- Lock screen (PIN on app open) ---------
     if (state.locked && !state.mustCreatePin) {
         AppDialogTheme {
             PinDialog(
                 title = Locales.t("unlock_title"),
                 text = Locales.t("unlock_text"),
                 confirmText = Locales.t("confirm"),
-                onDismiss = { /* cannot dismiss */ },
+                onDismiss = { },
                 onConfirmPin = { pin ->
                     if (AppSettings.verifyPin(pin)) state.locked = false
                 }
@@ -92,11 +116,14 @@ fun AppRootDialogs(state: AppRootState) {
         }
     }
 
-    // --------- Set/Change PIN from Settings ---------
     if (state.showSetPinDialog) {
         AppDialogTheme {
             PinDialog(
-                title = if (AppSettings.isPinSet()) Locales.t("pin_change") else Locales.t("pin_set"),
+                title = if (AppSettings.isPinSet()) {
+                    Locales.t("pin_change")
+                } else {
+                    Locales.t("pin_set")
+                },
                 text = Locales.t("pin_invalid_format"),
                 confirmText = Locales.t("save"),
                 onDismiss = { state.showSetPinDialog = false },
@@ -110,28 +137,32 @@ fun AppRootDialogs(state: AppRootState) {
         }
     }
 
-    // --------- Remove PIN confirm ---------
     if (state.showRemovePinConfirm) {
         AlertDialog(
             onDismissRequest = { state.showRemovePinConfirm = false },
             title = { Text(Locales.t("pin_remove")) },
             text = { Text(Locales.t("clear_db_confirm")) },
             confirmButton = {
-                Button(onClick = {
-                    AppSettings.clearPin()
-                    state.showRemovePinConfirm = false
-                    state.locked = false
-                    state.mustCreatePin = true
-                }) { Text(Locales.t("yes")) }
+                Button(
+                    onClick = {
+                        AppSettings.clearPin()
+                        state.showRemovePinConfirm = false
+                        state.locked = false
+                        state.mustCreatePin = true
+                    }
+                ) {
+                    Text(Locales.t("yes"))
+                }
             },
             dismissButton = {
-                TextButton(onClick = { state.showRemovePinConfirm = false }) { Text(Locales.t("cancel")) }
+                TextButton(onClick = { state.showRemovePinConfirm = false }) {
+                    Text(Locales.t("cancel"))
+                }
             },
             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
         )
     }
 
-    // --------- Clear DB: backup prompt ---------
     if (state.showClearDbBackupPrompt) {
         AppDialogTheme {
             AlertDialog(
@@ -139,19 +170,31 @@ fun AppRootDialogs(state: AppRootState) {
                 title = { Text(Locales.t("clear_db_title")) },
                 text = { Text(Locales.t("clear_db_warning_backup")) },
                 confirmButton = {
-                    Button(onClick = {
-                        state.showClearDbBackupPrompt = false
-                        state.exportFileName = "beautyplanner-backup"
-                        state.showExportNameDialog = true
-                        state.showClearDbFinalConfirm = true
-                    }) { Text(Locales.t("clear_db_make_backup")) }
+                    Button(
+                        onClick = {
+                            state.showClearDbBackupPrompt = false
+                            state.exportFileName = "beautyplanner-backup"
+                            state.backupEncryptEnabled = true
+                            state.backupPassword = ""
+                            state.backupPasswordConfirm = ""
+                            state.backupPasswordError = null
+                            state.showExportNameDialog = true
+                            state.showClearDbFinalConfirm = true
+                        }
+                    ) {
+                        Text(Locales.t("clear_db_make_backup"))
+                    }
                 },
                 dismissButton = {
                     Column {
-                        TextButton(onClick = {
-                            state.showClearDbBackupPrompt = false
-                            state.showClearDbFinalConfirm = true
-                        }) { Text(Locales.t("clear_db_skip_backup"), color = Color.Red) }
+                        TextButton(
+                            onClick = {
+                                state.showClearDbBackupPrompt = false
+                                state.showClearDbFinalConfirm = true
+                            }
+                        ) {
+                            Text(Locales.t("clear_db_skip_backup"), color = Color.Red)
+                        }
 
                         TextButton(onClick = { state.showClearDbBackupPrompt = false }) {
                             Text(Locales.t("cancel"))
@@ -163,7 +206,6 @@ fun AppRootDialogs(state: AppRootState) {
         }
     }
 
-    // --------- Clear DB: final confirm ---------
     if (state.showClearDbFinalConfirm) {
         AppDialogTheme {
             AlertDialog(
@@ -171,21 +213,26 @@ fun AppRootDialogs(state: AppRootState) {
                 title = { Text(Locales.t("clear_db_title")) },
                 text = { Text(Locales.t("clear_db_confirm")) },
                 confirmButton = {
-                    Button(onClick = {
-                        state.appointments.clear()
-                        state.saveAll()
-                        state.showClearDbFinalConfirm = false
-                    }) { Text(Locales.t("yes")) }
+                    Button(
+                        onClick = {
+                            state.appointments.clear()
+                            state.saveAll()
+                            state.showClearDbFinalConfirm = false
+                        }
+                    ) {
+                        Text(Locales.t("yes"))
+                    }
                 },
                 dismissButton = {
-                    TextButton(onClick = { state.showClearDbFinalConfirm = false }) { Text(Locales.t("cancel")) }
+                    TextButton(onClick = { state.showClearDbFinalConfirm = false }) {
+                        Text(Locales.t("cancel"))
+                    }
                 },
                 shape = AppDialogShape
             )
         }
     }
 
-    // --- Auto shift confirm dialog ---
     if (state.showAutoShiftConfirm && state.pendingNewAppt != null) {
         val day = state.pendingNewAppt!!.dateString
         val blockedId = state.shiftBlockedApptId
@@ -198,7 +245,9 @@ fun AppRootDialogs(state: AppRootState) {
             append("Сдвинуть следующие записи автоматически?\n\n")
             if (state.shiftChain.isNotEmpty()) {
                 state.shiftChain.forEachIndexed { idx, item ->
-                    val a = state.appointments.firstOrNull { it.id == item.apptId && it.dateString == day }
+                    val a = state.appointments.firstOrNull {
+                        it.id == item.apptId && it.dateString == day
+                    }
                     val name = a?.clientName ?: "?"
                     append("${idx + 1}) $name → ${state.minutesToHm(item.newStartMin)}\n")
                 }
@@ -219,50 +268,70 @@ fun AppRootDialogs(state: AppRootState) {
                 title = { Text("Конфликт времени") },
                 text = { Text(chainText) },
                 confirmButton = {
-                    Button(onClick = {
-                        val newAppt = state.pendingNewAppt!!
+                    Button(
+                        onClick = {
+                            val newAppt = state.pendingNewAppt!!
 
-                        state.applyShiftChain(day, state.shiftChain)
-                        state.replaceById(newAppt)
-                        state.saveAll()
+                            state.applyShiftChain(day, state.shiftChain)
+                            state.replaceById(newAppt)
+                            state.saveAll()
 
-                        state.showAutoShiftConfirm = false
-                        state.pendingNewAppt = null
+                            state.showAutoShiftConfirm = false
+                            state.pendingNewAppt = null
 
-                        if (blockedAppt != null) {
-                            state.conflictB = blockedAppt
-                            state.showRescheduleBDialog = true
+                            if (blockedAppt != null) {
+                                state.conflictB = blockedAppt
+                                state.showRescheduleBDialog = true
+                            }
+
+                            state.shiftChain = emptyList()
+                            state.shiftBlockedApptId = null
+
+                            state.showBookingDialog = false
+                            state.editingAppointment = null
                         }
-
-                        state.shiftChain = emptyList()
-                        state.shiftBlockedApptId = null
-
-                        state.showBookingDialog = false
-                        state.editingAppointment = null
-                    }) { Text("Сдвинуть") }
+                    ) {
+                        Text("Сдвинуть")
+                    }
                 },
                 dismissButton = {
-                    TextButton(onClick = {
-                        state.showAutoShiftConfirm = false
-                        state.pendingNewAppt = null
-                        state.shiftChain = emptyList()
-                        state.shiftBlockedApptId = null
-                    }) { Text(Locales.t("cancel")) }
+                    TextButton(
+                        onClick = {
+                            state.showAutoShiftConfirm = false
+                            state.pendingNewAppt = null
+                            state.shiftChain = emptyList()
+                            state.shiftBlockedApptId = null
+                        }
+                    ) {
+                        Text(Locales.t("cancel"))
+                    }
                 },
                 shape = AppDialogShape
             )
         }
     }
 
-    // --- Export name dialog ---
     if (state.showExportNameDialog) {
+        var exportPasswordVisible by remember { mutableStateOf(false) }
+        var exportPasswordConfirmVisible by remember { mutableStateOf(false) }
+
         AlertDialog(
-            onDismissRequest = { state.showExportNameDialog = false },
+            onDismissRequest = {
+                state.showExportNameDialog = false
+                state.backupPassword = ""
+                state.backupPasswordConfirm = ""
+                state.backupPasswordError = null
+            },
             title = { Text(Locales.t("export_db")) },
             text = {
                 Column(Modifier.fillMaxWidth()) {
-                    Text(Locales.t("backup_export_name_hint"), style = MaterialTheme.typography.body2)
+                    Text(
+                        Locales.t("backup_export_name_hint"),
+                        style = MaterialTheme.typography.body2
+                    )
+
                     Spacer(Modifier.height(12.dp))
+
                     OutlinedTextField(
                         value = state.exportFileName,
                         onValueChange = { state.exportFileName = it },
@@ -270,7 +339,101 @@ fun AppRootDialogs(state: AppRootState) {
                         singleLine = true,
                         label = { Text(Locales.t("backup_file_name")) }
                     )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(Locales.t("backup_encrypt_toggle"))
+                        Switch(
+                            checked = state.backupEncryptEnabled,
+                            onCheckedChange = { state.backupEncryptEnabled = it }
+                        )
+                    }
+
+                    if (state.backupEncryptEnabled) {
+                        Spacer(Modifier.height(10.dp))
+
+                        OutlinedTextField(
+                            value = state.backupPassword,
+                            onValueChange = {
+                                state.backupPassword = it
+                                state.backupPasswordError = null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            label = { Text(Locales.t("backup_password")) },
+                            visualTransformation = if (exportPasswordVisible) {
+                                VisualTransformation.None
+                            } else {
+                                PasswordVisualTransformation()
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        exportPasswordVisible = !exportPasswordVisible
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = if (exportPasswordVisible) {
+                                            Icons.Default.VisibilityOff
+                                        } else {
+                                            Icons.Default.Visibility
+                                        },
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                        OutlinedTextField(
+                            value = state.backupPasswordConfirm,
+                            onValueChange = {
+                                state.backupPasswordConfirm = it
+                                state.backupPasswordError = null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            label = { Text(Locales.t("backup_password_confirm")) },
+                            visualTransformation = if (exportPasswordConfirmVisible) {
+                                VisualTransformation.None
+                            } else {
+                                PasswordVisualTransformation()
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        exportPasswordConfirmVisible = !exportPasswordConfirmVisible
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = if (exportPasswordConfirmVisible) {
+                                            Icons.Default.VisibilityOff
+                                        } else {
+                                            Icons.Default.Visibility
+                                        },
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        )
+
+                        if (state.backupPasswordError != null) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = state.backupPasswordError.orEmpty(),
+                                color = MaterialTheme.colors.error
+                            )
+                        }
+                    }
+
                     Spacer(Modifier.height(6.dp))
+
                     Text(
                         text = Locales.t("backup_extension_note"),
                         style = MaterialTheme.typography.caption,
@@ -279,18 +442,58 @@ fun AppRootDialogs(state: AppRootState) {
                 }
             },
             confirmButton = {
-                Button(onClick = {
-                    state.showExportNameDialog = false
-                    val json = DataManager.exportBackup(state.appointments)
-                    val safeName = state.exportFileName.trim().ifBlank { "beautyplanner-backup" }
-                    BackupFilePicker.exportJson(
-                        suggestedFileName = safeName,
-                        json = json
-                    )
-                }) { Text(Locales.t("save")) }
+                Button(
+                    onClick = {
+                        if (state.backupEncryptEnabled) {
+                            if (state.backupPassword.length < 6) {
+                                state.backupPasswordError =
+                                    Locales.t("backup_password_too_short")
+                                return@Button
+                            }
+
+                            if (state.backupPassword != state.backupPasswordConfirm) {
+                                state.backupPasswordError =
+                                    Locales.t("backup_password_mismatch")
+                                return@Button
+                            }
+                        }
+
+                        val payload = DataManager.exportBackupPayload(state.appointments)
+                        val safeName = state.exportFileName.trim()
+                            .ifBlank { "beautyplanner-backup" }
+
+                        val fileText = if (state.backupEncryptEnabled) {
+                            BackupCodec.createEncryptedBackupFile(
+                                payloadJson = payload,
+                                password = state.backupPassword
+                            )
+                        } else {
+                            BackupCodec.createPlainBackupFile(payload)
+                        }
+
+                        state.showExportNameDialog = false
+                        state.backupPassword = ""
+                        state.backupPasswordConfirm = ""
+                        state.backupPasswordError = null
+
+                        BackupFilePicker.exportJson(
+                            suggestedFileName = safeName,
+                            json = fileText
+                        )
+                    }
+                ) {
+                    Text(Locales.t("save"))
+                }
             },
             dismissButton = {
-                TextButton(onClick = { state.showExportNameDialog = false }) {
+                TextButton(
+                    onClick = {
+                        state.showExportNameDialog = false
+                        state.backupPassword = ""
+                        state.backupPasswordConfirm = ""
+                        state.backupPasswordError = null
+                    }
+                ) {
                     Text(Locales.t("cancel"))
                 }
             },
@@ -298,7 +501,6 @@ fun AppRootDialogs(state: AppRootState) {
         )
     }
 
-    // --- Import confirm dialog ---
     if (state.showImportConfirm && state.pendingImportText != null) {
         AlertDialog(
             onDismissRequest = {
@@ -308,47 +510,208 @@ fun AppRootDialogs(state: AppRootState) {
             title = { Text(Locales.t("import_db")) },
             text = { Text(Locales.t("backup_import_confirm_text")) },
             confirmButton = {
-                Button(onClick = {
-                    val text = state.pendingImportText.orEmpty()
-                    val imported = DataManager.importBackup(text)
-                    if (imported.isEmpty()) {
-                        state.showImportError = Locales.t("import_invalid_json")
-                    } else {
-                        state.appointments.clear()
-                        state.appointments.addAll(imported)
-                        state.saveAll()
-                        state.showImportError = null
-                    }
+                Button(
+                    onClick = {
+                        val text = state.pendingImportText.orEmpty()
+                        val parsed = BackupCodec.parseBackupFile(text)
 
-                    state.showImportConfirm = false
-                    state.pendingImportText = null
-                }) { Text(Locales.t("import_btn")) }
+                        when (parsed) {
+                            is ParsedBackupFile.LegacyPlainPayload -> {
+                                val imported = DataManager.importBackupPayload(parsed.payloadJson)
+                                if (imported.isEmpty()) {
+                                    state.showImportError = Locales.t("import_invalid_json")
+                                } else {
+                                    state.appointments.clear()
+                                    state.appointments.addAll(imported)
+                                    state.saveAll()
+                                    state.showImportError = null
+                                }
+
+                                state.showImportConfirm = false
+                                state.pendingImportText = null
+                            }
+
+                            is ParsedBackupFile.PlainContainer -> {
+                                val payload = parsed.container.payload.orEmpty()
+                                val imported = DataManager.importBackupPayload(payload)
+
+                                if (imported.isEmpty()) {
+                                    state.showImportError = Locales.t("import_invalid_json")
+                                } else {
+                                    state.appointments.clear()
+                                    state.appointments.addAll(imported)
+                                    state.saveAll()
+                                    state.showImportError = null
+                                }
+
+                                state.showImportConfirm = false
+                                state.pendingImportText = null
+                            }
+
+                            is ParsedBackupFile.EncryptedContainer -> {
+                                state.pendingEncryptedImportText = text
+                                state.importPassword = ""
+                                state.importPasswordError = null
+                                state.showImportPasswordDialog = true
+                                state.showImportConfirm = false
+                                state.pendingImportText = null
+                            }
+
+                            null -> {
+                                state.showImportError = Locales.t("import_invalid_json")
+                                state.showImportConfirm = false
+                                state.pendingImportText = null
+                            }
+                        }
+                    }
+                ) {
+                    Text(Locales.t("import_btn"))
+                }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    state.showImportConfirm = false
-                    state.pendingImportText = null
-                }) { Text(Locales.t("cancel")) }
+                TextButton(
+                    onClick = {
+                        state.showImportConfirm = false
+                        state.pendingImportText = null
+                    }
+                ) {
+                    Text(Locales.t("cancel"))
+                }
             },
             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
         )
     }
 
-    // --- Import error dialog ---
     if (state.showImportError != null) {
         AlertDialog(
             onDismissRequest = { state.showImportError = null },
             title = { Text(Locales.t("import_db")) },
             text = { Text(state.showImportError ?: "") },
             confirmButton = {
-                TextButton(onClick = { state.showImportError = null }) { Text(Locales.t("close")) }
+                TextButton(onClick = { state.showImportError = null }) {
+                    Text(Locales.t("close"))
+                }
             },
             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
         )
     }
 
-    // --- Transfer conflict confirm ---
-    if (state.showTransferConflictConfirm &&
+    if (state.showImportPasswordDialog && state.pendingEncryptedImportText != null) {
+        var importPasswordVisible by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = {
+                state.showImportPasswordDialog = false
+                state.pendingEncryptedImportText = null
+                state.importPassword = ""
+                state.importPasswordError = null
+            },
+            title = { Text(Locales.t("backup_import_password_title")) },
+            text = {
+                Column(Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = state.importPassword,
+                        onValueChange = {
+                            state.importPassword = it
+                            state.importPasswordError = null
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text(Locales.t("backup_import_password_hint")) },
+                        visualTransformation = if (importPasswordVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    importPasswordVisible = !importPasswordVisible
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (importPasswordVisible) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+
+                    if (state.importPasswordError != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = state.importPasswordError.orEmpty(),
+                            color = MaterialTheme.colors.error
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val text = state.pendingEncryptedImportText.orEmpty()
+                        val parsed = BackupCodec.parseBackupFile(text)
+                        val encrypted =
+                            (parsed as? ParsedBackupFile.EncryptedContainer)?.container
+
+                        if (encrypted == null) {
+                            state.importPasswordError = Locales.t("import_invalid_json")
+                            return@Button
+                        }
+
+                        val payload = BackupCodec.decryptPayload(
+                            container = encrypted,
+                            password = state.importPassword
+                        )
+
+                        if (payload.isNullOrBlank()) {
+                            state.importPasswordError =
+                                Locales.t("backup_import_password_invalid")
+                            return@Button
+                        }
+
+                        val imported = DataManager.importBackupPayload(payload)
+                        if (imported.isEmpty()) {
+                            state.importPasswordError = Locales.t("import_invalid_json")
+                            return@Button
+                        }
+
+                        state.appointments.clear()
+                        state.appointments.addAll(imported)
+                        state.saveAll()
+
+                        state.showImportPasswordDialog = false
+                        state.pendingEncryptedImportText = null
+                        state.importPassword = ""
+                        state.importPasswordError = null
+                        state.showImportError = null
+                    }
+                ) {
+                    Text(Locales.t("import_btn"))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        state.showImportPasswordDialog = false
+                        state.pendingEncryptedImportText = null
+                        state.importPassword = ""
+                        state.importPasswordError = null
+                    }
+                ) {
+                    Text(Locales.t("cancel"))
+                }
+            },
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+        )
+    }
+
+    if (
+        state.showTransferConflictConfirm &&
         state.transferA != null &&
         state.conflictB != null &&
         state.pendingTargetDate != null
@@ -368,25 +731,36 @@ fun AppRootDialogs(state: AppRootState) {
                     )
                 },
                 confirmButton = {
-                    Button(onClick = {
-                        state.moveAppointment(state.transferA!!, state.pendingTargetDate!!, state.pendingTargetTime)
-                        state.showTransferConflictConfirm = false
-                        state.showTransferPickDialog = false
-                        state.showRescheduleBDialog = true
-                    }) { Text(Locales.t("transfer_agree")) }
+                    Button(
+                        onClick = {
+                            state.moveAppointment(
+                                state.transferA!!,
+                                state.pendingTargetDate!!,
+                                state.pendingTargetTime
+                            )
+                            state.showTransferConflictConfirm = false
+                            state.showTransferPickDialog = false
+                            state.showRescheduleBDialog = true
+                        }
+                    ) {
+                        Text(Locales.t("transfer_agree"))
+                    }
                 },
                 dismissButton = {
-                    TextButton(onClick = {
-                        state.showTransferConflictConfirm = false
-                        state.conflictB = null
-                    }) { Text(Locales.t("cancel")) }
+                    TextButton(
+                        onClick = {
+                            state.showTransferConflictConfirm = false
+                            state.conflictB = null
+                        }
+                    ) {
+                        Text(Locales.t("cancel"))
+                    }
                 },
                 shape = AppDialogShape
             )
         }
     }
 
-    // --- Reschedule B dialog ---
     if (state.showRescheduleBDialog && state.conflictB != null) {
         RescheduleClientBDialog(
             clientName = state.conflictB!!.clientName,
@@ -413,7 +787,6 @@ fun AppRootDialogs(state: AppRootState) {
         )
     }
 
-    // --- Delete confirm ---
     if (state.showDeleteConfirm != null) {
         AlertDialog(
             onDismissRequest = { state.showDeleteConfirm = null },
@@ -428,11 +801,13 @@ fun AppRootDialogs(state: AppRootState) {
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
-                    state.appointments.remove(state.showDeleteConfirm)
-                    state.saveAll()
-                    state.showDeleteConfirm = null
-                }) {
+                TextButton(
+                    onClick = {
+                        state.appointments.remove(state.showDeleteConfirm)
+                        state.saveAll()
+                        state.showDeleteConfirm = null
+                    }
+                ) {
                     Text(
                         Locales.t("delete_btn"),
                         color = Color.Red,

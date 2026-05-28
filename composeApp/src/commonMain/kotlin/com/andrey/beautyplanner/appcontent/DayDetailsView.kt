@@ -328,6 +328,7 @@ fun DayDetailsView(
             endHm = viewingEndHm,
             status = liveStatusToView,
             actionsEnabled = actionsEnabled,
+            allowDeletePast = AppSettings.developerModeUnlocked,
             onDismiss = {
                 viewingAppt = null
                 viewingStatus = null
@@ -345,7 +346,9 @@ fun DayDetailsView(
                 onTransferClick(apptToView)
             },
             onDeleteClick = {
-                if (!actionsEnabled) return@AppointmentDetailsDialog
+                if (!(actionsEnabled || AppSettings.developerModeUnlocked)) {
+                    return@AppointmentDetailsDialog
+                }
                 viewingAppt = null
                 viewingStatus = null
                 onDeleteClick(apptToView)
