@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.openEmail
 
-private const val PRIVACY_EMAIL = "chief.andrew5891@gmail.com"
+private const val PRIVACY_EMAIL = "beautyplanner2026@gmail.com"
 private const val AUTHOR_NAME = "KISELOV ANDRII"
 
 @Composable
