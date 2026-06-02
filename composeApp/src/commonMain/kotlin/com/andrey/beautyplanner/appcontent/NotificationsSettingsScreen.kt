@@ -72,140 +72,126 @@ fun NotificationsSettingsScreen() {
         Locales.t("notif_sound_silent") to NotificationSound.SILENT
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        Text(
-            text = Locales.t("notifications_section"),
-            fontSize = (22 * fontScale).sp,
-            fontWeight = FontWeight.Bold,
-            color = onBg
-        )
-
-        Text(
-            text = Locales.t("notifications_settings_hint"),
-            fontSize = (14 * fontScale).sp,
-            color = onBg.copy(alpha = 0.7f)
-        )
-
-        androidx.compose.material.Divider()
-
-        androidx.compose.foundation.layout.Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+    CenteredNarrowContentContainer {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Text(
-                text = Locales.t("notifications_enabled"),
-                fontSize = (16 * fontScale).sp,
+                text = Locales.t("notifications_section"),
+                fontSize = (22 * fontScale).sp,
+                fontWeight = FontWeight.Bold,
+                color = onBg
+            )
+            Text(
+                text = Locales.t("notifications_settings_hint"),
+                fontSize = (14 * fontScale).sp,
+                color = onBg.copy(alpha = 0.7f)
+            )
+            androidx.compose.material.Divider()
+            androidx.compose.foundation.layout.Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                Text(
+                    text = Locales.t("notifications_enabled"),
+                    fontSize = (16 * fontScale).sp,
+                    color = onSurface
+                )
+                Switch(
+                    checked = AppSettings.notificationsEnabled,
+                    onCheckedChange = {
+                        AppSettings.notificationsEnabled = it
+                        AppSettings.persist()
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colors.primary,
+                        checkedTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.35f),
+                        uncheckedThumbColor = onSurface.copy(alpha = 0.45f),
+                        uncheckedTrackColor = onSurface.copy(alpha = 0.20f)
+                    )
+                )
+            }
+            SettingsDropdown(
+                label = Locales.t("notif_sound_label"),
+                selected = soundItems.firstOrNull { it.second == AppSettings.notificationSound }?.first
+                    ?: Locales.t("notif_sound_default"),
+                items = soundItems.map { it.first },
+                onSelect = { selected ->
+                    val sound =
+                        soundItems.firstOrNull { it.first == selected }?.second
+                            ?: NotificationSound.DEFAULT
+                    AppSettings.notificationSound = sound
+                    AppSettings.persist()
+                }
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = Locales.t("reminders_when"),
+                fontSize = (14 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface.copy(alpha = 0.75f)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "${Locales.t("remind_days")}: ${Locales.daysCount(AppSettings.reminderDaysBefore)}",
+                fontSize = (15 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
                 color = onSurface
             )
-
-            Switch(
-                checked = AppSettings.notificationsEnabled,
-                onCheckedChange = {
-                    AppSettings.notificationsEnabled = it
+            Slider(
+                value = daysSlider,
+                onValueChange = { daysSlider = it },
+                onValueChangeFinished = {
+                    AppSettings.reminderDaysBefore = daysSlider.roundToInt().coerceIn(0, 3)
                     AppSettings.persist()
                 },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colors.primary,
-                    checkedTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.35f),
-                    uncheckedThumbColor = onSurface.copy(alpha = 0.45f),
-                    uncheckedTrackColor = onSurface.copy(alpha = 0.20f)
+                valueRange = 0f..3f,
+                steps = 0,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colors.primary,
+                    activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
+                    inactiveTrackColor = onSurface.copy(alpha = 0.20f)
                 )
             )
-        }
-
-        SettingsDropdown(
-            label = Locales.t("notif_sound_label"),
-            selected = soundItems.firstOrNull { it.second == AppSettings.notificationSound }?.first
-                ?: Locales.t("notif_sound_default"),
-            items = soundItems.map { it.first },
-            onSelect = { selected ->
-                val sound =
-                    soundItems.firstOrNull { it.first == selected }?.second
-                        ?: NotificationSound.DEFAULT
-                AppSettings.notificationSound = sound
-                AppSettings.persist()
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "${Locales.t("remind_hours")}: ${Locales.hoursCount(AppSettings.reminderHoursBefore)}",
+                fontSize = (15 * fontScale).sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface
+            )
+            Slider(
+                value = hoursSlider,
+                onValueChange = { hoursSlider = it },
+                onValueChangeFinished = {
+                    AppSettings.reminderHoursBefore = hoursSlider.roundToInt().coerceIn(0, 12)
+                    AppSettings.persist()
+                },
+                valueRange = 0f..12f,
+                steps = 0,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colors.primary,
+                    activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
+                    inactiveTrackColor = onSurface.copy(alpha = 0.20f)
+                )
+            )
+            val totalMinutes =
+                AppSettings.reminderDaysBefore * 24 * 60 + AppSettings.reminderHoursBefore * 60
+            val summary = if (totalMinutes <= 0) {
+                Locales.t("remind_off")
+            } else {
+                "${Locales.daysCount(AppSettings.reminderDaysBefore)} • ${Locales.hoursCount(AppSettings.reminderHoursBefore)}"
             }
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = Locales.t("reminders_when"),
-            fontSize = (14 * fontScale).sp,
-            fontWeight = FontWeight.SemiBold,
-            color = onSurface.copy(alpha = 0.75f)
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "${Locales.t("remind_days")}: ${Locales.daysCount(AppSettings.reminderDaysBefore)}",
-            fontSize = (15 * fontScale).sp,
-            fontWeight = FontWeight.SemiBold,
-            color = onSurface
-        )
-
-        Slider(
-            value = daysSlider,
-            onValueChange = { daysSlider = it },
-            onValueChangeFinished = {
-                AppSettings.reminderDaysBefore = daysSlider.roundToInt().coerceIn(0, 3)
-                AppSettings.persist()
-            },
-            valueRange = 0f..3f,
-            steps = 0,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colors.primary,
-                activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
-                inactiveTrackColor = onSurface.copy(alpha = 0.20f)
+            Text(
+                text = "${Locales.t("remind_summary")}: $summary",
+                fontSize = (13 * fontScale).sp,
+                color = onSurface.copy(alpha = 0.60f)
             )
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "${Locales.t("remind_hours")}: ${Locales.hoursCount(AppSettings.reminderHoursBefore)}",
-            fontSize = (15 * fontScale).sp,
-            fontWeight = FontWeight.SemiBold,
-            color = onSurface
-        )
-
-        Slider(
-            value = hoursSlider,
-            onValueChange = { hoursSlider = it },
-            onValueChangeFinished = {
-                AppSettings.reminderHoursBefore = hoursSlider.roundToInt().coerceIn(0, 12)
-                AppSettings.persist()
-            },
-            valueRange = 0f..12f,
-            steps = 0,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colors.primary,
-                activeTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.85f),
-                inactiveTrackColor = onSurface.copy(alpha = 0.20f)
-            )
-        )
-
-        val totalMinutes =
-            AppSettings.reminderDaysBefore * 24 * 60 + AppSettings.reminderHoursBefore * 60
-
-        val summary = if (totalMinutes <= 0) {
-            Locales.t("remind_off")
-        } else {
-            "${Locales.daysCount(AppSettings.reminderDaysBefore)} • ${Locales.hoursCount(AppSettings.reminderHoursBefore)}"
         }
-
-        Text(
-            text = "${Locales.t("remind_summary")}: $summary",
-            fontSize = (13 * fontScale).sp,
-            color = onSurface.copy(alpha = 0.60f)
-        )
     }
 }

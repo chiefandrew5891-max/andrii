@@ -3,7 +3,6 @@ package com.andrey.beautyplanner.appcontent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,15 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +25,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
-import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.openEmail
 
 private const val PRIVACY_EMAIL = "chief.andrew5891@gmail.com"
@@ -45,8 +38,6 @@ fun PrivacyPolicyScreen(
     val fontScale = AppSettings.getFontScale()
     val content = privacyPolicyContent(languageCode)
 
-    val titleFontSize = (18 * fontScale).sp
-    val titleLineHeight = (24 * fontScale).sp
     val docTitleFontSize = (20 * fontScale).sp
     val docTitleLineHeight = (26 * fontScale).sp
     val sectionTitleFontSize = (16 * fontScale).sp
@@ -148,9 +139,7 @@ private fun RichParagraphText(
     bodyFontSize: androidx.compose.ui.unit.TextUnit,
     bodyLineHeight: androidx.compose.ui.unit.TextUnit
 ) {
-    val primary = MaterialTheme.colors.primary
     val onBackground = MaterialTheme.colors.onBackground
-
     val annotated = buildAnnotatedString {
         val parts = text.split(AUTHOR_NAME)
         parts.forEachIndexed { index, part ->
@@ -215,11 +204,13 @@ private fun EmailLine(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        RichParagraphText(
-            text = prefix,
-            bodyFontSize = bodyFontSize,
-            bodyLineHeight = bodyLineHeight
-        )
+        if (prefix.isNotBlank()) {
+            RichParagraphText(
+                text = prefix,
+                bodyFontSize = bodyFontSize,
+                bodyLineHeight = bodyLineHeight
+            )
+        }
 
         Text(
             text = email,
@@ -243,7 +234,6 @@ private data class PrivacyPolicySection(
 )
 
 private data class PrivacyPolicyContent(
-    val screenTitle: String,
     val documentTitle: String,
     val lastUpdated: String,
     val intro: String,
@@ -253,60 +243,60 @@ private data class PrivacyPolicyContent(
 private fun privacyPolicyContent(languageCode: String): PrivacyPolicyContent {
     return when (languageCode) {
         "ru" -> PrivacyPolicyContent(
-            screenTitle = "Политика конфиденциальности",
             documentTitle = "Политика конфиденциальности приложения Beauty Planner",
             lastUpdated = "Последнее обновление: Май 2026 г.",
-            intro = "Настоящая Политика конфиденциальности описывает, как $AUTHOR_NAME (далее «мы», «наш» или «Разработчик») осуществляет сбор, использование, обработку и защиту информации пользователей (далее «пользователь» или «вы») в мобильном приложении Beauty Planner.",
+            intro = "Настоящая Политика конфиденциальности описывает, как $AUTHOR_NAME (далее «мы», «наш» или «Разработчик») обрабатывает данные при использовании мобильного приложения Beauty Planner.",
             sections = listOf(
                 PrivacyPolicySection(
-                    title = "1. Сбор и использование персональных данных",
+                    title = "1. Какие данные обрабатывает приложение",
                     paragraphs = listOf(
-                        "Приложение разработано как персональный органайзер для бьюти-мастеров. Мы собираем минимальный объем данных, необходимый для обеспечения базовой функциональности:"
+                        "Приложение Beauty Planner предназначено для локального ведения записей, расписания и напоминаний. Основные данные, которые вы вводите в приложение, сохраняются на вашем устройстве.",
+                        "К таким данным могут относиться имя клиента, номер телефона, дата и время записи, название услуги, стоимость и другие заметки, которые вы добавляете вручную."
+                    )
+                ),
+                PrivacyPolicySection(
+                    title = "2. Где хранятся данные",
+                    paragraphs = listOf(
+                        "На текущем этапе основная информация, которую вы вводите в приложение, хранится локально на вашем устройстве.",
+                        "Приложение также поддерживает экспорт и импорт резервных копий по вашей инициативе. Такие файлы создаются только по вашему действию и сохраняются в выбранное вами место."
+                    )
+                ),
+                PrivacyPolicySection(
+                    title = "3. Разрешения устройства",
+                    paragraphs = listOf(
+                        "Для работы отдельных функций приложение может запрашивать доступ к возможностям устройства."
                     ),
                     bullets = listOf(
-                        "Данные профиля и аутентификации: Если в приложении используется функция создания учетной записи, мы можем обрабатывать ваш email и имя.",
-                        "Данные планирования и клиентов: Информация, которую вы вносите в календарь (имена клиентов, номера телефонов, типы процедур, даты и стоимость услуг), обрабатывается исключительно для локального отображения и управления вашим расписанием.",
-                        "Технические данные: Мы можем собирать обезличенные технические идентификаторы устройств и логи ошибок для улучшения стабильности работы приложения."
+                        "Уведомления — для напоминаний о предстоящих записях.",
+                        "Контакты — только если вы сами используете автоподстановку или поиск клиента по контактам устройства.",
+                        "Доступ к файлам — только в рамках системного выбора файла при импорте или экспорте резервной копии."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "2. Разрешения (Permissions)",
+                    title = "4. Покупки и подписка",
                     paragraphs = listOf(
-                        "Для полноценной работы приложение может запрашивать доступ к:"
-                    ),
-                    bullets = listOf(
-                        "Уведомлениям (Notifications): Для отправки напоминаний о предстоящих записях и процедурах.",
-                        "Контактам (Contacts): Исключительно по вашей инициативе через стандартный системный интерфейс Android Contact Picker для быстрого добавления клиента из телефонной книги. Приложение не собирает и не передает вашу адресную книгу на внешние сервера."
+                        "Для оформления подписки Premium приложение использует Google Play Billing на Android.",
+                        "Информация об оплате обрабатывается соответствующей платформой магазина приложений. Само приложение не получает данные вашей банковской карты."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "3. Передача данных третьим лицам",
+                    title = "5. Передача данных третьим лицам",
                     paragraphs = listOf(
-                        "Мы не продаем, не обмениваем и не передаем ваши личные данные третьим сторонам. Вся информация о ваших клиентах и записях хранится локально на вашем устройстве или в защищенном облачном хранилище, привязанном к вашей учетной записи."
+                        "Приложение не предназначено для передачи вашей клиентской базы или записей третьим лицам.",
+                        "Данные не отправляются на отдельный внешний сервер приложения, если иное не указано явно в будущих обновлениях политики конфиденциальности."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "4. Безопасность и хранение данных",
+                    title = "6. Удаление данных",
                     paragraphs = listOf(
-                        "Мы обеспечиваем безопасную обработку данных с использованием современных методов шифрования. Данные хранятся до тех пор, пока вы используете приложение, или до момента направления запроса на их удаление."
+                        "Вы можете удалить данные приложения самостоятельно, очистив данные приложения в системе или удалив созданные резервные копии.",
+                        "Также внутри приложения могут быть доступны функции удаления записей и очистки локальной базы данных."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "5. Политика удаления данных (Data Deletion Policy)",
+                    title = "7. Контакты",
                     paragraphs = listOf(
-                        "В соответствии с требованиями Google Play, вы имеете полное право запросить удаление своей учетной записи и всех связанных с ней данных. Вы можете сделать это двумя способами:"
-                    ),
-                    bullets = listOf(
-                        "Непосредственно внутри приложения в меню «Настройки» -> «Удалить аккаунт»."
-                    ),
-                    emailLines = listOf(
-                        "Отправив официальный запрос на нашу электронную почту:"
-                    )
-                ),
-                PrivacyPolicySection(
-                    title = "6. Контакты",
-                    paragraphs = listOf(
-                        "Если у вас возникли вопросы относительно данной политики конфиденциальности, пожалуйста, свяжитесь с нами по адресу:"
+                        "Если у вас есть вопросы по данной Политике конфиденциальности, вы можете связаться с нами по адресу:"
                     ),
                     emailLines = listOf("")
                 )
@@ -314,60 +304,60 @@ private fun privacyPolicyContent(languageCode: String): PrivacyPolicyContent {
         )
 
         "uk" -> PrivacyPolicyContent(
-            screenTitle = "Політика конфіденційності",
             documentTitle = "Політика конфіденційності додатка Beauty Planner",
             lastUpdated = "Останнє оновлення: Травень 2026 р.",
-            intro = "Ця Політика конфіденційності описує, як $AUTHOR_NAME (далі «ми», «наш» або «Розробник») здійснює збір, використання, обробку та захист інформації користувачів (далі «користувач» або «ви») у мобільному додатку Beauty Planner.",
+            intro = "Ця Політика конфіденційності описує, як $AUTHOR_NAME (далі «ми», «наш» або «Розробник») обробляє дані під час використання мобільного додатка Beauty Planner.",
             sections = listOf(
                 PrivacyPolicySection(
-                    title = "1. Збір та використання персональних даних",
+                    title = "1. Які дані обробляє додаток",
                     paragraphs = listOf(
-                        "Додаток розроблений як персональний органайзер для б'юті-майстрів. Ми збираємо мінімальний обсяг даних, необхідний для забезпечення базової функціональності:"
+                        "Додаток Beauty Planner призначений для локального ведення записів, розкладу та нагадувань. Основні дані, які ви вводите, зберігаються на вашому пристрої.",
+                        "До таких даних можуть належати ім’я клієнта, номер телефону, дата і час запису, назва послуги, вартість та інші нотатки, які ви додаєте вручну."
+                    )
+                ),
+                PrivacyPolicySection(
+                    title = "2. Де зберігаються дані",
+                    paragraphs = listOf(
+                        "На поточному етапі основна інформація, яку ви вводите в додаток, зберігається локально на вашому пристрої.",
+                        "Додаток також підтримує експорт та імпорт резервних копій за вашою ініціативою. Такі файли створюються лише за вашою дією та зберігаються у вибране вами місце."
+                    )
+                ),
+                PrivacyPolicySection(
+                    title = "3. Дозволи пристрою",
+                    paragraphs = listOf(
+                        "Для роботи окремих функцій додаток може запитувати доступ до можливостей пристрою."
                     ),
                     bullets = listOf(
-                        "Дані профілю та автентифікації: Якщо в додатку використовується функція створення облікового запису, ми можемо обробляти ваш email та ім'я.",
-                        "Дані планування та клієнтів: Інформація, яку ви вносите в календар (імена клієнтів, номери телефонів, типи процедур, дати та вартість послуг), обробляється виключно для локального відображення та управління вашим розкладом.",
-                        "Технічні дані: Ми можемо збирати знеособлені технічні ідентифікатори пристроїв та логи помилок для покращення стабільності роботи додатка."
+                        "Сповіщення — для нагадувань про майбутні записи.",
+                        "Контакти — лише якщо ви самі використовуєте автопідстановку або пошук клієнта в контактах пристрою.",
+                        "Доступ до файлів — лише в межах системного вибору файлу під час імпорту або експорту резервної копії."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "2. Дозволи (Permissions)",
+                    title = "4. Покупки та підписка",
                     paragraphs = listOf(
-                        "Для повноцінної роботи додаток може запитувати доступ до:"
-                    ),
-                    bullets = listOf(
-                        "Сповіщень (Notifications): Для надсилання нагадувань про майбутні записи та процедури.",
-                        "Контактів (Contacts): Виключно за вашою ініціативою через стандартний системний інтерфейс Android Contact Picker для швидкого додавання клієнта з телефонної книги. Додаток не збирає і не передає вашу адресну книгу на зовнішні сервери."
+                        "Для оформлення підписки Premium додаток використовує Google Play Billing на Android.",
+                        "Інформація про оплату обробляється відповідною платформою магазину додатків. Сам додаток не отримує дані вашої банківської картки."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "3. Передача даних третім особам",
+                    title = "5. Передача даних третім особам",
                     paragraphs = listOf(
-                        "Ми не продаємо, не обмінюємо і не передаємо ваші особисті дані третім сторонам. Вся інформація про ваших клієнтів та записи зберігається локально на вашому пристрої або в захищеному хмарному сховищі, прив'язаному до вашого облікового запису."
+                        "Додаток не призначений для передачі вашої клієнтської бази або записів третім особам.",
+                        "Дані не надсилаються на окремий зовнішній сервер додатка, якщо інше не буде прямо вказано в майбутніх оновленнях політики конфіденційності."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "4. Безпека та зберігання даних",
+                    title = "6. Видалення даних",
                     paragraphs = listOf(
-                        "Ми забезпечуємо безпечну обробку даних з використанням сучасних методів шифрування. Дані зберігаються доти, доки ви використовуєте додаток, або до моменту направлення запиту на їх видалення."
+                        "Ви можете видалити дані додатка самостійно, очистивши дані додатка в системі або видаливши створені резервні копії.",
+                        "Також усередині додатка можуть бути доступні функції видалення записів і очищення локальної бази даних."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "5. Політика видалення даних (Data Deletion Policy)",
+                    title = "7. Контакти",
                     paragraphs = listOf(
-                        "Відповідно до вимог Google Play, ви маєте повне право запросити видалення свого облікового запису та всіх пов'язаних з ним даних. Ви можете зробити це двома способами:"
-                    ),
-                    bullets = listOf(
-                        "Безпосередньо всередині додатка в меню «Налаштування» -> «Видалити акаунт»."
-                    ),
-                    emailLines = listOf(
-                        "Надіславши офіційний запит на нашу електронну пошту:"
-                    )
-                ),
-                PrivacyPolicySection(
-                    title = "6. Контакти",
-                    paragraphs = listOf(
-                        "Якщо у вас виникли запитання щодо цієї політики конфіденційності, будь ласка, зв'яжіться з нами за адресою:"
+                        "Якщо у вас є запитання щодо цієї Політики конфіденційності, ви можете зв’язатися з нами за адресою:"
                     ),
                     emailLines = listOf("")
                 )
@@ -375,60 +365,60 @@ private fun privacyPolicyContent(languageCode: String): PrivacyPolicyContent {
         )
 
         "it" -> PrivacyPolicyContent(
-            screenTitle = "Informativa sulla Privacy",
             documentTitle = "Informativa sulla Privacy di Beauty Planner",
             lastUpdated = "Ultimo aggiornamento: Maggio 2026",
-            intro = "La presente Informativa sulla Privacy descrive le modalità con cui $AUTHOR_NAME (\"noi\", \"nostro\" o \"Sviluppatore\") raccoglie, utilizza, elabora e protegge le informazioni degli utenti (\"utente\" o \"tu\") all'interno dell'applicazione mobile Beauty Planner.",
+            intro = "La presente Informativa sulla Privacy descrive come $AUTHOR_NAME (\"noi\", \"nostro\" o \"Sviluppatore\") tratta i dati durante l’utilizzo dell’app mobile Beauty Planner.",
             sections = listOf(
                 PrivacyPolicySection(
-                    title = "1. Raccolta e Utilizzo dei Dati Personali",
+                    title = "1. Quali dati tratta l'app",
                     paragraphs = listOf(
-                        "L'applicazione è progettata come un organizzatore personale per i professionisti del settore della bellezza. Raccogliamo la quantità minima di dati necessari per fornire le funzionalità di base:"
+                        "Beauty Planner è progettata per gestire localmente appuntamenti, pianificazione e promemoria. I principali dati inseriti nell’app vengono salvati sul tuo dispositivo.",
+                        "Questi dati possono includere nome del cliente, numero di telefono, data e ora dell’appuntamento, nome del servizio, prezzo e altre note inserite manualmente."
+                    )
+                ),
+                PrivacyPolicySection(
+                    title = "2. Dove vengono conservati i dati",
+                    paragraphs = listOf(
+                        "Nello stato attuale del progetto, le principali informazioni inserite nell’app vengono conservate localmente sul tuo dispositivo.",
+                        "L’app supporta anche l’esportazione e l’importazione di backup su tua iniziativa. Tali file vengono creati solo su tua azione e salvati nella posizione da te scelta."
+                    )
+                ),
+                PrivacyPolicySection(
+                    title = "3. Permessi del dispositivo",
+                    paragraphs = listOf(
+                        "Per il funzionamento di alcune funzioni, l’app può richiedere accesso a determinate capacità del dispositivo."
                     ),
                     bullets = listOf(
-                        "Dati del Profilo e Autenticazione: Se l'app include la creazione di un account, potremmo elaborare il tuo indirizzo email e il tuo nome.",
-                        "Dati di Pianificazione e Clienti: Le informazioni inserite nel calendario (nomi dei clienti, numeri di telefono, tipi di trattamento, date e costi del servizio) sono elaborate esclusivamente per visualizzare e gestire il tuo programma a livello locale.",
-                        "Dati Tecnici: Potremmo raccogliere identificatori anonimi del dispositivo e registri di crash per migliorare la stabilità e le prestazioni dell'app."
+                        "Notifiche — per ricordare i prossimi appuntamenti.",
+                        "Contatti — solo se utilizzi volontariamente il completamento automatico o la ricerca cliente nei contatti del dispositivo.",
+                        "Accesso ai file — solo nell’ambito della selezione di file di sistema durante importazione o esportazione del backup."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "2. Autorizzazioni del Dispositivo (Permissions)",
+                    title = "4. Acquisti e abbonamento",
                     paragraphs = listOf(
-                        "Per funzionare correttamente, l'applicazione potrebbe richiedere l'accesso a:"
-                    ),
-                    bullets = listOf(
-                        "Notifiche (Notifications): Per inviare promemoria sui prossimi appuntamenti e trattamenti.",
-                        "Contatti (Contacts): Esclusivamente su tua esplicita iniziativa tramite l'interfaccia standard Android Contact Picker per aggiungere rapidamente un cliente dalla rubrica. L'applicazione non raccoglie né trasmette la tua rubrica a server esterni."
+                        "Per l’attivazione dell’abbonamento Premium su Android, l’app utilizza Google Play Billing.",
+                        "Le informazioni di pagamento vengono gestite dalla piattaforma del negozio di applicazioni. L’app non riceve i dati della tua carta bancaria."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "3. Condivisione dei Dati con Terze Parti",
+                    title = "5. Condivisione dei dati con terze parti",
                     paragraphs = listOf(
-                        "Non vendiamo, commerciamo o trasferiamo i tuoi dati personali a terze parti. Tutte le informazioni relative ai tuoi clienti e appuntamenti sono memorizzate localmente sul tuo dispositivo o all'interno di uno spazio di archiviazione cloud sicuro collegato al tuo account."
+                        "L’app non è progettata per trasferire a terzi il tuo archivio clienti o i tuoi appuntamenti.",
+                        "I dati non vengono inviati a un server esterno dedicato dell’app, salvo diversa indicazione esplicita in futuri aggiornamenti dell’informativa."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "4. Sicurezza e Conservazione dei Dati",
+                    title = "6. Eliminazione dei dati",
                     paragraphs = listOf(
-                        "Garantiamo la gestione sicura dei dati utilizzando pratiche di crittografia standard del settore. I dati vengono conservati finché utilizzi attivamente l'app o fino alla richiesta di cancellazione."
+                        "Puoi eliminare i dati dell’app in autonomia cancellando i dati dell’app dal sistema o eliminando i backup creati.",
+                        "All’interno dell’app possono inoltre essere disponibili funzioni per eliminare gli appuntamenti o cancellare il database locale."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "5. Politica di Cancellazione dei Dati (Data Deletion Policy)",
+                    title = "7. Contatti",
                     paragraphs = listOf(
-                        "In conformità con i requisiti di Google Play e del GDPR, hai il diritto di richiedere la cancellazione completa del tuo account e dei dati associati. È possibile richiedere la cancellazione:"
-                    ),
-                    bullets = listOf(
-                        "Direttamente all'interno dell'app tramite \"Impostazioni\" -> \"Elimina Account\"."
-                    ),
-                    emailLines = listOf(
-                        "Contattandoci via email all'indirizzo:"
-                    )
-                ),
-                PrivacyPolicySection(
-                    title = "6. Contatti",
-                    paragraphs = listOf(
-                        "Per qualsiasi domanda riguardante la presente Informativa sulla Privacy, si prega di contattarci all'indirizzo:"
+                        "Per qualsiasi domanda relativa alla presente Informativa sulla Privacy, puoi contattarci all’indirizzo:"
                     ),
                     emailLines = listOf("")
                 )
@@ -436,60 +426,60 @@ private fun privacyPolicyContent(languageCode: String): PrivacyPolicyContent {
         )
 
         else -> PrivacyPolicyContent(
-            screenTitle = "Privacy Policy",
             documentTitle = "Privacy Policy for Beauty Planner",
             lastUpdated = "Last Updated: May 2026",
-            intro = "This Privacy Policy describes how $AUTHOR_NAME (\"we\", \"our\", or \"Developer\") collects, uses, processes, and protects the information of users (\"user\" or \"you\") within the Beauty Planner mobile application.",
+            intro = "This Privacy Policy explains how $AUTHOR_NAME (\"we\", \"our\", or \"Developer\") processes data when you use the Beauty Planner mobile application.",
             sections = listOf(
                 PrivacyPolicySection(
-                    title = "1. Collection and Use of Personal Data",
+                    title = "1. What data the app processes",
                     paragraphs = listOf(
-                        "The app is designed as a personal organizer for beauty professionals. We collect the minimum amount of data required to provide essential application functionality:"
+                        "Beauty Planner is designed for local appointment management, planning, and reminders. The main data you enter into the app is stored on your device.",
+                        "This may include client name, phone number, appointment date and time, service name, price, and other notes that you enter manually."
+                    )
+                ),
+                PrivacyPolicySection(
+                    title = "2. Where data is stored",
+                    paragraphs = listOf(
+                        "At the current stage of the project, the main information entered into the app is stored locally on your device.",
+                        "The app also supports backup export and import initiated by you. Such files are created only by your action and stored in the location you choose."
+                    )
+                ),
+                PrivacyPolicySection(
+                    title = "3. Device permissions",
+                    paragraphs = listOf(
+                        "For some features, the app may request access to certain device capabilities."
                     ),
                     bullets = listOf(
-                        "Profile and Authentication Data: If the app includes account creation functionality, we may process your email address and name.",
-                        "Scheduling and Client Data: Information you enter into the calendar (client names, phone numbers, appointment types, dates, and service costs) is processed solely to display and manage your schedule locally.",
-                        "Technical Data: We may collect anonymous device identifiers and crash logs to improve app stability and performance."
+                        "Notifications — to remind you about upcoming appointments.",
+                        "Contacts — only if you voluntarily use autocomplete or client lookup from your device contacts.",
+                        "File access — only within the system file picker used for backup import or export."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "2. Device Permissions",
+                    title = "4. Purchases and subscription",
                     paragraphs = listOf(
-                        "To function effectively, the app may request access to:"
-                    ),
-                    bullets = listOf(
-                        "Notifications: To send reminders about upcoming appointments and beauty sessions.",
-                        "Contacts: Only upon your explicit initiative via the standard Android Contact Picker API to quickly add a client from your phonebook. The app does not collect or transmit your address book to external servers."
+                        "For Premium subscription purchases on Android, the app uses Google Play Billing.",
+                        "Payment information is processed by the relevant app store platform. The app itself does not receive your bank card details."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "3. Third-Party Data Sharing",
+                    title = "5. Sharing data with third parties",
                     paragraphs = listOf(
-                        "We do not sell, trade, or transfer your personal data to third parties. All information regarding your clients and appointments is stored locally on your device or within secure cloud storage tied to your verified account."
+                        "The app is not designed to transfer your client database or appointment data to third parties.",
+                        "Data is not sent to a dedicated external server of the app unless explicitly stated in future updates to this Privacy Policy."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "4. Data Security and Retention",
+                    title = "6. Data deletion",
                     paragraphs = listOf(
-                        "We ensure secure data handling using industry-standard encryption practices. Data is retained for as long as you actively use the app or until you request its deletion."
+                        "You can delete app data yourself by clearing app storage in the system or removing any backup files you created.",
+                        "The app may also provide features for deleting appointments and clearing the local database."
                     )
                 ),
                 PrivacyPolicySection(
-                    title = "5. Data Deletion Policy",
+                    title = "7. Contact",
                     paragraphs = listOf(
-                        "In compliance with Google Play requirements, you have the right to request the complete deletion of your account and associated data. You can initiate this:"
-                    ),
-                    bullets = listOf(
-                        "Directly within the app via \"Settings\" -> \"Delete Account\"."
-                    ),
-                    emailLines = listOf(
-                        "By contacting us via email at:"
-                    )
-                ),
-                PrivacyPolicySection(
-                    title = "6. Contact Information",
-                    paragraphs = listOf(
-                        "If you have any questions regarding this Privacy Policy, please contact us at:"
+                        "If you have any questions about this Privacy Policy, you can contact us at:"
                     ),
                     emailLines = listOf("")
                 )

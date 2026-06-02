@@ -252,141 +252,136 @@ fun AppRootContent(
                     }
                 }
 
-                Column(Modifier.fillMaxSize()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = headerText,
-                            fontSize = (24 * state.fontScale).sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colors.onBackground
-                        )
-
-                        Row {
-                            val arrowsEnabled = !isCollapsed
-                            val arrowTint = if (arrowsEnabled) {
-                                MaterialTheme.colors.primary
-                            } else {
-                                MaterialTheme.colors.onSurface.copy(alpha = 0.35f)
-                            }
-
-                            IconButton(
-                                enabled = arrowsEnabled,
-                                onClick = { state.calendarViewDate = state.calendarViewDate.minus(1, DateTimeUnit.MONTH) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.KeyboardArrowLeft,
-                                    contentDescription = null,
-                                    tint = arrowTint
-                                )
-                            }
-
-                            IconButton(
-                                enabled = arrowsEnabled,
-                                onClick = { state.calendarViewDate = state.calendarViewDate.plus(1, DateTimeUnit.MONTH) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = arrowTint
-                                )
-                            }
-                        }
-                    }
-
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 24.dp)
-                    ) {
-                        item {
-                            MonthCalendarGrid(
-                                monthDate = state.calendarViewDate,
-                                today = state.today,
-                                selectedDate = state.selectedDate
-                            ) { date ->
-                                state.selectedDate = date
-                                state.navigateTo(Screen.DAY_DETAILS)
-                            }
-                        }
-
-                        item {
-                            Divider(
-                                modifier = Modifier.padding(horizontal = 40.dp, vertical = 20.dp),
-                                color = Color.LightGray.copy(alpha = 0.5f),
-                                thickness = 1.dp
-                            )
-
+                CenteredContentContainer(maxWidth = 980.dp) {
+                    Column(Modifier.fillMaxSize()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
                             Text(
-                                text = Locales.t("upcoming_appointments_list"),
-                                modifier = Modifier.padding(start = 24.dp, bottom = 8.dp),
-                                fontSize = (16 * state.fontScale).sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.Gray
+                                text = headerText,
+                                fontSize = (24 * state.fontScale).sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.onBackground
                             )
-                        }
-
-                        if (upcoming.isEmpty()) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 12.dp),
-                                    contentAlignment = Alignment.Center
+                            Row {
+                                val arrowsEnabled = !isCollapsed
+                                val arrowTint = if (arrowsEnabled) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    MaterialTheme.colors.onSurface.copy(alpha = 0.35f)
+                                }
+                                IconButton(
+                                    enabled = arrowsEnabled,
+                                    onClick = { state.calendarViewDate = state.calendarViewDate.minus(1, DateTimeUnit.MONTH) }
                                 ) {
-                                    Text(
-                                        text = Locales.t("no_upcoming_appointments"),
-                                        color = Color.Gray,
-                                        fontSize = (14 * state.fontScale).sp
+                                    Icon(
+                                        imageVector = Icons.Filled.KeyboardArrowLeft,
+                                        contentDescription = null,
+                                        tint = arrowTint
+                                    )
+                                }
+                                IconButton(
+                                    enabled = arrowsEnabled,
+                                    onClick = { state.calendarViewDate = state.calendarViewDate.plus(1, DateTimeUnit.MONTH) }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.KeyboardArrowRight,
+                                        contentDescription = null,
+                                        tint = arrowTint
                                     )
                                 }
                             }
-                        } else {
-                            items(upcoming.size) { idx ->
-                                val appt = upcoming[idx]
+                        }
 
-                                val durationMin =
-                                    if (appt.durationMinutes > 0) appt.durationMinutes
-                                    else appt.durationHours.coerceAtLeast(1) * 60
-                                val startMin =
-                                    com.andrey.beautyplanner.utils.parseHmToMinutes(appt.time) ?: 0
-                                val endMin = startMin + durationMin
-                                val endHour = ((endMin / 60) % 24).toString().padStart(2, '0')
-                                val endMinute = (endMin % 60).toString().padStart(2, '0')
-                                val endHm = "$endHour:$endMinute"
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 24.dp)
+                        ) {
+                            item {
+                                MonthCalendarGrid(
+                                    monthDate = state.calendarViewDate,
+                                    today = state.today,
+                                    selectedDate = state.selectedDate
+                                ) { date ->
+                                    state.selectedDate = date
+                                    state.navigateTo(Screen.DAY_DETAILS)
+                                }
+                            }
 
-                                val status = getLiveStatus(
-                                    appt = appt,
-                                    nowDate = state.today,
-                                    nowMinutes = nowMin
+                            item {
+                                Divider(
+                                    modifier = Modifier.padding(horizontal = 40.dp, vertical = 16.dp),
+                                    color = Color.LightGray.copy(alpha = 0.5f),
+                                    thickness = 1.dp
                                 )
+                                Text(
+                                    text = Locales.t("upcoming_appointments_list"),
+                                    modifier = Modifier.padding(start = 24.dp, bottom = 8.dp),
+                                    fontSize = (16 * state.fontScale).sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.Gray
+                                )
+                            }
 
-                                AppointmentCard(
-                                    appt = appt,
-                                    status = status,
-                                    showDateInCard = true,
-                                    startHm = appt.time,
-                                    endHm = endHm,
-                                    nowDate = state.today,
-                                    nowMinutes = nowMin,
-                                    onClick = {
-                                        viewingAppt = appt
-                                        viewingStartHm = appt.time
-                                        viewingEndHm = endHm
-                                        viewingStatus = status
-                                    },
-                                    onLongClick = {
-                                        viewingAppt = appt
-                                        viewingStartHm = appt.time
-                                        viewingEndHm = endHm
-                                        viewingStatus = status
+                            if (upcoming.isEmpty()) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 12.dp, bottom = 40.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = Locales.t("no_upcoming_appointments"),
+                                            color = Color.Gray,
+                                            fontSize = (14 * state.fontScale).sp
+                                        )
                                     }
-                                )
+                                }
+                            } else {
+                                items(upcoming.size) { idx ->
+                                    val appt = upcoming[idx]
+                                    val durationMin =
+                                        if (appt.durationMinutes > 0) appt.durationMinutes
+                                        else appt.durationHours.coerceAtLeast(1) * 60
+                                    val startMin =
+                                        com.andrey.beautyplanner.utils.parseHmToMinutes(appt.time) ?: 0
+                                    val endMin = startMin + durationMin
+                                    val endHour = ((endMin / 60) % 24).toString().padStart(2, '0')
+                                    val endMinute = (endMin % 60).toString().padStart(2, '0')
+                                    val endHm = "$endHour:$endMinute"
+                                    val status = getLiveStatus(
+                                        appt = appt,
+                                        nowDate = state.today,
+                                        nowMinutes = nowMin
+                                    )
+                                    AppointmentCard(
+                                        appt = appt,
+                                        status = status,
+                                        showDateInCard = true,
+                                        startHm = appt.time,
+                                        endHm = endHm,
+                                        nowDate = state.today,
+                                        nowMinutes = nowMin,
+                                        onClick = {
+                                            viewingAppt = appt
+                                            viewingStartHm = appt.time
+                                            viewingEndHm = endHm
+                                            viewingStatus = status
+                                        },
+                                        onLongClick = {
+                                            viewingAppt = appt
+                                            viewingStartHm = appt.time
+                                            viewingEndHm = endHm
+                                            viewingStatus = status
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

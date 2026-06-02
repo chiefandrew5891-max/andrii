@@ -5,6 +5,9 @@ data class BillingProduct(
     val title: String,
     val description: String,
     val formattedPrice: String,
+    val offerToken: String = "",
+    val basePlanId: String = "",
+    val offerId: String? = null,
     val priceAmountMicros: Long? = null,
     val priceCurrencyCode: String? = null
 )

@@ -57,5 +57,8 @@ actual object Notifications {
             }
         }
     }
+    actual fun rescheduleFromStorage() {
+        // iOS version can be implemented later if needed.
+    }
 }
 // fix 7

@@ -589,9 +589,6 @@ object Locales {
             "appearance_settings" to "Appearance & Theme",
             "appearance_settings_hint" to "Language, theme, font size, and user name.",
             //Settings
-            "appearance_settings" to "Aspetto e tema",
-            "appearance_settings_hint" to "Lingua, tema, dimensione del carattere e nome utente.",
-            //Settings
             "pin_disable_warning" to "If you disable the PIN code, database operations will be restricted:\n• import\n• export\n• clear database\n\nContinue?",
             "backup_pin_required_hint" to "To use import, export, and database clearing, enable PIN and set it up.",
             "security_section" to "Security",
@@ -852,7 +849,7 @@ object Locales {
             "work_schedule_delete_confirm" to "Eliminare questo intervallo?",
             "premium_required_work_schedule" to "L'orario dei giorni non lavorativi è disponibile solo durante il periodo di prova o con l'abbonamento Premium.",
             // User name satting
-            "user_name_label" to "Nome utent",
+            "user_name_label" to "Nome utente",
             "user_name_hint" to "Inserisci il tuo nome",
             "contacts_permission_hint" to "Per la ricerca automatica serve il permesso di accesso ai contatti. Puoi abilitarlo nelle impostazioni del dispositivo.",
 
@@ -1082,7 +1079,7 @@ object Locales {
             "export_db" to "Експорт",
             "import_db" to "Імпорт",
             "backup_file_name" to "Назва файлу",
-            "backup_export_name_hint" to "Введіть наз��у файлу резервної копії. Розширення .json додасться автоматично.",
+            "backup_export_name_hint" to "Введіть назву файлу резервної копії. Розширення .json додасться автоматично.",
             "backup_extension_note" to "Формат: .json (Android та iOS)",
             "backup_import_confirm_text" to "Імпортувати вибраний файл? Поточні записи буде замінено.",
             "import_btn" to "Імпорт",
@@ -1117,7 +1114,7 @@ object Locales {
             "transfer_conflict_b" to "Зайнято",
             "transfer_agree" to "Погодити",
 
-            "reschedule_title_for" to "Пер��назначити запис для",
+            "reschedule_title_for" to "Перепризначити запис для",
             "reschedule_choose_time" to "Оберіть новий час",
             "reschedule_confirm" to "Зберегти",
 
@@ -1235,7 +1232,7 @@ object Locales {
             "unlock_title" to "Введіть PIN",
             "unlock_text" to "Для доступу до застосунку потрібен PIN.",
 
-            "month_jan" to "��ічень", "month_feb" to "Лютий", "month_mar" to "Березень",
+            "month_jan" to "Січень", "month_feb" to "Лютий", "month_mar" to "Березень",
             "month_apr" to "Квітень", "month_may" to "Травень", "month_jun" to "Червень",
             "month_jul" to "Липень", "month_aug" to "Серпень", "month_sep" to "Вересень",
             "month_oct" to "Жовтень", "month_nov" to "Листопад", "month_dec" to "Грудень",

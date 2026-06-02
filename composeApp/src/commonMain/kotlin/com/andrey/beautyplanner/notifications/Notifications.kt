@@ -10,10 +10,6 @@ import kotlinx.datetime.toInstant
 expect object Notifications {
     suspend fun requestPermissionIfNeeded(): Boolean
 
-    /**
-     * Планирует (или пересоздаёт) напоминания по всем записям.
-     * Чтобы не усложнять диффы — MVP: просто пересоздаём всё после каждого save/delete/import.
-     */
     fun rescheduleAll(
         appointments: List<Appointment>,
         reminderMinutes: List<Int>,
@@ -22,6 +18,8 @@ expect object Notifications {
     )
 
     fun cancelAll()
+
+    fun rescheduleFromStorage()
 }
 
 /**

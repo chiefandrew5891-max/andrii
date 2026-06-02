@@ -38,91 +38,88 @@ import androidx.compose.ui.text.font.FontWeight
 @Composable
 fun ServiceTemplatesScreen() {
     val fontScale = AppSettings.getFontScale()
-
     var editingItem by remember { mutableStateOf<ServiceTemplate?>(null) }
     var showCreateDialog by remember { mutableStateOf(false) }
     var deletingItem by remember { mutableStateOf<ServiceTemplate?>(null) }
-
     val services = AppSettings.serviceTemplates.filter { it.isActive }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        Text(
-            text = Locales.t("my_services"),
-            fontSize = (22 * fontScale).sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colors.onBackground
-        )
-
-        Text(
-            text = Locales.t("my_services_hint"),
-            fontSize = (14 * fontScale).sp,
-            color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
-        )
-
-        Button(
-            onClick = { showCreateDialog = true },
-            modifier = Modifier.fillMaxWidth()
+    CenteredNarrowContentContainer {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text(Locales.t("service_add"))
-        }
-
-        if (services.isEmpty()) {
             Text(
-                text = Locales.t("service_empty_list"),
-                color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f)
+                text = Locales.t("my_services"),
+                fontSize = (22 * fontScale).sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.onBackground
             )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(services, key = { it.id }) { item ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
-                        elevation = 2.dp,
-                        backgroundColor = MaterialTheme.colors.surface
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = displayServiceTitle(item),
-                                    color = MaterialTheme.colors.onSurface,
-                                    fontSize = (16 * fontScale).sp
-                                )
 
-                                if (item.defaultPrice.isNotBlank()) {
-                                    Spacer(Modifier.height(4.dp))
+            Text(
+                text = Locales.t("my_services_hint"),
+                fontSize = (14 * fontScale).sp,
+                color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
+            )
+
+            PrimaryActionButton(
+                text = Locales.t("service_add"),
+                onClick = { showCreateDialog = true }
+            )
+
+            if (services.isEmpty()) {
+                Text(
+                    text = Locales.t("service_empty_list"),
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(services, key = { it.id }) { item ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp),
+                            elevation = 2.dp,
+                            backgroundColor = MaterialTheme.colors.surface
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "${Locales.t("service_default_price")}: ${item.defaultPrice} €",
-                                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.65f),
-                                        fontSize = (13 * fontScale).sp
+                                        text = displayServiceTitle(item),
+                                        color = MaterialTheme.colors.onSurface,
+                                        fontSize = (16 * fontScale).sp
+                                    )
+                                    if (item.defaultPrice.isNotBlank()) {
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(
+                                            text = "${Locales.t("service_default_price")}: ${item.defaultPrice} €",
+                                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.65f),
+                                            fontSize = (13 * fontScale).sp
+                                        )
+                                    }
+                                }
+
+                                IconButton(onClick = { editingItem = item }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = Locales.t("service_edit")
                                     )
                                 }
-                            }
 
-                            IconButton(onClick = { editingItem = item }) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = Locales.t("service_edit")
-                                )
-                            }
-
-                            IconButton(onClick = { deletingItem = item }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = Locales.t("delete_btn")
-                                )
+                                IconButton(onClick = { deletingItem = item }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = Locales.t("delete_btn")
+                                    )
+                                }
                             }
                         }
                     }
@@ -196,7 +193,6 @@ private fun ServiceTemplateEditorDialog(
     var title by remember(initial) { mutableStateOf(resolveEditableTitle(initial)) }
     var price by remember(initial) { mutableStateOf(initial?.defaultPrice ?: "") }
     var triedSave by remember { mutableStateOf(false) }
-
     val titleValid = title.trim().isNotBlank()
 
     AlertDialog(

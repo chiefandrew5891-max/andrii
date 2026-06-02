@@ -132,7 +132,7 @@ class AppRootState(
     fun refreshAccessState(nowMillis: Long = Clock.System.now().toEpochMilliseconds()) {
         accessState = AccessManager.getAccessState(nowMillis)
         billingUiState = billingUiState.copy(
-            ownedPremium = AppSettings.premiumUnlocked
+            ownedPremium = accessState.hasPremium
         )
     }
     var screenHistory by mutableStateOf(listOf<Screen>())
@@ -184,7 +184,6 @@ class AppRootState(
             )
 
             loadBillingProducts()
-            restorePremium(silent = true)
             syncSubscriptionState()
         }
     }
@@ -247,7 +246,7 @@ class AppRootState(
                     billingUiState = billingUiState.copy(
                         status = BillingStatus.PURCHASED,
                         errorMessage = null,
-                        ownedPremium = true
+                        ownedPremium = accessState.hasPremium
                     )
                 }
 
@@ -255,7 +254,7 @@ class AppRootState(
                     billingUiState = billingUiState.copy(
                         status = BillingStatus.READY,
                         errorMessage = Locales.t("premium_purchase_cancelled"),
-                        ownedPremium = AppSettings.premiumUnlocked
+                        ownedPremium = accessState.hasPremium
                     )
                 }
 
@@ -265,7 +264,7 @@ class AppRootState(
                         errorMessage = result.message.ifBlank {
                             Locales.t("premium_purchase_failed")
                         },
-                        ownedPremium = AppSettings.premiumUnlocked
+                        ownedPremium = accessState.hasPremium
                     )
                 }
             }
@@ -287,7 +286,7 @@ class AppRootState(
                     billingUiState = billingUiState.copy(
                         status = BillingStatus.READY,
                         errorMessage = if (silent) null else Locales.t("premium_restored"),
-                        ownedPremium = true
+                        ownedPremium = accessState.hasPremium
                     )
                 }
 
@@ -295,7 +294,7 @@ class AppRootState(
                     billingUiState = billingUiState.copy(
                         status = BillingStatus.READY,
                         errorMessage = if (silent) null else Locales.t("premium_nothing_to_restore"),
-                        ownedPremium = AppSettings.premiumUnlocked
+                        ownedPremium = accessState.hasPremium
                     )
                 }
 
@@ -305,7 +304,7 @@ class AppRootState(
                         errorMessage = if (silent) null else result.message.ifBlank {
                             Locales.t("premium_restore_failed")
                         },
-                        ownedPremium = AppSettings.premiumUnlocked
+                        ownedPremium = accessState.hasPremium
                     )
                 }
             }

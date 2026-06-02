@@ -19,10 +19,10 @@ import kotlin.coroutines.resume
 
 actual class BillingManager actual constructor() {
 
-    private var cachedProducts: Map<String, ProductDetails> = emptyMap()
+    private var cachedProductDetails: Map<String, ProductDetails> = emptyMap()
+    private var cachedBillingProducts: Map<String, BillingProduct> = emptyMap()
 
-    private var pendingPurchaseContinuation:
-            ((PurchaseResult) -> Unit)? = null
+    private var pendingPurchaseContinuation: ((PurchaseResult) -> Unit)? = null
 
     private val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
         val callback = pendingPurchaseContinuation ?: return@PurchasesUpdatedListener
@@ -41,8 +41,15 @@ actual class BillingManager actual constructor() {
                     productId = PREMIUM_SUBS_PRODUCT_ID
                 ) { ok, message ->
                     pendingPurchaseContinuation = null
-                    if (ok) callback(PurchaseResult.Success)
-                    else callback(PurchaseResult.Error(message ?: "Purchase acknowledgement failed."))
+                    if (ok) {
+                        callback(PurchaseResult.Success)
+                    } else {
+                        callback(
+                            PurchaseResult.Error(
+                                message ?: "Purchase acknowledgement failed."
+                            )
+                        )
+                    }
                 }
             }
 
@@ -55,7 +62,9 @@ actual class BillingManager actual constructor() {
                 pendingPurchaseContinuation = null
                 callback(
                     PurchaseResult.Error(
-                        billingResult.debugMessage.ifBlank { "Google Play Billing error." }
+                        billingResult.debugMessage.ifBlank {
+                            "Google Play Billing error."
+                        }
                     )
                 )
             }
@@ -115,25 +124,37 @@ actual class BillingManager actual constructor() {
         return suspendCancellableCoroutine { cont ->
             billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
                 if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                    cachedProductDetails = emptyMap()
+                    cachedBillingProducts = emptyMap()
                     cont.resume(emptyList())
                     return@queryProductDetailsAsync
                 }
 
-                cachedProducts = productDetailsList.associateBy { it.productId }
+                cachedProductDetails = productDetailsList.associateBy { it.productId }
 
-                val mapped = productDetailsList.map { details ->
-                    val offer = details.oneTimePurchaseOfferDetails
+                val mappedProducts = productDetailsList.mapNotNull { details ->
+                    val subscriptionOffers = details.subscriptionOfferDetails.orEmpty()
+                    val selectedOffer = subscriptionOffers.firstOrNull() ?: return@mapNotNull null
+
+                    val pricingPhase = selectedOffer.pricingPhases.pricingPhaseList.firstOrNull()
+                        ?: return@mapNotNull null
+
                     BillingProduct(
                         productId = details.productId,
                         title = details.title,
                         description = details.description,
-                        formattedPrice = offer?.formattedPrice ?: "",
-                        priceAmountMicros = offer?.priceAmountMicros,
-                        priceCurrencyCode = offer?.priceCurrencyCode
+                        formattedPrice = pricingPhase.formattedPrice,
+                        offerToken = selectedOffer.offerToken,
+                        basePlanId = selectedOffer.basePlanId,
+                        offerId = selectedOffer.offerId,
+                        priceAmountMicros = pricingPhase.priceAmountMicros,
+                        priceCurrencyCode = pricingPhase.priceCurrencyCode
                     )
                 }
 
-                cont.resume(mapped)
+                cachedBillingProducts = mappedProducts.associateBy { it.productId }
+
+                cont.resume(mappedProducts)
             }
         }
     }
@@ -146,8 +167,15 @@ actual class BillingManager actual constructor() {
         val activity = AndroidAppContext.activity
             ?: return PurchaseResult.Error("Activity is not available.")
 
-        val productDetails = cachedProducts[productId]
+        val productDetails = cachedProductDetails[productId]
             ?: return PurchaseResult.Error("Product details are not loaded.")
+
+        val billingProduct = cachedBillingProducts[productId]
+            ?: return PurchaseResult.Error("Subscription offer is not loaded.")
+
+        if (billingProduct.offerToken.isBlank()) {
+            return PurchaseResult.Error("Subscription offer token is missing.")
+        }
 
         return suspendCancellableCoroutine { cont ->
             pendingPurchaseContinuation = { result ->
@@ -156,6 +184,7 @@ actual class BillingManager actual constructor() {
 
             val productParams = BillingFlowParams.ProductDetailsParams.newBuilder()
                 .setProductDetails(productDetails)
+                .setOfferToken(billingProduct.offerToken)
                 .build()
 
             val flowParams = BillingFlowParams.newBuilder()
@@ -168,7 +197,9 @@ actual class BillingManager actual constructor() {
                 if (cont.isActive) {
                     cont.resume(
                         PurchaseResult.Error(
-                            result.debugMessage.ifBlank { "Unable to launch purchase flow." }
+                            result.debugMessage.ifBlank {
+                                "Unable to launch purchase flow."
+                            }
                         )
                     )
                 }
@@ -190,7 +221,9 @@ actual class BillingManager actual constructor() {
                 if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
                     cont.resume(
                         RestoreResult.Error(
-                            billingResult.debugMessage.ifBlank { "Failed to restore purchases." }
+                            billingResult.debugMessage.ifBlank {
+                                "Failed to restore purchases."
+                            }
                         )
                     )
                     return@queryPurchasesAsync
@@ -202,6 +235,7 @@ actual class BillingManager actual constructor() {
                 }
 
                 if (premiumPurchase == null) {
+                    clearStoredSubscriptionState()
                     cont.resume(RestoreResult.NothingToRestore)
                     return@queryPurchasesAsync
                 }
@@ -210,73 +244,20 @@ actual class BillingManager actual constructor() {
                     purchase = premiumPurchase,
                     productId = PREMIUM_SUBS_PRODUCT_ID
                 ) { ok, message ->
-                    if (ok) cont.resume(RestoreResult.Restored)
-                    else cont.resume(
-                        RestoreResult.Error(message ?: "Failed to finalize restored purchase.")
-                    )
+                    if (ok) {
+                        cont.resume(RestoreResult.Restored)
+                    } else {
+                        cont.resume(
+                            RestoreResult.Error(
+                                message ?: "Failed to finalize restored purchase."
+                            )
+                        )
+                    }
                 }
             }
         }
     }
 
-    private fun handleSuccessfulPurchase(
-        purchase: Purchase,
-        productId: String,
-        done: (Boolean, String?) -> Unit
-    ) {
-        if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
-            done(false, "Purchase is not completed.")
-            return
-        }
-
-        fun finalizeEntitlement() {
-            val now = System.currentTimeMillis()
-            val isAutoRenewing = purchase.isAutoRenewing
-
-            AppSettings.premiumSubscribedProductId = productId
-            AppSettings.premiumSubscriptionToken = purchase.purchaseToken
-            AppSettings.premiumSubscriptionStartMillis = now
-            AppSettings.premiumSubscriptionAutoRenewing = isAutoRenewing
-            AppSettings.premiumSubscriptionState = "ACTIVE"
-            AppSettings.premiumLastVerifiedAtMillis = now
-
-            // ВАЖНО:
-            // на клиенте точную expiry дату для subscription надёжно не вычисляем.
-            // временно можно поставить эвристику 365 дней,
-            // но лучше потом получать с backend / Play Developer API.
-            AppSettings.premiumSubscriptionExpiryMillis = now + 365L * 24L * 60L * 60L * 1000L
-
-            AppSettings.persist()
-            done(true, null)
-        }
-
-        if (purchase.isAcknowledged) {
-            finalizeEntitlement()
-            return
-        }
-
-        val ackParams = AcknowledgePurchaseParams.newBuilder()
-            .setPurchaseToken(purchase.purchaseToken)
-            .build()
-
-        billingClient.acknowledgePurchase(ackParams) { billingResult ->
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                finalizeEntitlement()
-            } else {
-                done(
-                    false,
-                    billingResult.debugMessage.ifBlank { "Acknowledge failed." }
-                )
-            }
-        }
-    }
-
-    actual fun dispose() {
-        pendingPurchaseContinuation = null
-        if (billingClient.isReady) {
-            billingClient.endConnection()
-        }
-    }
     actual suspend fun getSubscriptionInfo(): SubscriptionInfo {
         if (!billingClient.isReady) {
             return SubscriptionInfo(state = SubscriptionState.NONE)
@@ -304,25 +285,85 @@ actual class BillingManager actual constructor() {
                 }
 
                 val now = System.currentTimeMillis()
-                val cachedExpiry = AppSettings.premiumSubscriptionExpiryMillis
-                val expiry = if (cachedExpiry > now) cachedExpiry else null
 
                 cont.resume(
                     SubscriptionInfo(
-                        state = if (expiry == null || expiry > now) {
-                            SubscriptionState.ACTIVE
-                        } else {
-                            SubscriptionState.EXPIRED
-                        },
+                        state = SubscriptionState.ACTIVE,
                         productId = PREMIUM_SUBS_PRODUCT_ID,
                         purchaseToken = subPurchase.purchaseToken,
                         isAutoRenewing = subPurchase.isAutoRenewing,
                         startTimeMillis = subPurchase.purchaseTime,
-                        expiryTimeMillis = expiry,
+                        expiryTimeMillis = null,
                         lastVerifiedAtMillis = now
                     )
                 )
             }
+        }
+    }
+
+    private fun handleSuccessfulPurchase(
+        purchase: Purchase,
+        productId: String,
+        done: (Boolean, String?) -> Unit
+    ) {
+        if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
+            done(false, "Purchase is not completed.")
+            return
+        }
+
+        fun finalizeEntitlement() {
+            val now = System.currentTimeMillis()
+
+            AppSettings.premiumSubscribedProductId = productId
+            AppSettings.premiumSubscriptionToken = purchase.purchaseToken
+            AppSettings.premiumSubscriptionStartMillis = purchase.purchaseTime
+            AppSettings.premiumSubscriptionAutoRenewing = purchase.isAutoRenewing
+            AppSettings.premiumSubscriptionState = "ACTIVE"
+            AppSettings.premiumLastVerifiedAtMillis = now
+
+            // На этом этапе expiry вручную НЕ рисуем.
+            AppSettings.premiumSubscriptionExpiryMillis = 0L
+
+            AppSettings.persist()
+            done(true, null)
+        }
+
+        if (purchase.isAcknowledged) {
+            finalizeEntitlement()
+            return
+        }
+
+        val ackParams = AcknowledgePurchaseParams.newBuilder()
+            .setPurchaseToken(purchase.purchaseToken)
+            .build()
+
+        billingClient.acknowledgePurchase(ackParams) { billingResult ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                finalizeEntitlement()
+            } else {
+                done(
+                    false,
+                    billingResult.debugMessage.ifBlank { "Acknowledge failed." }
+                )
+            }
+        }
+    }
+
+    private fun clearStoredSubscriptionState() {
+        AppSettings.premiumSubscriptionState = "NONE"
+        AppSettings.premiumSubscribedProductId = ""
+        AppSettings.premiumSubscriptionToken = ""
+        AppSettings.premiumSubscriptionStartMillis = 0L
+        AppSettings.premiumSubscriptionExpiryMillis = 0L
+        AppSettings.premiumSubscriptionAutoRenewing = false
+        AppSettings.premiumLastVerifiedAtMillis = System.currentTimeMillis()
+        AppSettings.persist()
+    }
+
+    actual fun dispose() {
+        pendingPurchaseContinuation = null
+        if (billingClient.isReady) {
+            billingClient.endConnection()
         }
     }
 }
