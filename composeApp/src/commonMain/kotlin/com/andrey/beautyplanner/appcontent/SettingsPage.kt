@@ -66,8 +66,9 @@ fun SettingsPage(
     val onBg = MaterialTheme.colors.onBackground
 
     var showDisablePinConfirm by remember { mutableStateOf(false) }
-    var pendingPinEnabledValue by remember { mutableStateOf(AppSettings.pinEnabled) }
-
+    var pendingPinEnabledValue by remember(AppSettings.pinEnabled) {
+        mutableStateOf(AppSettings.pinEnabled)
+    }
     var securityTapCount by remember { mutableStateOf(0) }
     var showDeveloperPasswordDialog by remember { mutableStateOf(false) }
     var developerPasswordInput by remember { mutableStateOf("") }
@@ -365,9 +366,14 @@ fun SettingsPage(
                         checked = pendingPinEnabledValue,
                         onCheckedChange = { newValue ->
                             if (newValue) {
-                                AppSettings.pinEnabled = true
-                                AppSettings.persist()
-                                pendingPinEnabledValue = true
+                                if (AppSettings.isPinSet()) {
+                                    AppSettings.pinEnabled = true
+                                    AppSettings.persist()
+                                    pendingPinEnabledValue = true
+                                } else {
+                                    pendingPinEnabledValue = false
+                                    onSetOrChangePin()
+                                }
                             } else {
                                 pendingPinEnabledValue = false
                                 showDisablePinConfirm = true

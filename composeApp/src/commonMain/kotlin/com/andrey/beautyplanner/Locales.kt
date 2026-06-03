@@ -280,6 +280,10 @@ object Locales {
             "appearance_settings_hint" to "Язык, тема, размер шрифта и имя пользователя.",
 
             // --------- Security / PIN ---------
+            "pin_create_hint" to "Придумайте PIN-код и подтвердите его.",
+            "pin_create_label" to "Придумайте PIN",
+            "pin_confirm_label" to "Подтвердите PIN",
+            "pin_mismatch" to "PIN-коды не совпадают",
             "pin_disable_warning" to "При отключении PIN-кода будут ограничены операции с базой данных:\n• импорт\n• экспорт\n• очистка базы\n\nПродолжить?",
             "backup_pin_required_hint" to "Чтобы использовать импорт, экспорт и очистку базы, включите PIN и установите его.",
             "security_section" to "Безопасность",
@@ -589,6 +593,11 @@ object Locales {
             "appearance_settings" to "Appearance & Theme",
             "appearance_settings_hint" to "Language, theme, font size, and user name.",
             //Settings
+            // --------- Security / PIN ---------
+            "pin_create_hint" to "Create a PIN code and confirm it.",
+            "pin_create_label" to "Create PIN",
+            "pin_confirm_label" to "Confirm PIN",
+            "pin_mismatch" to "PIN codes do not match",
             "pin_disable_warning" to "If you disable the PIN code, database operations will be restricted:\n• import\n• export\n• clear database\n\nContinue?",
             "backup_pin_required_hint" to "To use import, export, and database clearing, enable PIN and set it up.",
             "security_section" to "Security",
@@ -889,7 +898,11 @@ object Locales {
             //Settings
             "appearance_settings" to "Aspetto e tema",
             "appearance_settings_hint" to "Lingua, tema, dimensione del carattere e nome utente.",
-
+            // --------- Security / PIN ---------
+            "pin_create_hint" to "Crea un PIN e confermalo.",
+            "pin_create_label" to "Crea PIN",
+            "pin_confirm_label" to "Conferma PIN",
+            "pin_mismatch" to "I codici PIN non corrispondono",
             "pin_disable_warning" to "Se disattivi il codice PIN, le operazioni sul database saranno limitate:\n• importazione\n• esportazione\n• cancellazione del database\n\nContinuare?",
             "backup_pin_required_hint" to "Per usare importazione, esportazione e cancellazione del database, abilita il PIN e configurarlo.",
             "security_section" to "Sicurezza",
@@ -1205,7 +1218,11 @@ object Locales {
             //Settings
             "appearance_settings" to "Налаштування оформлення і теми",
             "appearance_settings_hint" to "Мова, тема, розмір шрифту та ім’я користувача.",
-
+            // --------- Security / PIN ---------
+            "pin_create_hint" to "Придумайте PIN-код і підтвердьте його.",
+            "pin_create_label" to "Придумайте PIN",
+            "pin_confirm_label" to "Підтвердьте PIN",
+            "pin_mismatch" to "PIN-коди не збігаються",
             "pin_disable_warning" to "Якщо вимкнути PIN-код, операції з базою даних будуть обмежені:\n• імпорт\n• експорт\n• очищення бази\n\nПродовжити?",
             "backup_pin_required_hint" to "Щоб використовувати імпорт, експорт і очищення бази, увімкніть PIN і встановіть його.",
             "security_section" to "Безпека",

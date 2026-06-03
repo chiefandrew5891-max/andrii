@@ -77,7 +77,7 @@ class AppRootState(
     var premiumRequiredMessage by mutableStateOf("")
     var premiumReturnScreen by mutableStateOf(Screen.SETTINGS)
 
-    var mustCreatePin by mutableStateOf(!AppSettings.isPinSet())
+    var mustCreatePin by mutableStateOf(false)
     var locked by mutableStateOf(AppSettings.pinEnabled && AppSettings.isPinSet())
 
     var showPinDialog by mutableStateOf(false)

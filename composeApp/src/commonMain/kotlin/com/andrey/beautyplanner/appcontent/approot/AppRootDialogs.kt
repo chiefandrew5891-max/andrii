@@ -39,8 +39,10 @@ import com.andrey.beautyplanner.ParsedBackupFile
 import com.andrey.beautyplanner.appcontent.AppDialogShape
 import com.andrey.beautyplanner.appcontent.AppDialogTheme
 import com.andrey.beautyplanner.appcontent.PinDialog
+import com.andrey.beautyplanner.appcontent.SetPinDialog
 import com.andrey.beautyplanner.appcontent.RescheduleClientBDialog
 import kotlinx.datetime.LocalDate
+
 
 @Composable
 fun AppRootDialogs(state: AppRootState) {
@@ -57,23 +59,6 @@ fun AppRootDialogs(state: AppRootState) {
             },
             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
         )
-    }
-
-    if (state.mustCreatePin) {
-        AppDialogTheme {
-            PinDialog(
-                title = Locales.t("pin_set"),
-                text = Locales.t("pin_invalid_format"),
-                confirmText = Locales.t("save"),
-                onDismiss = { },
-                onConfirmPin = { newPin ->
-                    if (AppSettings.setPin(newPin)) {
-                        state.mustCreatePin = false
-                        state.locked = false
-                    }
-                }
-            )
-        }
     }
 
     if (state.showPinDialog) {
@@ -118,20 +103,14 @@ fun AppRootDialogs(state: AppRootState) {
 
     if (state.showSetPinDialog) {
         AppDialogTheme {
-            PinDialog(
-                title = if (AppSettings.isPinSet()) {
-                    Locales.t("pin_change")
-                } else {
-                    Locales.t("pin_set")
-                },
-                text = Locales.t("pin_invalid_format"),
-                confirmText = Locales.t("save"),
+            SetPinDialog(
                 onDismiss = { state.showSetPinDialog = false },
-                onConfirmPin = { newPin ->
-                    if (AppSettings.setPin(newPin)) {
-                        state.showSetPinDialog = false
-                        state.mustCreatePin = false
-                    }
+                onPinSet = {
+                    AppSettings.pinEnabled = true
+                    AppSettings.persist()
+                    state.showSetPinDialog = false
+                    state.mustCreatePin = false
+                    state.locked = false
                 }
             )
         }
@@ -148,7 +127,7 @@ fun AppRootDialogs(state: AppRootState) {
                         AppSettings.clearPin()
                         state.showRemovePinConfirm = false
                         state.locked = false
-                        state.mustCreatePin = true
+                        state.mustCreatePin = false
                     }
                 ) {
                     Text(Locales.t("yes"))
