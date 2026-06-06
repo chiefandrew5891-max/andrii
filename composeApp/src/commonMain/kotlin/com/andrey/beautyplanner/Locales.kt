@@ -13,6 +13,7 @@ object Locales {
     private val strings = mapOf(
         "ru" to mapOf(
             //Backup and restore
+            "booking_new_title" to "Новая запись",
             "backup_encrypt_toggle" to "Зашифровать резервную копию",
             "backup_password" to "Пароль резервной копии",
             "backup_password_confirm" to "Подтвердите пароль",
@@ -23,6 +24,29 @@ object Locales {
             "backup_import_password_invalid" to "Не удалось расшифровать файл. Проверьте пароль.",
             "notifications_settings_hint" to "Управление уведомлениями, звуком и временем напоминаний.",
             "notifications_settings_open" to "Открыть настройки уведомлений",
+            "multi_currency_mode_all" to "Мультивалютный режим (все процедуры)",
+            "booking_end_after_start" to "Конец должен быть позже начала",
+            "booking_fill_required_fields" to "Заполните обязательные поля",
+            "booking_other_mode_hint" to "Режим “Другое”: введите название процедуры вручную",
+            "currency_text_format_label" to "Текстовый формат валюты (USD/UAH)",
+            "auto_shift_conflict_title" to "Конфликт времени",
+            "auto_shift_conflict_intro" to "Есть пересечение по времени.",
+            "auto_shift_conflict_question" to "Сдвинуть следующие записи автоматически?",
+            "auto_shift_conflict_no_space_for" to "Не хватает места в конце дня для",
+            "shift" to "Сдвинуть",
+            "reschedule_for_client_prefix" to "Переназначить запись для",
+            "backup_created_at" to "Дата создания",
+            "backup_appointments_count" to "Количество записей",
+            "backup_format_plain" to "Обычная резервная копия",
+            "backup_format_encrypted" to "Зашифрованная резервная копия",
+            "backup_format_legacy" to "Старый формат резервной копии",
+            "backup_version" to "Версия",
+            "backup_import_preview_title" to "Информация о резервной копии",
+            "backup_import_make_safety_copy" to "Перед импортом рекомендуется сделать резервную копию текущей базы. Сделать сейчас?",
+            "backup_export_success" to "Резервная копия подготовлена к сохранению.",
+            "backup_import_success" to "Импорт успешно завершён.",
+            "backup_import_invalid_file" to "Выбранный файл не является корректной резервной копией.",
+            "backup_import_invalid_payload" to "Файл резервной копии повреждён или не содержит корректных данных.",
 
             "stats_client_filter" to "Клиент",
             "stats_client_picker_title" to "Выбрать клиента",
@@ -181,6 +205,8 @@ object Locales {
             "transfer_title" to "Перенос записи",
             "transfer_choose_time" to "Выберите время",
             "transfer_confirm" to "Перенести",
+            "booking_new_title" to "Новая запись",
+            "user_name_placeholder" to "Например, Евгения",
 
             "transfer_conflict_title" to "Время занято",
             "transfer_conflict_text" to "Это время уже занято другой записью. Вы хотите перенести текущую запись сюда и затем переназначить вторую запись?",
@@ -227,7 +253,7 @@ object Locales {
             "work_schedule_hint" to "Выберите дни недели и интервал времени, когда вы недоступны для записи.",
             "work_schedule_add_interval" to "Добавить интервал",
             "work_schedule_from" to "С",
-            "work_schedule_to" to "До",
+                "work_schedule_to" to "До",
             "work_schedule_empty" to "Интервалы не добавлены",
             "work_schedule_delete_confirm" to "Удалить этот интервал?",
             "premium_required_work_schedule" to "График нерабочих дней доступен только во время пробного периода или с Premium-подпиской.",
@@ -339,6 +365,7 @@ object Locales {
 
         "en" to mapOf(
             //Backup and restore
+            "booking_new_title" to "New appointment",
             "backup_encrypt_toggle" to "Encrypt backup",
             "backup_password" to "Backup password",
             "backup_password_confirm" to "Confirm password",
@@ -349,6 +376,29 @@ object Locales {
             "backup_import_password_invalid" to "Could not decrypt file. Check the password.",
             "notifications_settings_hint" to "Manage notifications, sound, and reminder timing.",
             "notifications_settings_open" to "Open notification settings",
+            "multi_currency_mode_all" to "Multi-currency mode (all services)",
+            "booking_end_after_start" to "End must be after start",
+            "booking_fill_required_fields" to "Fill required fields",
+            "booking_other_mode_hint" to "Other mode: type service name",
+            "currency_text_format_label" to "Text currency format (USD/UAH)",
+            "auto_shift_conflict_title" to "Time conflict",
+            "auto_shift_conflict_intro" to "There is a time overlap.",
+            "auto_shift_conflict_question" to "Shift the following appointments automatically?",
+            "auto_shift_conflict_no_space_for" to "Not enough space at the end of the day for",
+            "shift" to "Shift",
+            "reschedule_for_client_prefix" to "Reschedule appointment for",
+            "backup_created_at" to "Created at",
+            "backup_appointments_count" to "Appointments count",
+            "backup_format_plain" to "Plain backup",
+            "backup_format_encrypted" to "Encrypted backup",
+            "backup_format_legacy" to "Legacy backup format",
+            "backup_version" to "Version",
+            "backup_import_preview_title" to "Backup information",
+            "backup_import_make_safety_copy" to "Before import, we recommend creating a backup of the current database. Create one now?",
+            "backup_export_success" to "Backup is ready to be saved.",
+            "backup_import_success" to "Import completed successfully.",
+            "backup_import_invalid_file" to "The selected file is not a valid backup.",
+            "backup_import_invalid_payload" to "The backup file is corrupted or does not contain valid data.",
 
             "stats_client_filter" to "Client",
             "stats_client_picker_title" to "Select client",
@@ -504,6 +554,8 @@ object Locales {
             "transfer_title" to "Transfer appointment",
             "transfer_choose_time" to "Choose time",
             "transfer_confirm" to "Transfer",
+            "booking_new_title" to "New appointment",
+            "user_name_placeholder" to "For example, Eugeniia",
 
             "transfer_conflict_title" to "Time is busy",
             "transfer_conflict_text" to "This time is already booked. Do you want to move the current appointment here and then reschedule the other one?",
@@ -658,6 +710,7 @@ object Locales {
         // Итальянский и украинский блоки оставляю как у тебя, но добавляю статусы в конец каждого.
         "it" to mapOf(
             //Backup and restore
+            "booking_new_title" to "Nuovo appuntamento",
             "backup_encrypt_toggle" to "Crittografa backup",
             "backup_password" to "Password del backup",
             "backup_password_confirm" to "Conferma password",
@@ -668,6 +721,29 @@ object Locales {
             "backup_import_password_invalid" to "Impossibile decifrare il file. Controlla la password.",
             "notifications_settings_hint" to "Gestisci notifiche, suono e tempi dei promemoria.",
             "notifications_settings_open" to "Apri impostazioni notifiche",
+            "multi_currency_mode_all" to "Modalità multivaluta (tutti i servizi)",
+            "booking_end_after_start" to "La fine deve essere dopo l'inizio",
+            "booking_fill_required_fields" to "Compila i campi obbligatori",
+            "booking_other_mode_hint" to "Modalità “Altro”: inserisci manualmente il nome",
+            "currency_text_format_label" to "Formato testo valuta (USD/UAH)",
+            "auto_shift_conflict_title" to "Conflitto di orario",
+            "auto_shift_conflict_intro" to "C'è una sovrapposizione di orario.",
+            "auto_shift_conflict_question" to "Spostare automaticamente i seguenti appuntamenti?",
+            "auto_shift_conflict_no_space_for" to "Non c'è abbastanza spazio alla fine della giornata per",
+            "shift" to "Sposta",
+            "reschedule_for_client_prefix" to "Riprogrammare appuntamento per",
+            "backup_created_at" to "Data di creazione",
+            "backup_appointments_count" to "Numero appuntamenti",
+            "backup_format_plain" to "Backup normale",
+            "backup_format_encrypted" to "Backup crittografato",
+            "backup_format_legacy" to "Formato backup legacy",
+            "backup_version" to "Versione",
+            "backup_import_preview_title" to "Informazioni sul backup",
+            "backup_import_make_safety_copy" to "Prima dell'importazione consigliamo di creare un backup del database attuale. Crearlo ora?",
+            "backup_export_success" to "Il backup è pronto per essere salvato.",
+            "backup_import_success" to "Importazione completata con successo.",
+            "backup_import_invalid_file" to "Il file selezionato non è un backup valido.",
+            "backup_import_invalid_payload" to "Il file di backup è danneggiato o non contiene dati validi.",
 
             "stats_client_filter" to "Cliente",
             "stats_client_picker_title" to "Seleziona cliente",
@@ -823,6 +899,8 @@ object Locales {
             "transfer_title" to "Sposta appuntamento",
             "transfer_choose_time" to "Scegli l'orario",
             "transfer_confirm" to "Sposta",
+            "booking_new_title" to "Nuovo appuntamento",
+            "user_name_placeholder" to "Per esempio, Yevheniia",
 
             "transfer_conflict_title" to "Orario occupato",
             "transfer_conflict_text" to "Questo orario è già prenotato. Vuoi spostare l'appuntamento qui e poi riprogrammare l'altro?",
@@ -975,6 +1053,7 @@ object Locales {
 
         "uk" to mapOf(
             //Backup and restore
+            "booking_new_title" to "Новий запис",
             "backup_encrypt_toggle" to "Зашифрувати резервну копію",
             "backup_password" to "Пароль резервної копії",
             "backup_password_confirm" to "Підтвердіть пароль",
@@ -985,6 +1064,29 @@ object Locales {
             "backup_import_password_invalid" to "Не вдалося розшифрувати файл. Перевірте пароль.",
             "notifications_settings_hint" to "Керуйте сповіщеннями, звуком і часом нагадувань.",
             "notifications_settings_open" to "Відкрити налаштування сповіщень",
+            "multi_currency_mode_all" to "Мультивалютний режим (всі процедури)",
+            "booking_end_after_start" to "Кінець має бути пізніше початку",
+            "booking_fill_required_fields" to "Заповніть обовʼязкові поля",
+            "booking_other_mode_hint" to "Режим “Інше”: введіть назву процедури вручну",
+            "currency_text_format_label" to "Текстовий формат валюти (USD/UAH)",
+            "auto_shift_conflict_title" to "Конфлікт часу",
+            "auto_shift_conflict_intro" to "Є перетин у часі.",
+            "auto_shift_conflict_question" to "Зсунути наступні записи автоматично?",
+            "auto_shift_conflict_no_space_for" to "Не вистачає місця в кінці дня для",
+            "shift" to "Зсунути",
+            "reschedule_for_client_prefix" to "Перепризначити запис для",
+            "backup_created_at" to "Дата створення",
+            "backup_appointments_count" to "Кількість записів",
+            "backup_format_plain" to "Звичайна резервна копія",
+            "backup_format_encrypted" to "Зашифрована резервна копія",
+            "backup_format_legacy" to "Старий формат резервної копії",
+            "backup_version" to "Версія",
+            "backup_import_preview_title" to "Інформація про резервну копію",
+            "backup_import_make_safety_copy" to "Перед імпортом рекомендуємо зробити резервну копію поточної бази. Зробити зараз?",
+            "backup_export_success" to "Резервну копію підготовлено до збереження.",
+            "backup_import_success" to "Імпорт успішно завершено.",
+            "backup_import_invalid_file" to "Обраний файл не є коректною резервною копією.",
+            "backup_import_invalid_payload" to "Файл резервної копії пошкоджений або не містить коректних даних.",
 
             "stats_client_filter" to "Клієнт",
             "stats_client_picker_title" to "Обрати клієнта",
@@ -1140,6 +1242,8 @@ object Locales {
             "transfer_title" to "Перенесення запису",
             "transfer_choose_time" to "Оберіть час",
             "transfer_confirm" to "Перенести",
+            "booking_new_title" to "Новий запис",
+            "user_name_placeholder" to "Наприклад, Євгенiя",
 
             "transfer_conflict_title" to "Час зайнято",
             "transfer_conflict_text" to "Цей час уже зайнятий. Перенести запис сюди і потім переназначити інший?",
@@ -1292,12 +1396,12 @@ object Locales {
     )
 
     fun t(key: String): String {
-        val langCode = AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "ru"
+        val langCode = currentLanguage
         return strings[langCode]?.get(key) ?: strings["en"]?.get(key) ?: key
     }
 
     fun daysCount(n: Int): String {
-        val langCode = AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "ru"
+        val langCode = currentLanguage
         return when (langCode) {
             "ru" -> "$n ${ruPlural(n, "день", "дня", "дней")}"
             "uk" -> "$n ${ukPlural(n, "день", "дні", "днів")}"
@@ -1307,7 +1411,7 @@ object Locales {
     }
 
     fun hoursCount(n: Int): String {
-        val langCode = AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "ru"
+        val langCode = currentLanguage
         return when (langCode) {
             "ru" -> "$n ${ruPlural(n, "час", "часа", "часов")}"
             "uk" -> "$n ${ukPlural(n, "година", "години", "годин")}"

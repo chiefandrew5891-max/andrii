@@ -59,14 +59,15 @@ private fun defaultServiceTemplates(): List<ServiceTemplate> = listOf(
 private data class SettingsSnapshot(
     val isDarkMode: Boolean = false,
     val selectedLanguage: String = "Русский",
-    val fontSizeMode: String = "Средний",
+    val fontSizeMode: String = "medium",
 
-    val ownerName: String = "Euvgi",
+    val ownerName: String = "",
 
     val notificationsEnabled: Boolean = true,
     val notificationSound: String = NotificationSound.DEFAULT.name,
 
     val selectedCurrency: String = "EUR",
+    val useShortTextCurrency: Boolean = false,
 
     val reminderDaysBefore: Int = 0,
     val reminderHoursBefore: Int = 1,
@@ -120,9 +121,9 @@ object AppSettings {
         }
     )
 
-    var fontSizeMode by mutableStateOf("Средний")
+    var fontSizeMode by mutableStateOf("medium")
 
-    var ownerName by mutableStateOf("Euvgi")
+    var ownerName by mutableStateOf("")
 
     var notificationsEnabled by mutableStateOf(true)
     var notificationSound by mutableStateOf(NotificationSound.DEFAULT)
@@ -143,6 +144,7 @@ object AppSettings {
     var pinEnabled by mutableStateOf(false)
     private var adminPinHash by mutableStateOf("")
     var developerModeUnlocked by mutableStateOf(false)
+    var previewFontScaleOverride by mutableStateOf<Float?>(null)
 
     fun currencySymbol(): String {
         return if (useShortTextCurrency) {
@@ -160,6 +162,36 @@ object AppSettings {
                 else -> "€"
             }
         }
+    }
+    fun currencySymbolFor(
+        currencyCode: String,
+        useShortText: Boolean = useShortTextCurrency
+    ): String {
+        return if (useShortText) {
+            when (currencyCode.uppercase()) {
+                "USD" -> "USD"
+                "RUB" -> "RUB"
+                "UAH" -> "UAH"
+                else -> "EUR"
+            }
+        } else {
+            when (currencyCode.uppercase()) {
+                "USD" -> "$"
+                "RUB" -> "₽"
+                "UAH" -> "₴"
+                else -> "€"
+            }
+        }
+    }
+
+    fun formatMoneyAmount(
+        amount: String,
+        currencyCode: String,
+        useShortText: Boolean = useShortTextCurrency
+    ): String {
+        val trimmed = amount.trim()
+        if (trimmed.isBlank()) return ""
+        return "$trimmed ${currencySymbolFor(currencyCode, useShortText)}"
     }
     fun saveCurrencySynchronously(newCurrency: String, useShortText: Boolean) {
         selectedCurrency = newCurrency
@@ -247,10 +279,22 @@ object AppSettings {
     var premiumSubscriptionAutoRenewing by mutableStateOf(false)
     var premiumLastVerifiedAtMillis by mutableStateOf(0L)
 
-    fun getFontScale(): Float = when (fontSizeMode) {
-        "Мелкий" -> 0.80f
-        "Крупный" -> 1.22f
-        else -> 1.10f
+    private fun normalizeFontSizeMode(value: String): String {
+        return when (value.trim()) {
+            "Мелкий", "small" -> "small"
+            "Крупный", "large" -> "large"
+            "Средний", "medium" -> "medium"
+            else -> "medium"
+        }
+    }
+
+    fun getFontScale(): Float {
+        previewFontScaleOverride?.let { return it }
+        return when (normalizeFontSizeMode(fontSizeMode)) {
+            "small" -> 0.80f
+            "large" -> 1.22f
+            else -> 1.10f
+        }
     }
 
     fun isPinSet(): Boolean = adminPinHash.isNotBlank()
@@ -314,8 +358,9 @@ object AppSettings {
 
         isDarkMode = snapshot.isDarkMode
         selectedLanguage = snapshot.selectedLanguage
-        fontSizeMode = snapshot.fontSizeMode
+        fontSizeMode = normalizeFontSizeMode(snapshot.fontSizeMode)
         selectedCurrency = snapshot.selectedCurrency
+        useShortTextCurrency = snapshot.useShortTextCurrency
 
         notificationsEnabled = snapshot.notificationsEnabled
         notificationSound = runCatching { NotificationSound.valueOf(snapshot.notificationSound) }
@@ -390,6 +435,7 @@ object AppSettings {
             premiumLastVerifiedAtMillis = premiumLastVerifiedAtMillis,
 
             selectedCurrency = selectedCurrency,
+            useShortTextCurrency = useShortTextCurrency,
 
             pinEnabled = pinEnabled,
             adminPinHash = adminPinHash,

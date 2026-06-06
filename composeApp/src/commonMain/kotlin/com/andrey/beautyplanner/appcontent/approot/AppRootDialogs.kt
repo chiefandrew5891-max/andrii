@@ -41,7 +41,9 @@ import com.andrey.beautyplanner.appcontent.AppDialogTheme
 import com.andrey.beautyplanner.appcontent.PinDialog
 import com.andrey.beautyplanner.appcontent.SetPinDialog
 import com.andrey.beautyplanner.appcontent.RescheduleClientBDialog
+import com.andrey.beautyplanner.appcontent.formatBackupCreatedAt
 import kotlinx.datetime.LocalDate
+
 
 
 @Composable
@@ -54,6 +56,19 @@ fun AppRootDialogs(state: AppRootState) {
             text = { Text(state.showSaveError ?: "") },
             confirmButton = {
                 TextButton(onClick = { state.showSaveError = null }) {
+                    Text(Locales.t("close"))
+                }
+            },
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+        )
+    }
+    if (state.backupSuccessMessage != null) {
+        AlertDialog(
+            onDismissRequest = { state.backupSuccessMessage = null },
+            title = { Text(Locales.t("backup_section")) },
+            text = { Text(state.backupSuccessMessage.orEmpty()) },
+            confirmButton = {
+                TextButton(onClick = { state.backupSuccessMessage = null }) {
                     Text(Locales.t("close"))
                 }
             },
@@ -220,8 +235,10 @@ fun AppRootDialogs(state: AppRootState) {
         }
 
         val chainText = buildString {
-            append("Есть пересечение по времени.\n\n")
-            append("Сдвинуть следующие записи автоматически?\n\n")
+            append(Locales.t("auto_shift_conflict_intro"))
+            append("\n\n")
+            append(Locales.t("auto_shift_conflict_question"))
+            append("\n\n")
             if (state.shiftChain.isNotEmpty()) {
                 state.shiftChain.forEachIndexed { idx, item ->
                     val a = state.appointments.firstOrNull {
@@ -232,7 +249,9 @@ fun AppRootDialogs(state: AppRootState) {
                 }
             }
             if (blockedAppt != null) {
-                append("\nНе хватает места в конце дня для: ${blockedAppt.clientName}")
+                append("\n")
+                append(Locales.t("auto_shift_conflict_no_space_for"))
+                append(": ${blockedAppt.clientName}")
             }
         }
 
@@ -244,7 +263,7 @@ fun AppRootDialogs(state: AppRootState) {
                     state.shiftChain = emptyList()
                     state.shiftBlockedApptId = null
                 },
-                title = { Text("Конфликт времени") },
+                title = { Text(Locales.t("auto_shift_conflict_title")) },
                 text = { Text(chainText) },
                 confirmButton = {
                     Button(
@@ -270,7 +289,7 @@ fun AppRootDialogs(state: AppRootState) {
                             state.editingAppointment = null
                         }
                     ) {
-                        Text("Сдвинуть")
+                        Text(Locales.t("shift"))
                     }
                 },
                 dismissButton = {
@@ -444,10 +463,14 @@ fun AppRootDialogs(state: AppRootState) {
                         val fileText = if (state.backupEncryptEnabled) {
                             BackupCodec.createEncryptedBackupFile(
                                 payloadJson = payload,
-                                password = state.backupPassword
+                                password = state.backupPassword,
+                                appointmentsCount = state.appointments.size
                             )
                         } else {
-                            BackupCodec.createPlainBackupFile(payload)
+                            BackupCodec.createPlainBackupFile(
+                                payloadJson = payload,
+                                appointmentsCount = state.appointments.size
+                            )
                         }
 
                         state.showExportNameDialog = false
@@ -459,6 +482,13 @@ fun AppRootDialogs(state: AppRootState) {
                             suggestedFileName = safeName,
                             json = fileText
                         )
+
+                        state.backupSuccessMessage = Locales.t("backup_export_success")
+
+                        if (state.pendingImportAfterBackup) {
+                            state.pendingImportAfterBackup = false
+                            state.showImportConfirm = true
+                        }
                     }
                 ) {
                     Text(Locales.t("save"))
@@ -474,6 +504,74 @@ fun AppRootDialogs(state: AppRootState) {
                     }
                 ) {
                     Text(Locales.t("cancel"))
+                }
+            },
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+        )
+    }
+    if (state.showImportBackupPrompt && state.pendingImportText != null) {
+        AlertDialog(
+            onDismissRequest = {
+                state.showImportBackupPrompt = false
+                state.pendingImportText = null
+                state.pendingImportPreview = null
+            },
+            title = { Text(Locales.t("backup_import_preview_title")) },
+            text = {
+                Column {
+                    val preview = state.pendingImportPreview
+                    if (preview != null) {
+                        Text(
+                            text = when {
+                                preview.isLegacy -> Locales.t("backup_format_legacy")
+                                preview.isEncrypted -> Locales.t("backup_format_encrypted")
+                                else -> Locales.t("backup_format_plain")
+                            }
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text("${Locales.t("backup_version")}: ${preview.version ?: "—"}")
+                        Text("${Locales.t("backup_created_at")}: ${formatBackupCreatedAt(preview.createdAtEpochMillis)}")
+                        Text("${Locales.t("backup_appointments_count")}: ${preview.appointmentsCount ?: "—"}")
+                        Spacer(Modifier.height(12.dp))
+                    }
+                    Text(Locales.t("backup_import_make_safety_copy"))
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        state.showImportBackupPrompt = false
+                        state.exportFileName = "beautyplanner-backup-before-import"
+                        state.backupEncryptEnabled = true
+                        state.backupPassword = ""
+                        state.backupPasswordConfirm = ""
+                        state.backupPasswordError = null
+                        state.pendingImportAfterBackup = true
+                        state.showExportNameDialog = true
+                    }
+                ) {
+                    Text(Locales.t("clear_db_make_backup"))
+                }
+            },
+            dismissButton = {
+                Column {
+                    TextButton(
+                        onClick = {
+                            state.showImportBackupPrompt = false
+                            state.showImportConfirm = true
+                        }
+                    ) {
+                        Text(Locales.t("import_btn"))
+                    }
+                    TextButton(
+                        onClick = {
+                            state.showImportBackupPrompt = false
+                            state.pendingImportText = null
+                            state.pendingImportPreview = null
+                        }
+                    ) {
+                        Text(Locales.t("cancel"))
+                    }
                 }
             },
             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
@@ -498,14 +596,15 @@ fun AppRootDialogs(state: AppRootState) {
                             is ParsedBackupFile.LegacyPlainPayload -> {
                                 val imported = DataManager.importBackupPayload(parsed.payloadJson)
                                 if (imported.isEmpty()) {
-                                    state.showImportError = Locales.t("import_invalid_json")
+                                    state.showImportError = Locales.t("backup_import_invalid_payload")
                                 } else {
                                     state.appointments.clear()
                                     state.appointments.addAll(imported)
                                     state.saveAll()
                                     state.showImportError = null
+                                    state.backupSuccessMessage = Locales.t("backup_import_success")
+                                    state.pendingImportPreview = null
                                 }
-
                                 state.showImportConfirm = false
                                 state.pendingImportText = null
                             }
@@ -513,16 +612,16 @@ fun AppRootDialogs(state: AppRootState) {
                             is ParsedBackupFile.PlainContainer -> {
                                 val payload = parsed.container.payload.orEmpty()
                                 val imported = DataManager.importBackupPayload(payload)
-
                                 if (imported.isEmpty()) {
-                                    state.showImportError = Locales.t("import_invalid_json")
+                                    state.showImportError = Locales.t("backup_import_invalid_payload")
                                 } else {
                                     state.appointments.clear()
                                     state.appointments.addAll(imported)
                                     state.saveAll()
                                     state.showImportError = null
+                                    state.backupSuccessMessage = Locales.t("backup_import_success")
+                                    state.pendingImportPreview = null
                                 }
-
                                 state.showImportConfirm = false
                                 state.pendingImportText = null
                             }
@@ -537,9 +636,10 @@ fun AppRootDialogs(state: AppRootState) {
                             }
 
                             null -> {
-                                state.showImportError = Locales.t("import_invalid_json")
+                                state.showImportError = Locales.t("backup_import_invalid_file")
                                 state.showImportConfirm = false
                                 state.pendingImportText = null
+                                state.pendingImportPreview = null
                             }
                         }
                     }
@@ -638,7 +738,7 @@ fun AppRootDialogs(state: AppRootState) {
                             (parsed as? ParsedBackupFile.EncryptedContainer)?.container
 
                         if (encrypted == null) {
-                            state.importPasswordError = Locales.t("import_invalid_json")
+                            state.importPasswordError = Locales.t("backup_import_invalid_payload")
                             return@Button
                         }
 
@@ -655,7 +755,7 @@ fun AppRootDialogs(state: AppRootState) {
 
                         val imported = DataManager.importBackupPayload(payload)
                         if (imported.isEmpty()) {
-                            state.importPasswordError = Locales.t("import_invalid_json")
+                            state.importPasswordError = Locales.t("backup_import_invalid_payload")
                             return@Button
                         }
 

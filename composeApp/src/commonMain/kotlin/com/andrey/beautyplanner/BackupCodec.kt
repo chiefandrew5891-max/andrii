@@ -18,28 +18,34 @@ sealed class ParsedBackupFile {
 
 object BackupCodec {
 
-    fun createPlainBackupFile(payloadJson: String): String {
+    fun createPlainBackupFile(
+        payloadJson: String,
+        appointmentsCount: Int
+    ): String {
         val container = BackupContainer(
             encrypted = false,
             payload = payloadJson,
-            crypto = null
+            crypto = null,
+            createdAtEpochMillis = kotlinx.datetime.Clock.System.now().toEpochMilliseconds(),
+            appointmentsCount = appointmentsCount
         )
         return backupJson.encodeToString(container)
     }
-
     fun createEncryptedBackupFile(
         payloadJson: String,
-        password: String
+        password: String,
+        appointmentsCount: Int
     ): String {
         val encrypted = BackupCrypto.encryptBackupPayload(
             plaintext = payloadJson,
             password = password
         )
-
         val container = BackupContainer(
             encrypted = true,
             payload = null,
-            crypto = encrypted.metadata
+            crypto = encrypted.metadata,
+            createdAtEpochMillis = kotlinx.datetime.Clock.System.now().toEpochMilliseconds(),
+            appointmentsCount = appointmentsCount
         )
         return backupJson.encodeToString(container)
     }

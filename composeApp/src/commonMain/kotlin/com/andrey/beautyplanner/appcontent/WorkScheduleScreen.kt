@@ -1,9 +1,6 @@
 package com.andrey.beautyplanner.appcontent
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -11,23 +8,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
-import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,6 +40,7 @@ import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.WeeklyBlockedInterval
 import kotlinx.datetime.Clock
+import androidx.compose.foundation.border
 
 @OptIn(
     androidx.compose.material.ExperimentalMaterialApi::class,
@@ -161,7 +158,7 @@ fun WorkScheduleScreen() {
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     intervals.forEach { item ->
-                        Card(
+                        androidx.compose.material.Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
                             elevation = 2.dp,
@@ -289,43 +286,40 @@ private fun TimeDropdown(
     val interactionSource = remember { MutableInteractionSource() }
 
     Box(modifier = modifier) {
-        Card(
+        OutlinedTextField(
+            value = value,
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(
                     interactionSource = interactionSource,
-                    indication = LocalIndication.current
+                    indication = null
                 ) {
                     expanded = true
                 },
+            label = { Text(label) },
+            trailingIcon = {
+                IconButton(onClick = { expanded = true }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null
+                    )
+                }
+            },
             shape = RoundedCornerShape(14.dp),
-            elevation = 0.dp,
-            border = BorderStroke(
-                1.dp,
-                MaterialTheme.colors.onSurface.copy(alpha = 0.22f)
+            textStyle = androidx.compose.ui.text.TextStyle(
+                fontSize = 16.sp,
+                color = MaterialTheme.colors.onSurface
             ),
-            backgroundColor = MaterialTheme.colors.surface
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 12.dp)
-            ) {
-                Text(
-                    text = label,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = value,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colors.onSurface
-                )
-            }
-        }
+            colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                textColor = MaterialTheme.colors.onSurface,
+                focusedBorderColor = MaterialTheme.colors.primary,
+                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.22f),
+                backgroundColor = MaterialTheme.colors.surface
+            )
+        )
 
         DropdownMenu(
             expanded = expanded,
@@ -355,7 +349,6 @@ private fun dayLabel(dayOfWeek: Int): String = when (dayOfWeek) {
     7 -> Locales.t("sun")
     else -> "?"
 }
-
 @Composable
 private fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier {
     val interactionSource = remember { MutableInteractionSource() }

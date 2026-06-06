@@ -11,47 +11,53 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role.Companion.Switch
-import androidx.compose.material.SwitchDefaults
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
+import com.andrey.beautyplanner.appcontent.approot.AppRootState
 
 @Composable
-fun AppearanceSettingsScreen(state: com.andrey.beautyplanner.appcontent.approot.AppRootState) {
+fun AppearanceSettingsScreen(state: AppRootState) {
     val languages = AppSettings.languageCodes.keys.toList()
-    val themeOptions = listOf(Locales.t("theme_light"), Locales.t("theme_dark"))
-    val fontOptions = listOf(
-        Locales.t("font_small"),
-        Locales.t("font_medium"),
-        Locales.t("font_large")
+
+    val themeItems = listOf(
+        "light" to Locales.t("theme_light"),
+        "dark" to Locales.t("theme_dark")
     )
+
+    val fontItems = listOf(
+        "small" to Locales.t("font_small"),
+        "medium" to Locales.t("font_medium"),
+        "large" to Locales.t("font_large")
+    )
+
+    val currencyItems = listOf("EUR (€)", "USD ($)", "RUB (₽)", "UAH (₴)")
 
     val fontScale = state.fontScale
     val onSurface = MaterialTheme.colors.onSurface
     val onBg = MaterialTheme.colors.onBackground
 
     var selectedLanguageDraft by remember { mutableStateOf(AppSettings.selectedLanguage) }
-    var selectedThemeDraft by remember {
-        mutableStateOf(
-            if (AppSettings.isDarkMode) {
-                Locales.t("theme_dark")
-            } else {
-                Locales.t("theme_light")
-            }
-        )
+    var selectedThemeDraftKey by remember {
+        mutableStateOf(if (AppSettings.isDarkMode) "dark" else "light")
     }
-    var selectedFontDraft by remember {
+    var selectedFontDraftKey by remember {
         mutableStateOf(
             when (AppSettings.fontSizeMode) {
-                "Мелкий" -> Locales.t("font_small")
-                "Крупный" -> Locales.t("font_large")
-                else -> Locales.t("font_medium")
+                "small" -> "small"
+                "large" -> "large"
+                else -> "medium"
             }
         )
     }
@@ -68,20 +74,28 @@ fun AppearanceSettingsScreen(state: com.andrey.beautyplanner.appcontent.approot.
     var userNameDraft by remember { mutableStateOf(AppSettings.ownerName) }
     var useShortTextCurrencyDraft by remember { mutableStateOf(AppSettings.useShortTextCurrency) }
 
-    // Если мастер выходит назад или переключает вкладку не сохранившись — сбрасываем живое превью на исходные
+    LaunchedEffect(selectedFontDraftKey) {
+        val previewScale = when (selectedFontDraftKey) {
+            "small" -> 0.80f
+            "large" -> 1.22f
+            else -> 1.10f
+        }
+        state.fontScale = previewScale
+        AppSettings.previewFontScaleOverride = previewScale
+    }
+
     DisposableEffect(Unit) {
         onDispose {
+            AppSettings.previewFontScaleOverride = null
             state.resetLivePreviews()
         }
     }
 
-    val currentThemeValue =
-        if (AppSettings.isDarkMode) Locales.t("theme_dark") else Locales.t("theme_light")
-
-    val currentFontValue = when (AppSettings.fontSizeMode) {
-        "Мелкий" -> Locales.t("font_small")
-        "Крупный" -> Locales.t("font_large")
-        else -> Locales.t("font_medium")
+    val currentThemeKey = if (AppSettings.isDarkMode) "dark" else "light"
+    val currentFontKey = when (AppSettings.fontSizeMode) {
+        "small" -> "small"
+        "large" -> "large"
+        else -> "medium"
     }
 
     val currentCurrencyValue = when (AppSettings.selectedCurrency) {
@@ -91,10 +105,13 @@ fun AppearanceSettingsScreen(state: com.andrey.beautyplanner.appcontent.approot.
         else -> "EUR (€)"
     }
 
+    val selectedThemeLabel = themeItems.first { it.first == selectedThemeDraftKey }.second
+    val selectedFontLabel = fontItems.first { it.first == selectedFontDraftKey }.second
+
     val hasChanges =
         selectedLanguageDraft != AppSettings.selectedLanguage ||
-                selectedThemeDraft != currentThemeValue ||
-                selectedFontDraft != currentFontValue ||
+                selectedThemeDraftKey != currentThemeKey ||
+                selectedFontDraftKey != currentFontKey ||
                 selectedCurrencyDraft != currentCurrencyValue ||
                 useShortTextCurrencyDraft != AppSettings.useShortTextCurrency ||
                 userNameDraft.trim() != AppSettings.ownerName.trim()
@@ -133,38 +150,42 @@ fun AppearanceSettingsScreen(state: com.andrey.beautyplanner.appcontent.approot.
 
             SettingsDropdown(
                 label = Locales.t("theme_label"),
-                selected = selectedThemeDraft,
-                items = themeOptions,
+                selected = selectedThemeLabel,
+                items = themeItems.map { it.second },
                 onSelect = { newValue ->
-                    selectedThemeDraft = newValue
-                    // Мгновенно перекрашиваем корень всего приложения для превью
-                    state.currentLiveDarkMode = (newValue == Locales.t("theme_dark"))
+                    val selectedKey = themeItems.firstOrNull { it.second == newValue }?.first ?: "light"
+                    selectedThemeDraftKey = selectedKey
+                    state.currentLiveDarkMode = (selectedKey == "dark")
                 }
             )
 
             SettingsDropdown(
                 label = Locales.t("font_size_label"),
-                selected = selectedFontDraft,
-                items = fontOptions,
+                selected = selectedFontLabel,
+                items = fontItems.map { it.second },
                 onSelect = { newValue ->
-                    selectedFontDraft = newValue
-                    // Мгновенно масштабируем шрифты всего приложения для превью
-                    state.fontScale = when (newValue) {
-                        Locales.t("font_small") -> 0.85f
-                        Locales.t("font_large") -> 1.2f
-                        else -> 1.0f
+                    val selectedKey = fontItems.firstOrNull { it.second == newValue }?.first ?: "medium"
+                    selectedFontDraftKey = selectedKey
+
+                    val previewScale = when (selectedKey) {
+                        "small" -> 0.80f
+                        "large" -> 1.22f
+                        else -> 1.10f
                     }
+                    state.fontScale = previewScale
+                    AppSettings.previewFontScaleOverride = previewScale
                 }
             )
 
             SettingsDropdown(
                 label = Locales.t("currency_label"),
                 selected = selectedCurrencyDraft,
-                items = listOf("EUR (€)", "USD ($)", "RUB (₽)", "UAH (₴)"),
+                items = currencyItems,
                 onSelect = { newValue ->
                     selectedCurrencyDraft = newValue
                 }
             )
+
             androidx.compose.foundation.layout.Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -173,14 +194,11 @@ fun AppearanceSettingsScreen(state: com.andrey.beautyplanner.appcontent.approot.
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
                 Text(
-                    text = when (Locales.currentLanguage) {
-                        "uk" -> "Текстовий формат валюти (USD/UAH)"
-                        "it" -> "Formato testo valuta (USD/UAH)"
-                        else -> "Текстовый формат валюты (USD/UAH)"
-                    },
+                    text = Locales.t("currency_text_format_label"),
                     fontSize = (16 * fontScale).sp,
                     color = onSurface
                 )
+
                 androidx.compose.material.Switch(
                     checked = useShortTextCurrencyDraft,
                     onCheckedChange = { useShortTextCurrencyDraft = it },
@@ -202,16 +220,16 @@ fun AppearanceSettingsScreen(state: com.andrey.beautyplanner.appcontent.approot.
                     fontWeight = FontWeight.SemiBold,
                     color = onSurface.copy(alpha = 0.85f)
                 )
-
                 OutlinedTextField(
                     value = userNameDraft,
                     onValueChange = { userNameDraft = it },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    label = {
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                    placeholder = {
                         Text(
-                            Locales.t("user_name_hint"),
-                            color = onSurface.copy(alpha = 0.65f)
+                            text = Locales.t("user_name_placeholder"),
+                            color = onSurface.copy(alpha = 0.45f)
                         )
                     },
                     textStyle = TextStyle(
@@ -226,31 +244,27 @@ fun AppearanceSettingsScreen(state: com.andrey.beautyplanner.appcontent.approot.
             PrimaryActionButton(
                 text = Locales.t("save"),
                 onClick = {
-                    // Теперь строки условий посимвольно совпадают со значениями из списка items
                     val targetCurrencyCode = when (selectedCurrencyDraft) {
                         "USD ($)" -> "USD"
                         "RUB (₽)" -> "RUB"
-                        "UAH (₴)" -> "UAH" // <-- Теперь строка совпадает со списком идеально!
+                        "UAH (₴)" -> "UAH"
                         else -> "EUR"
                     }
 
-                    // Сохраняем остальные параметры оформления
-                    AppSettings.isDarkMode = (selectedThemeDraft == Locales.t("theme_dark"))
-                    AppSettings.fontSizeMode = when (selectedFontDraft) {
-                        Locales.t("font_small") -> "Мелкий"
-                        Locales.t("font_large") -> "Крупный"
-                        else -> "Средний"
-                    }
+                    AppSettings.isDarkMode = (selectedThemeDraftKey == "dark")
+                    AppSettings.fontSizeMode = selectedFontDraftKey
                     AppSettings.ownerName = userNameDraft.trim()
 
-                    // Синхронно пишем в settings.json и код валюты, и состояние чекбокса альтернативного текста
-                    AppSettings.saveCurrencySynchronously(targetCurrencyCode, useShortTextCurrencyDraft)
+                    AppSettings.saveCurrencySynchronously(
+                        targetCurrencyCode,
+                        useShortTextCurrencyDraft
+                    )
 
-                    // В последнюю очередь меняем локаль
                     AppSettings.selectedLanguage = selectedLanguageDraft
                     val code = AppSettings.languageCodes[selectedLanguageDraft] ?: "en"
                     Locales.currentLanguage = code
 
+                    AppSettings.previewFontScaleOverride = null
                     AppSettings.persist()
                 },
                 enabled = hasChanges

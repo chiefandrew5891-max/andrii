@@ -8,7 +8,9 @@ data class BackupContainer(
     val version: Int = BACKUP_VERSION,
     val encrypted: Boolean,
     val payload: String? = null,
-    val crypto: BackupCryptoMetadata? = null
+    val crypto: BackupCryptoMetadata? = null,
+    val createdAtEpochMillis: Long? = null,
+    val appointmentsCount: Int? = null
 )
 
 @Serializable

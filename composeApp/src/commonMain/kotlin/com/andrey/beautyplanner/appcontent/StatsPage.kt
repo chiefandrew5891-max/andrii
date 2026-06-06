@@ -18,6 +18,8 @@ import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
+import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -43,6 +45,12 @@ import kotlin.math.roundToInt
 private enum class StatsPeriod {
     DAY, WEEK, MONTH, YEAR, CUSTOM
 }
+
+private data class ServiceStat(
+    val service: String,
+    val count: Int,
+    val revenueByCurrency: Map<String, Double>
+)
 
 @Composable
 fun StatsPage(
@@ -87,9 +95,17 @@ fun StatsPage(
     }
 
     val filtered = remember(
-        appointments, fromDate, toDateInclusive, clientQuery, selectedClient, isMultiCurrencyMode
+        appointments,
+        fromDate,
+        toDateInclusive,
+        clientQuery,
+        selectedClient,
+        isMultiCurrencyMode,
+        AppSettings.selectedCurrency
     ) {
-        val clientFilter = selectedClient?.displayName?.trim()?.lowercase() ?: clientQuery.trim().lowercase().takeIf { it.isNotBlank() }
+        val clientFilter = selectedClient?.displayName?.trim()?.lowercase()
+            ?: clientQuery.trim().lowercase().takeIf { it.isNotBlank() }
+
         appointments
             .asSequence()
             .mapNotNull { a ->
@@ -99,11 +115,10 @@ fun StatsPage(
             .filter { (d, _) -> d >= fromDate && d <= toDateInclusive }
             .map { it.second }
             .filter { appt ->
-                // Если свитч мультивалютности ВЫКЛЮЧЕН, показываем только процедуры текущей валюты системы
                 if (!isMultiCurrencyMode) {
                     appt.currency == AppSettings.selectedCurrency
                 } else {
-                    true // Если включен — показываем абсолютно все валюты
+                    true
                 }
             }
             .filter { appt ->
@@ -127,13 +142,17 @@ fun StatsPage(
         a.price.trim().replace(",", ".").toDoubleOrNull() ?: 0.0
     }
 
-    data class ServiceStat(
-        val service: String,
-        val count: Int,
-        val revenue: Double
-    )
+    val revenueByCurrency = remember(filtered, AppSettings.selectedCurrency) {
+        filtered
+            .groupBy { it.currency.ifBlank { AppSettings.selectedCurrency } }
+            .mapValues { (_, items) ->
+                items.sumOf { appt ->
+                    appt.price.trim().replace(",", ".").toDoubleOrNull() ?: 0.0
+                }
+            }
+    }
 
-    val byService = remember(filtered) {
+    val byService = remember(filtered, AppSettings.selectedCurrency) {
         filtered
             .groupBy { a ->
                 val s = a.serviceName
@@ -141,17 +160,22 @@ fun StatsPage(
             }
             .map { (service, list) ->
                 val count = list.size
-                val serviceRevenue =
-                    list.sumOf { it.price.trim().replace(",", ".").toDoubleOrNull() ?: 0.0 }
+                val serviceRevenueByCurrency = list
+                    .groupBy { it.currency.ifBlank { AppSettings.selectedCurrency } }
+                    .mapValues { (_, currencyList) ->
+                        currencyList.sumOf {
+                            it.price.trim().replace(",", ".").toDoubleOrNull() ?: 0.0
+                        }
+                    }
 
                 ServiceStat(
                     service = service,
                     count = count,
-                    revenue = serviceRevenue
+                    revenueByCurrency = serviceRevenueByCurrency
                 )
             }
             .sortedWith(
-                compareByDescending<ServiceStat> { it.revenue }
+                compareByDescending<ServiceStat> { it.revenueByCurrency.values.sum() }
                     .thenByDescending { it.count }
             )
     }
@@ -177,34 +201,29 @@ fun StatsPage(
             color = primaryText
         )
 
-        // НАШ SWITCH (Мультивалютный режим) — Сразу после заголовка фильтров
-        androidx.compose.foundation.layout.Row(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = when (Locales.currentLanguage) {
-                    "uk" -> "Мультивалютний режим (всі процедури)"
-                    "it" -> "Modalità multivaluta (tutti i servizi)"
-                    else -> "Мультивалютный режим (все процедуры)"
-                },
+                text = Locales.t("multi_currency_mode_all"),
                 fontSize = (15 * fontScale).sp,
-                color = primaryText
+                color = primaryText,
+                modifier = Modifier.weight(1f)
             )
-            androidx.compose.material.Switch(
+
+            Switch(
                 checked = isMultiCurrencyMode,
                 onCheckedChange = { isMultiCurrencyMode = it },
-                colors = androidx.compose.material.SwitchDefaults.colors(
+                colors = SwitchDefaults.colors(
                     checkedThumbColor = MaterialTheme.colors.primary,
                     checkedTrackColor = MaterialTheme.colors.primary.copy(alpha = 0.5f)
                 )
             )
         }
 
-        // Горизонтальный скролл чипсов времени — Тут День, Неделя, Месяц, Год
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -225,17 +244,24 @@ fun StatsPage(
             }
         }
 
-        // КНОПКА «ПЕРИОД» — Убрали принудительный fontWeight, теперь стиль шрифта один в один как у остальных кнопок
         OutlinedButton(
             onClick = { period = StatsPeriod.CUSTOM },
             modifier = Modifier.fillMaxWidth(),
             shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-                backgroundColor = if (period == StatsPeriod.CUSTOM) MaterialTheme.colors.primary.copy(alpha = 0.08f) else Color.Transparent
+                backgroundColor = if (period == StatsPeriod.CUSTOM) {
+                    MaterialTheme.colors.primary.copy(alpha = 0.08f)
+                } else {
+                    Color.Transparent
+                }
             ),
             border = androidx.compose.foundation.BorderStroke(
                 width = 1.dp,
-                color = if (period == StatsPeriod.CUSTOM) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+                color = if (period == StatsPeriod.CUSTOM) {
+                    MaterialTheme.colors.primary
+                } else {
+                    MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+                }
             )
         ) {
             Text(
@@ -335,11 +361,19 @@ fun StatsPage(
 
         Divider()
 
-        StatRow(
-            label = Locales.t("stats_revenue"),
-            value = formatMoney(revenue),
-            primaryText = primaryText
-        )
+        if (!isMultiCurrencyMode) {
+            StatRow(
+                label = Locales.t("stats_revenue"),
+                value = formatMoney(revenue, AppSettings.selectedCurrency),
+                primaryText = primaryText
+            )
+        } else {
+            RevenueByCurrencyBlock(
+                label = Locales.t("stats_revenue"),
+                revenueByCurrency = revenueByCurrency,
+                primaryText = primaryText
+            )
+        }
 
         StatRow(
             label = Locales.t("stats_count"),
@@ -373,7 +407,9 @@ fun StatsPage(
                 ServiceRow(
                     service = s.service,
                     count = s.count,
-                    revenue = s.revenue,
+                    revenueByCurrency = s.revenueByCurrency,
+                    isMultiCurrencyMode = isMultiCurrencyMode,
+                    selectedCurrency = AppSettings.selectedCurrency,
                     fontScale = fontScale,
                     primaryText = primaryText,
                     secondaryText = secondaryText
@@ -483,14 +519,62 @@ private fun StatRow(
 }
 
 @Composable
+private fun RevenueByCurrencyBlock(
+    label: String,
+    revenueByCurrency: Map<String, Double>,
+    primaryText: Color
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = label,
+            fontWeight = FontWeight.Medium,
+            color = primaryText
+        )
+
+        if (revenueByCurrency.isEmpty()) {
+            Text(
+                text = "0",
+                fontWeight = FontWeight.SemiBold,
+                color = primaryText
+            )
+        } else {
+            revenueByCurrency
+                .toList()
+                .sortedBy { it.first }
+                .forEach { (currencyCode, amount) ->
+                    Text(
+                        text = formatMoney(amount, currencyCode),
+                        fontWeight = FontWeight.SemiBold,
+                        color = primaryText
+                    )
+                }
+        }
+    }
+}
+
+@Composable
 private fun ServiceRow(
     service: String,
     count: Int,
-    revenue: Double,
+    revenueByCurrency: Map<String, Double>,
+    isMultiCurrencyMode: Boolean,
+    selectedCurrency: String,
     fontScale: Float,
     primaryText: Color,
     secondaryText: Color
 ) {
+    val revenueText = if (!isMultiCurrencyMode) {
+        formatMoney(
+            revenueByCurrency[selectedCurrency] ?: 0.0,
+            selectedCurrency
+        )
+    } else {
+        formatMoneyCompactList(revenueByCurrency)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -503,10 +587,12 @@ private fun ServiceRow(
             Text(
                 text = service,
                 fontWeight = FontWeight.SemiBold,
-                color = primaryText
+                color = primaryText,
+                modifier = Modifier.weight(1f)
             )
+
             Text(
-                text = formatMoney(revenue),
+                text = revenueText,
                 color = primaryText,
                 fontWeight = FontWeight.SemiBold
             )
@@ -517,15 +603,47 @@ private fun ServiceRow(
             color = secondaryText,
             fontSize = (13 * fontScale).sp
         )
+
+        if (isMultiCurrencyMode && revenueByCurrency.size > 1) {
+            Spacer(modifier = Modifier.height(4.dp))
+            revenueByCurrency
+                .toList()
+                .sortedBy { it.first }
+                .forEach { (currencyCode, amount) ->
+                    Text(
+                        text = "• ${formatMoney(amount, currencyCode)}",
+                        color = secondaryText,
+                        fontSize = (12 * fontScale).sp
+                    )
+                }
+        }
     }
 }
 
-private fun formatMoney(v: Double): String {
+private fun formatMoney(
+    v: Double,
+    currencyCode: String
+): String {
     val rounded = (v * 100).roundToInt() / 100.0
     val s = if (rounded % 1.0 == 0.0) {
         rounded.toInt().toString()
     } else {
         rounded.toString()
     }
-    return "$s ${AppSettings.currencySymbol()}"
+    return AppSettings.formatMoneyAmount(
+        amount = s,
+        currencyCode = currencyCode
+    )
+}
+
+private fun formatMoneyCompactList(
+    revenueByCurrency: Map<String, Double>
+): String {
+    if (revenueByCurrency.isEmpty()) return "0"
+    return revenueByCurrency
+        .toList()
+        .sortedBy { it.first }
+        .joinToString(" • ") { (currencyCode, amount) ->
+            formatMoney(amount, currencyCode)
+        }
 }

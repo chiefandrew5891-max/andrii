@@ -486,8 +486,43 @@ fun AppRootContent(
                     ) {
                         BackupFilePicker.importJson(
                             onPicked = { jsonText ->
+                                val parsed = BackupCodec.parseBackupFile(jsonText)
+                                if (parsed == null) {
+                                    state.showImportError = Locales.t("backup_import_invalid_file")
+                                    return@importJson
+                                }
+
                                 state.pendingImportText = jsonText
-                                state.showImportConfirm = true
+                                state.pendingImportPreview = when (parsed) {
+                                    is ParsedBackupFile.LegacyPlainPayload -> {
+                                        AppRootState.ImportPreviewInfo(
+                                            isLegacy = true,
+                                            isEncrypted = false,
+                                            version = null,
+                                            createdAtEpochMillis = null,
+                                            appointmentsCount = DataManager.importBackupPayload(parsed.payloadJson).size
+                                        )
+                                    }
+                                    is ParsedBackupFile.PlainContainer -> {
+                                        AppRootState.ImportPreviewInfo(
+                                            isLegacy = false,
+                                            isEncrypted = false,
+                                            version = parsed.container.version,
+                                            createdAtEpochMillis = parsed.container.createdAtEpochMillis,
+                                            appointmentsCount = parsed.container.appointmentsCount
+                                        )
+                                    }
+                                    is ParsedBackupFile.EncryptedContainer -> {
+                                        AppRootState.ImportPreviewInfo(
+                                            isLegacy = false,
+                                            isEncrypted = true,
+                                            version = parsed.container.version,
+                                            createdAtEpochMillis = parsed.container.createdAtEpochMillis,
+                                            appointmentsCount = parsed.container.appointmentsCount
+                                        )
+                                    }
+                                }
+                                state.showImportBackupPrompt = true
                             },
                             onError = { errorText ->
                                 state.showImportError = errorText

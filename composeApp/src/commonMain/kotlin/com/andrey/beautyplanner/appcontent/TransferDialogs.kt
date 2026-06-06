@@ -55,7 +55,7 @@ fun TransferPickDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "${monthDate.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${monthDate.year}",
+                        text = localizedMonthTitle(monthDate),
                         fontWeight = FontWeight.Bold,
                         fontSize = (16 * fontScale).sp
                     )
@@ -135,7 +135,8 @@ fun RescheduleClientBDialog(
         title = {
             Text(
                 buildAnnotatedString {
-                    append("Переназначить запись для ")
+                    append(Locales.t("reschedule_for_client_prefix"))
+                    append(" ")
                     withStyle(SpanStyle(fontWeight = FontWeight.ExtraBold)) {
                         append(clientName)
                     }
@@ -150,7 +151,7 @@ fun RescheduleClientBDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "${monthDate.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${monthDate.year}",
+                        text = localizedMonthTitle(monthDate),
                         fontWeight = FontWeight.Bold,
                         fontSize = (16 * fontScale).sp
                     )

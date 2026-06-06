@@ -47,7 +47,7 @@ fun StatsDatePickerDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "${monthDate.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${monthDate.year}",
+                        text = localizedMonthTitle(monthDate),
                         fontWeight = FontWeight.Bold,
                         fontSize = (16 * fontScale).sp
                     )

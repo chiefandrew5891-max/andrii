@@ -106,7 +106,10 @@ fun AppointmentCard(
     val interactionSource = remember { MutableInteractionSource() }
 
     val serviceDisplay = apptServiceDisplay(appt)
-    val priceText = appt.price.trim().let { p -> if (p.isBlank()) "" else "$p ${AppSettings.currencySymbol()}" }
+    val priceText = AppSettings.formatMoneyAmount(
+        amount = appt.price,
+        currencyCode = appt.currency
+    )
 
     if (showDateInCard) {
         val formattedDate = ddMMyyyy(appt.dateString)
@@ -197,9 +200,11 @@ fun AppointmentCard(
                             color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
                         )
                     }
-
                     Text(
-                        text = "${appt.price} ${AppSettings.currencySymbol()}",
+                        text = AppSettings.formatMoneyAmount(
+                            amount = appt.price,
+                            currencyCode = appt.currency
+                        ),
                         fontSize = (13 * fontScale).sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.85f)
@@ -371,7 +376,10 @@ fun AppointmentDetailsDialog(
     val fontScale = AppSettings.getFontScale()
 
     val serviceDisplay = apptServiceDisplay(appt)
-    val priceText = appt.price.trim().let { p -> if (p.isBlank()) "" else "$p ${AppSettings.currencySymbol()}" }
+    val priceText = AppSettings.formatMoneyAmount(
+        amount = appt.price,
+        currencyCode = appt.currency
+    )
 
     val dateTextColor = MaterialTheme.colors.primary.copy(alpha = 0.95f)
     val timeTextColor = MaterialTheme.colors.onSurface.copy(alpha = 0.72f)
@@ -454,16 +462,7 @@ fun AppointmentDetailsDialog(
                         fontSize = (13 * fontScale).sp
                     )
 
-                    if (!actionsEnabled && !allowDeletePast) {
-                        Spacer(Modifier.height(10.dp))
-                        Text(
-                            text = Locales.t("past_date_actions_disabled"),
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.65f),
-                            fontSize = (12 * fontScale).sp
-                        )
-                    }
-
-                    if (!actionsEnabled && allowDeletePast) {
+                    if (!actionsEnabled) {
                         Spacer(Modifier.height(10.dp))
                         Text(
                             text = Locales.t("past_date_actions_disabled"),

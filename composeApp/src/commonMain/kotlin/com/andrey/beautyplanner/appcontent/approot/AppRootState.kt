@@ -79,8 +79,12 @@ class AppRootState(
     var exportFileName by mutableStateOf("beautyplanner-backup")
 
     var pendingImportText by mutableStateOf<String?>(null)
+    var pendingImportPreview by mutableStateOf<ImportPreviewInfo?>(null)
     var showImportConfirm by mutableStateOf(false)
     var showImportError by mutableStateOf<String?>(null)
+    var showImportBackupPrompt by mutableStateOf(false)
+    var pendingImportAfterBackup by mutableStateOf(false)
+    var backupSuccessMessage by mutableStateOf<String?>(null)
     var premiumRequiredMessage by mutableStateOf("")
     var premiumReturnScreen by mutableStateOf(Screen.SETTINGS)
 
@@ -103,6 +107,13 @@ class AppRootState(
     var showSaveError by mutableStateOf<String?>(null)
 
     data class ShiftItem(val apptId: String, val newStartMin: Int)
+    data class ImportPreviewInfo(
+        val isLegacy: Boolean,
+        val isEncrypted: Boolean,
+        val version: Int?,
+        val createdAtEpochMillis: Long?,
+        val appointmentsCount: Int?
+    )
     var showAutoShiftConfirm by mutableStateOf(false)
     var pendingNewAppt by mutableStateOf<Appointment?>(null)
     var shiftChain by mutableStateOf<List<ShiftItem>>(emptyList())

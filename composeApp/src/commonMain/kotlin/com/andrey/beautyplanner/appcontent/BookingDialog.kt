@@ -1,6 +1,5 @@
 package com.andrey.beautyplanner.appcontent
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,13 +19,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Appointment
+import com.andrey.beautyplanner.ClientSuggestion
+import com.andrey.beautyplanner.ClientSuggestions
 import com.andrey.beautyplanner.ContactSuggestion
 import com.andrey.beautyplanner.ContactsAutocomplete
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.ServiceTemplate
 import kotlinx.coroutines.delay
-import com.andrey.beautyplanner.ClientSuggestion
-import com.andrey.beautyplanner.ClientSuggestions
 
 private fun displayServiceTitle(title: String): String {
     return if (title.startsWith("service_")) {
@@ -35,6 +34,7 @@ private fun displayServiceTitle(title: String): String {
         title
     }
 }
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BookingDialog(
@@ -76,12 +76,8 @@ fun BookingDialog(
     var price by remember(initKey) { mutableStateOf(initialData?.price ?: "") }
 
     val otherKey = "service_other"
-    var serviceIsOther by remember(initKey) {
-        mutableStateOf(false)
-    }
-    var customServiceText by remember(initKey) {
-        mutableStateOf("")
-    }
+    var serviceIsOther by remember(initKey) { mutableStateOf(false) }
+    var customServiceText by remember(initKey) { mutableStateOf("") }
 
     val initialStart = remember(initKey) { initialData?.time ?: time }
     val startBaseHour = remember(initKey) { initialStart.substringBefore(":").toIntOrNull() ?: 0 }
@@ -95,7 +91,9 @@ fun BookingDialog(
     val startTime = remember(startBaseHour, startMinutesPart) {
         "${startBaseHour.toString().padStart(2, '0')}:${startMinutesPart.toString().padStart(2, '0')}"
     }
-    val startAbsMinutes = remember(startTime) { parseHmToMinutes(startTime) ?: (startBaseHour * 60) }
+    val startAbsMinutes = remember(startTime) {
+        parseHmToMinutes(startTime) ?: (startBaseHour * 60)
+    }
 
     val endOptions = remember(startAbsMinutes) {
         val list = mutableListOf<String>()
@@ -129,16 +127,15 @@ fun BookingDialog(
 
     val nameOk = name.trim().isNotBlank()
     val phoneOk = phone.trim().isNotBlank()
-
-    val serviceOk =
-        if (serviceIsOther) customServiceText.trim().isNotBlank()
-        else serviceKey.trim().isNotBlank()
-
+    val serviceOk = if (serviceIsOther) {
+        customServiceText.trim().isNotBlank()
+    } else {
+        serviceKey.trim().isNotBlank()
+    }
     val priceOk = price.trim().isNotBlank()
 
     val endAbs = parseHmToMinutes(endTime)
     val endOk = endAbs != null && endAbs > startAbsMinutes
-
     val formOk = nameOk && phoneOk && serviceOk && priceOk && endOk
 
     var mergedSuggestions by remember { mutableStateOf<List<ClientSuggestion>>(emptyList()) }
@@ -195,10 +192,14 @@ fun BookingDialog(
                 Button(onClick = {
                     showEnableEditConfirm = false
                     editEnabled = true
-                }) { Text(Locales.t("yes")) }
+                }) {
+                    Text(Locales.t("yes"))
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showEnableEditConfirm = false }) { Text(Locales.t("cancel")) }
+                TextButton(onClick = { showEnableEditConfirm = false }) {
+                    Text(Locales.t("cancel"))
+                }
             },
             shape = RoundedCornerShape(16.dp)
         )
@@ -214,37 +215,57 @@ fun BookingDialog(
                 modifier = Modifier
                     .padding(24.dp)
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .verticalScroll(rememberScrollState())
             ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        "${Locales.t("start_time")}: $startTime • ${Locales.t("end_time")}: $endTime",
-                        fontSize = (14 * fontScale).sp,
-                        color = Color.Gray,
-                        modifier = Modifier.align(Alignment.Center)
+                        text = if (initialData == null) {
+                            Locales.t("booking_new_title")
+                        } else {
+                            Locales.t("view_appointment_title")
+                        },
+                        fontSize = (22 * fontScale).sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.onSurface,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(top = 2.dp, end = 12.dp)
                     )
 
                     IconButton(
                         onClick = onDismiss,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(x = 10.dp, y = (-10).dp)
+                        modifier = Modifier.size(40.dp)
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Close")
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = Locales.t("close"),
+                            tint = MaterialTheme.colors.onSurface.copy(alpha = 0.82f)
+                        )
                     }
                 }
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    text = "${Locales.t("start_time")}: $startTime • ${Locales.t("end_time")}: $endTime",
+                    fontSize = (15 * fontScale).sp,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.72f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(14.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(Locales.t("start_time"), fontSize = (12 * fontScale).sp, color = Color.Gray)
-
                         var expStart by remember { mutableStateOf(false) }
+
                         ExposedDropdownMenuBox(
                             expanded = expStart,
                             onExpandedChange = { if (editEnabled) expStart = !expStart }
@@ -255,17 +276,27 @@ fun BookingDialog(
                                 readOnly = true,
                                 enabled = editEnabled,
                                 modifier = Modifier.fillMaxWidth(),
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expStart) },
-                                shape = RoundedCornerShape(14.dp)
+                                label = { Text(Locales.t("start_time")) },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expStart)
+                                },
+                                shape = RoundedCornerShape(14.dp),
+                                singleLine = true
                             )
-                            ExposedDropdownMenu(expanded = expStart, onDismissRequest = { expStart = false }) {
+
+                            ExposedDropdownMenu(
+                                expanded = expStart,
+                                onDismissRequest = { expStart = false }
+                            ) {
                                 minuteOptions.forEach { m ->
                                     DropdownMenuItem(onClick = {
                                         startMinutesPart = m
                                         expStart = false
                                         endTime = defaultEnd()
                                     }) {
-                                        Text("${startBaseHour.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}")
+                                        Text(
+                                            "${startBaseHour.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}"
+                                        )
                                     }
                                 }
                             }
@@ -273,9 +304,8 @@ fun BookingDialog(
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(Locales.t("end_time"), fontSize = (12 * fontScale).sp, color = Color.Gray)
-
                         var expEnd by remember { mutableStateOf(false) }
+
                         ExposedDropdownMenuBox(
                             expanded = expEnd,
                             onExpandedChange = { if (editEnabled) expEnd = !expEnd }
@@ -286,16 +316,26 @@ fun BookingDialog(
                                 readOnly = true,
                                 enabled = editEnabled,
                                 modifier = Modifier.fillMaxWidth(),
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expEnd) },
+                                label = { Text(Locales.t("end_time")) },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expEnd)
+                                },
                                 shape = RoundedCornerShape(14.dp),
-                                isError = triedSave && editEnabled && !endOk
+                                isError = triedSave && editEnabled && !endOk,
+                                singleLine = true
                             )
-                            ExposedDropdownMenu(expanded = expEnd, onDismissRequest = { expEnd = false }) {
+
+                            ExposedDropdownMenu(
+                                expanded = expEnd,
+                                onDismissRequest = { expEnd = false }
+                            ) {
                                 endOptions.forEach { t ->
                                     DropdownMenuItem(onClick = {
                                         endTime = t
                                         expEnd = false
-                                    }) { Text(t) }
+                                    }) {
+                                        Text(t)
+                                    }
                                 }
                             }
                         }
@@ -304,15 +344,12 @@ fun BookingDialog(
 
                 if (triedSave && editEnabled && !endOk) {
                     Text(
-                        text = when (Locales.currentLanguage) {
-                            "ru" -> "Конец должен быть позже начала"
-                            "uk" -> "Кінець має бути пізніше початку"
-                            "it" -> "La fine deve essere dopo l'inizio"
-                            else -> "End must be after start"
-                        },
+                        text = Locales.t("booking_end_after_start"),
                         color = MaterialTheme.colors.error,
                         fontSize = (12 * fontScale).sp,
-                        modifier = Modifier.align(Alignment.Start).padding(top = 6.dp)
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .padding(top = 6.dp)
                     )
                 }
 
@@ -320,8 +357,8 @@ fun BookingDialog(
 
                 OutlinedTextField(
                     value = name,
-                    onValueChange = {
-                        name = it
+                    onValueChange = { newValue ->
+                        name = newValue
                         showSuggestions = true
                     },
                     enabled = editEnabled,
@@ -336,7 +373,8 @@ fun BookingDialog(
                                 Icon(Icons.Default.Contacts, contentDescription = null)
                             }
                         }
-                    }
+                    },
+                    singleLine = true
                 )
 
                 if (editEnabled && !contactsPermissionGranted) {
@@ -404,13 +442,14 @@ fun BookingDialog(
 
                 OutlinedTextField(
                     value = phone,
-                    onValueChange = { phone = it },
+                    onValueChange = { newValue -> phone = newValue },
                     enabled = editEnabled,
                     label = { Text(Locales.t("phone")) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = { Icon(Icons.Default.Phone, null) },
-                    isError = triedSave && editEnabled && !phoneOk
+                    isError = triedSave && editEnabled && !phoneOk,
+                    singleLine = true
                 )
 
                 Spacer(Modifier.height(12.dp))
@@ -423,6 +462,7 @@ fun BookingDialog(
                         isActive = true
                     )
                 }
+
                 LaunchedEffect(initKey) {
                     val existing = AppSettings.getActiveServiceTemplates().any { it.title == serviceKey }
                     val builtIn = serviceKey.startsWith("service_")
@@ -452,8 +492,11 @@ fun BookingDialog(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
                             leadingIcon = { Icon(Icons.Default.Brush, null) },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = serviceExpanded) },
-                            isError = triedSave && editEnabled && !serviceOk
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = serviceExpanded)
+                            },
+                            isError = triedSave && editEnabled && !serviceOk,
+                            singleLine = true
                         )
 
                         ExposedDropdownMenu(
@@ -497,9 +540,9 @@ fun BookingDialog(
                 } else {
                     OutlinedTextField(
                         value = customServiceText,
-                        onValueChange = {
-                            customServiceText = it
-                            if (it.isBlank()) {
+                        onValueChange = { newValue ->
+                            customServiceText = newValue
+                            if (newValue.isBlank()) {
                                 serviceIsOther = false
                                 serviceKey = ""
                             }
@@ -518,22 +561,23 @@ fun BookingDialog(
                                     serviceKey = ""
                                 }
                             ) {
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Back to list")
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = "Back to list"
+                                )
                             }
                         },
-                        isError = triedSave && editEnabled && !serviceOk
+                        isError = triedSave && editEnabled && !serviceOk,
+                        singleLine = true
                     )
 
                     Text(
-                        text = when (Locales.currentLanguage) {
-                            "ru" -> "Режим “Другое”: введите название процедуры вручную"
-                            "uk" -> "Режим “Інше”: введіть назву процедури вручну"
-                            "it" -> "Modalità “Altro”: inserisci manualmente il nome"
-                            else -> "Other mode: type service name"
-                        },
+                        text = Locales.t("booking_other_mode_hint"),
                         fontSize = (12 * fontScale).sp,
                         color = Color.Gray,
-                        modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 6.dp)
                     )
                 }
 
@@ -541,13 +585,14 @@ fun BookingDialog(
 
                 OutlinedTextField(
                     value = price,
-                    onValueChange = { price = it },
+                    onValueChange = { newValue -> price = newValue },
                     enabled = editEnabled,
                     label = { Text(Locales.t("price") + " (${AppSettings.currencySymbol()})") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = { Icon(Icons.Default.Payments, null) },
-                    isError = triedSave && editEnabled && !priceOk
+                    isError = triedSave && editEnabled && !priceOk,
+                    singleLine = true
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -555,12 +600,7 @@ fun BookingDialog(
                 if (editEnabled) {
                     if (triedSave && !formOk) {
                         Text(
-                            text = when (Locales.currentLanguage) {
-                                "ru" -> "Заполните обязательные поля"
-                                "uk" -> "Заповніть обовʼязкові поля"
-                                "it" -> "Compila i campi obbligatori"
-                                else -> "Fill required fields"
-                            },
+                            text = Locales.t("booking_fill_required_fields"),
                             color = MaterialTheme.colors.error,
                             fontSize = (13 * fontScale).sp,
                             modifier = Modifier.fillMaxWidth()
@@ -576,9 +616,11 @@ fun BookingDialog(
                             val durationMinutes = ((parseHmToMinutes(endTime) ?: 0) - startAbsMinutes)
                                 .coerceAtLeast(10)
 
-                            val serviceToStore =
-                                if (serviceIsOther) customServiceText.trim()
-                                else serviceKey.trim()
+                            val serviceToStore = if (serviceIsOther) {
+                                customServiceText.trim()
+                            } else {
+                                serviceKey.trim()
+                            }
 
                             onSave(
                                 startTime,
@@ -587,23 +629,39 @@ fun BookingDialog(
                                 phone.trim(),
                                 serviceToStore,
                                 price.trim(),
-                                initialData?.currency ?: AppSettings.selectedCurrency // <-- Передаем валюту записи
+                                initialData?.currency ?: AppSettings.selectedCurrency
                             )
                         },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = MaterialTheme.colors.primary
+                        )
                     ) {
-                        Text(Locales.t("save").uppercase(), color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = Locales.t("save").uppercase(),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 } else {
                     Button(
                         onClick = { showEnableEditConfirm = true },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = MaterialTheme.colors.primary
+                        )
                     ) {
-                        Text(Locales.t("edit").uppercase(), color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = Locales.t("edit").uppercase(),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
 
@@ -612,7 +670,10 @@ fun BookingDialog(
                         onClick = { onTransferRequest(initialData) },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        Text(Locales.t("transfer_appt"), color = MaterialTheme.colors.primary)
+                        Text(
+                            text = Locales.t("transfer_appt"),
+                            color = MaterialTheme.colors.primary
+                        )
                     }
                 }
             }
