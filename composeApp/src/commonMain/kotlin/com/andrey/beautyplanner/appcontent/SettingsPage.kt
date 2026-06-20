@@ -118,15 +118,25 @@ fun SettingsPage(
     if (showDeveloperPasswordDialog) {
         AlertDialog(
             onDismissRequest = {
-                showDeveloperPasswordDialog = false
-                developerPasswordInput = ""
-                developerPasswordError = false
             },
             title = {
-                Text(Locales.t("developer_password_title"), color = onSurface)
+                Text(
+                    text = Locales.t("developer_password_title"),
+                    color = onSurface,
+                    fontSize = (18 * fontScale).sp,
+                    fontWeight = FontWeight.Bold
+                )
             },
             text = {
-                Column {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = Locales.t("developer_password_hint"),
+                        color = onSurface.copy(alpha = 0.72f),
+                        fontSize = (13 * fontScale).sp
+                    )
+
                     androidx.compose.material.OutlinedTextField(
                         value = developerPasswordInput,
                         onValueChange = {
@@ -135,12 +145,21 @@ fun SettingsPage(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        label = { Text(Locales.t("developer_password_hint")) },
+                        placeholder = {
+                            Text(
+                                text = Locales.t("developer_password_hint"),
+                                color = onSurface.copy(alpha = 0.45f)
+                            )
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        textStyle = androidx.compose.ui.text.TextStyle(
+                            fontSize = (15 * fontScale).sp,
+                            color = onSurface
+                        ),
                         isError = developerPasswordError
                     )
 
                     if (developerPasswordError) {
-                        Spacer(Modifier.height(8.dp))
                         Text(
                             text = Locales.t("developer_password_invalid"),
                             color = MaterialTheme.colors.error,
@@ -161,7 +180,8 @@ fun SettingsPage(
                         } else {
                             developerPasswordError = true
                         }
-                    }
+                    },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(Locales.t("developer_unlock"))
                 }
@@ -172,9 +192,13 @@ fun SettingsPage(
                         showDeveloperPasswordDialog = false
                         developerPasswordInput = ""
                         developerPasswordError = false
+                        securityTapCount = 0
                     }
                 ) {
-                    Text(Locales.t("cancel"), color = onSurface.copy(alpha = 0.85f))
+                    Text(
+                        text = Locales.t("cancel"),
+                        color = onSurface.copy(alpha = 0.85f)
+                    )
                 }
             },
             shape = RoundedCornerShape(16.dp)
@@ -341,8 +365,10 @@ fun SettingsPage(
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() }
                         ) {
+                            if (showDeveloperPasswordDialog) return@clickable
+
                             securityTapCount += 1
-                            if (securityTapCount >= 10) {
+                            if (securityTapCount >= 15) {
                                 securityTapCount = 0
                                 developerPasswordInput = ""
                                 developerPasswordError = false

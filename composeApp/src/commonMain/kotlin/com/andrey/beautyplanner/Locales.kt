@@ -13,6 +13,7 @@ object Locales {
     private val strings = mapOf(
         "ru" to mapOf(
             //Backup and restore
+            "premium_required_backup" to "Резервное копирование доступно только во время пробного периода или с Premium-подпиской.",
             "booking_new_title" to "Новая запись",
             "backup_encrypt_toggle" to "Зашифровать резервную копию",
             "backup_password" to "Пароль резервной копии",
@@ -86,7 +87,7 @@ object Locales {
             "developer_mode_hint" to "Внутренние инструменты разработчика и тестовый доступ.",
             "developer_mode_open" to "Открыть режим разработчика",
             "developer_password_title" to "Пароль разработчика",
-            "developer_password_hint" to "Введите пароль разработчика",
+            "developer_password_hint" to "Введите пароль",
             "developer_password_invalid" to "Неверный пароль",
             "developer_unlock" to "Разблокировать",
             "developer_logout" to "Выйти из режима разработчика",
@@ -385,6 +386,7 @@ object Locales {
 
         "en" to mapOf(
             //Backup and restore
+            "premium_required_backup" to "Backup is available only during trial or with Premium subscription.",
             "booking_new_title" to "New appointment",
             "backup_encrypt_toggle" to "Encrypt backup",
             "backup_password" to "Backup password",
@@ -451,7 +453,7 @@ object Locales {
             "developer_mode_hint" to "Internal developer tools and test access.",
             "developer_mode_open" to "Open developer mode",
             "developer_password_title" to "Developer password",
-            "developer_password_hint" to "Enter developer password",
+            "developer_password_hint" to "Enter password",
             "developer_password_invalid" to "Invalid password",
             "developer_unlock" to "Unlock",
             "developer_logout" to "Exit developer mode",
@@ -750,6 +752,7 @@ object Locales {
         // Итальянский и украинский блоки оставляю как у тебя, но добавляю статусы в конец каждого.
         "it" to mapOf(
             //Backup and restore
+            "premium_required_backup" to "Il backup è disponibile solo durante il periodo di prova o con l'abbonamento Premium.",
             "booking_new_title" to "Nuovo appuntamento",
             "backup_encrypt_toggle" to "Crittografa backup",
             "backup_password" to "Password del backup",
@@ -816,7 +819,7 @@ object Locales {
             "developer_mode_hint" to "Strumenti interni per sviluppatore e accesso di test.",
             "developer_mode_open" to "Apri modalità sviluppatore",
             "developer_password_title" to "Password sviluppatore",
-            "developer_password_hint" to "Inserisci la password sviluppatore",
+            "developer_password_hint" to "Inserisci la password",
             "developer_password_invalid" to "Password non valida",
             "developer_unlock" to "Sblocca",
             "developer_logout" to "Esci dalla modalità sviluppatore",
@@ -1113,6 +1116,7 @@ object Locales {
 
         "uk" to mapOf(
             //Backup and restore
+            "premium_required_backup" to "Резервне копіювання доступне лише під час пробного періоду або з Premium-підпискою.",
             "booking_new_title" to "Новий запис",
             "backup_encrypt_toggle" to "Зашифрувати резервну копію",
             "backup_password" to "Пароль резервної копії",
@@ -1179,7 +1183,7 @@ object Locales {
             "developer_mode_hint" to "Внутрішні інструменти розробника та тестовий доступ.",
             "developer_mode_open" to "Відкрити режим розробника",
             "developer_password_title" to "Пароль розробника",
-            "developer_password_hint" to "Введіть пароль розробника",
+            "developer_password_hint" to "Введіть пароль",
             "developer_password_invalid" to "Невірний пароль",
             "developer_unlock" to "Розблокувати",
             "developer_logout" to "Вийти з режиму розробника",

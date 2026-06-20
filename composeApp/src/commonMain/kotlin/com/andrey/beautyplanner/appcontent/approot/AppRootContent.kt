@@ -126,6 +126,18 @@ fun AppRootContent(
                     state.navigateTo(Screen.APPEARANCE_SETTINGS)
                 },
                 onOpenBackupSettings = {
+                    val nowMillis = Clock.System.now().toEpochMilliseconds()
+                    if (
+                        !AccessManager.hasFeature(PremiumFeature.BACKUP_EXPORT, nowMillis) ||
+                        !AccessManager.hasFeature(PremiumFeature.BACKUP_IMPORT, nowMillis)
+                    ) {
+                        state.showPremiumRequired(
+                            message = Locales.t("premium_required_backup"),
+                            returnTo = Screen.SETTINGS
+                        )
+                        return@SettingsPage
+                    }
+
                     state.navigateTo(Screen.BACKUP_SETTINGS)
                 },
                 onOpenDeveloperAccess = {

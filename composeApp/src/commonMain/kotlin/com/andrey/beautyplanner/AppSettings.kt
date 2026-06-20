@@ -9,6 +9,10 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.experimental.xor
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration.Companion.minutes
 
 private val settingsJson = Json {
     ignoreUnknownKeys = true
@@ -101,8 +105,6 @@ private data class SettingsSnapshot(
 )
 
 object AppSettings {
-
-    private const val DEVELOPER_ACCESS_PASSWORD = "221290"
 
     const val SHOW_DEVELOPER_PREMIUM_TOOLS = true
     private val storage: SettingsStorage by lazy { createSettingsStorage() }
@@ -369,7 +371,33 @@ object AppSettings {
     }
 
     fun verifyDeveloperPassword(password: String): Boolean {
-        return password.trim() == DEVELOPER_ACCESS_PASSWORD
+        val systemZone = TimeZone.currentSystemDefault()
+        val currentMoment = Clock.System.now()
+        val oneMinuteAgoMoment = currentMoment.minus(1.minutes)
+
+        val nowDateTime = currentMoment.toLocalDateTime(systemZone)
+        val agoDateTime = oneMinuteAgoMoment.toLocalDateTime(systemZone)
+
+        val currentPassword = generateDeveloperPasswordForDateTime(nowDateTime)
+        val previousPassword = generateDeveloperPasswordForDateTime(agoDateTime)
+
+        val cleanedInput = password.trim()
+        return cleanedInput == currentPassword || cleanedInput == previousPassword
+    }
+
+    private fun generateDeveloperPasswordForDateTime(
+        dateTime: kotlinx.datetime.LocalDateTime
+    ): String {
+        val day = dateTime.dayOfMonth
+        val month = dateTime.monthNumber
+        val year = dateTime.year
+        val hour = dateTime.hour
+        val minute = dateTime.minute
+
+        val dayMonthSum = day + month
+        val hourMinuteSum = hour + minute
+
+        return "$dayMonthSum*$year*$hourMinuteSum"
     }
 
     fun unlockDeveloperMode() {
