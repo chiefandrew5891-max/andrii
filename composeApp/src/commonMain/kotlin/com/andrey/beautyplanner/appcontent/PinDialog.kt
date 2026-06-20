@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.text.TextStyle
+import com.andrey.beautyplanner.appcontent.appFontFamily
 
 @Composable
 fun PinDialog(
@@ -110,7 +112,11 @@ fun PinDialog(
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         modifier = Modifier.fillMaxWidth(),
-                        isError = tried && !validFormat
+                        isError = tried && !validFormat,
+                        textStyle = TextStyle(
+                            fontFamily = appFontFamily(),
+                            color = MaterialTheme.colors.onSurface
+                        )
                     )
 
                     if (tried && !validFormat) {
@@ -216,7 +222,11 @@ fun SetPinDialog(
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         modifier = Modifier.fillMaxWidth(),
-                        isError = tried && !pinValid
+                        isError = tried && !pinValid,
+                        textStyle = TextStyle(
+                            fontFamily = appFontFamily(),
+                            color = MaterialTheme.colors.onSurface
+                        )
                     )
 
                     Spacer(Modifier.height(12.dp))

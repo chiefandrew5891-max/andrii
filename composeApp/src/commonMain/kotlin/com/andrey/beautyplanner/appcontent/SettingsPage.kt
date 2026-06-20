@@ -46,6 +46,8 @@ import com.andrey.beautyplanner.AccessState
 import com.andrey.beautyplanner.AccessTier
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
+import androidx.compose.ui.text.TextStyle
+import com.andrey.beautyplanner.appcontent.appFontFamily
 
 @Composable
 fun SettingsPage(
@@ -152,7 +154,8 @@ fun SettingsPage(
                             )
                         },
                         shape = RoundedCornerShape(12.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(
+                        textStyle = TextStyle(
+                            fontFamily = appFontFamily(),
                             fontSize = (15 * fontScale).sp,
                             color = onSurface
                         ),

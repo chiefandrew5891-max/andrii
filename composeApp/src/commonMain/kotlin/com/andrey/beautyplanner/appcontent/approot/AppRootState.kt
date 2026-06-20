@@ -16,13 +16,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.Font
-import com.andrey.beautyplanner.generated.resources.Res
-import com.andrey.beautyplanner.generated.resources.inter_extralight
-import com.andrey.beautyplanner.generated.resources.inter_regular
-import com.andrey.beautyplanner.generated.resources.inter_medium
-import com.andrey.beautyplanner.generated.resources.inter_bold
+import com.andrey.beautyplanner.appcontent.appFontFamily
 
 @Stable
 class AppRootState(
@@ -143,31 +137,50 @@ class AppRootState(
     var fontScale by mutableStateOf(AppSettings.getFontScale())
 
     val customTypography: Typography
-    @Composable
-    get() {
-        val appFontFamily = FontFamily(
-            org.jetbrains.compose.resources.Font(Res.font.inter_extralight, FontWeight.ExtraLight),
-            org.jetbrains.compose.resources.Font(Res.font.inter_regular, FontWeight.Normal),
-            org.jetbrains.compose.resources.Font(Res.font.inter_medium, FontWeight.Medium),
-            org.jetbrains.compose.resources.Font(Res.font.inter_bold, FontWeight.Bold)
-        )
-        return Typography(
-            body1 = TextStyle(
-                fontFamily = appFontFamily,
-                fontSize = (16 * fontScale).sp
-            ),
-            h6 = TextStyle(
-                fontFamily = appFontFamily,
-                fontSize = (20 * fontScale).sp,
-                fontWeight = FontWeight.Bold
-            ),
-            subtitle1 = TextStyle(
-                fontFamily = appFontFamily,
-                fontSize = (14 * fontScale).sp
+        @Composable
+        get() {
+            val fontFamily = appFontFamily()
+            return Typography(
+                defaultFontFamily = fontFamily,
+                h5 = TextStyle(
+                    fontFamily = fontFamily,
+                    fontSize = (24 * fontScale).sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                h6 = TextStyle(
+                    fontFamily = fontFamily,
+                    fontSize = (20 * fontScale).sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                subtitle1 = TextStyle(
+                    fontFamily = fontFamily,
+                    fontSize = (14 * fontScale).sp,
+                    fontWeight = FontWeight.Medium
+                ),
+                subtitle2 = TextStyle(
+                    fontFamily = fontFamily,
+                    fontSize = (13 * fontScale).sp,
+                    fontWeight = FontWeight.Medium
+                ),
+                body1 = TextStyle(
+                    fontFamily = fontFamily,
+                    fontSize = (16 * fontScale).sp
+                ),
+                body2 = TextStyle(
+                    fontFamily = fontFamily,
+                    fontSize = (14 * fontScale).sp
+                ),
+                button = TextStyle(
+                    fontFamily = fontFamily,
+                    fontSize = (14 * fontScale).sp,
+                    fontWeight = FontWeight.Medium
+                ),
+                caption = TextStyle(
+                    fontFamily = fontFamily,
+                    fontSize = (12 * fontScale).sp
+                )
             )
-        )
-    }
-
+        }
 
     fun refreshAccessState(nowMillis: Long = Clock.System.now().toEpochMilliseconds()) {
         accessState = AccessManager.getAccessState(nowMillis)

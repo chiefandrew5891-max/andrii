@@ -34,6 +34,8 @@ import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.ServiceTemplate
 import kotlinx.datetime.Clock
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
+import com.andrey.beautyplanner.appcontent.appFontFamily
 
 @Composable
 fun ServiceTemplatesScreen() {
@@ -210,7 +212,11 @@ private fun ServiceTemplateEditorDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(Locales.t("service_name")) },
                     singleLine = true,
-                    isError = triedSave && !titleValid
+                    isError = triedSave && !titleValid,
+                    textStyle = TextStyle(
+                        fontFamily = appFontFamily(),
+                        color = MaterialTheme.colors.onSurface
+                    )
                 )
 
                 Spacer(Modifier.height(12.dp))
@@ -220,7 +226,11 @@ private fun ServiceTemplateEditorDialog(
                     onValueChange = { price = it },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(Locales.t("service_default_price")) },
-                    singleLine = true
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontFamily = appFontFamily(),
+                        color = MaterialTheme.colors.onSurface
+                    )
                 )
             }
         },

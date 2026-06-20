@@ -41,6 +41,7 @@ import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.WeeklyBlockedInterval
 import kotlinx.datetime.Clock
 import androidx.compose.foundation.border
+import com.andrey.beautyplanner.appcontent.appFontFamily
 
 @OptIn(
     androidx.compose.material.ExperimentalMaterialApi::class,
@@ -310,6 +311,7 @@ private fun TimeDropdown(
             },
             shape = RoundedCornerShape(14.dp),
             textStyle = androidx.compose.ui.text.TextStyle(
+                fontFamily = appFontFamily(),
                 fontSize = 16.sp,
                 color = MaterialTheme.colors.onSurface
             ),

@@ -26,6 +26,8 @@ import com.andrey.beautyplanner.ContactsAutocomplete
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.ServiceTemplate
 import kotlinx.coroutines.delay
+import androidx.compose.ui.text.TextStyle
+import com.andrey.beautyplanner.appcontent.appFontFamily
 
 private fun displayServiceTitle(title: String): String {
     return if (title.startsWith("service_")) {
@@ -281,7 +283,11 @@ fun BookingDialog(
                                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expStart)
                                 },
                                 shape = RoundedCornerShape(14.dp),
-                                singleLine = true
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontFamily = appFontFamily(),
+                                    color = MaterialTheme.colors.onSurface
+                                ),
                             )
 
                             ExposedDropdownMenu(
@@ -322,7 +328,11 @@ fun BookingDialog(
                                 },
                                 shape = RoundedCornerShape(14.dp),
                                 isError = triedSave && editEnabled && !endOk,
-                                singleLine = true
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontFamily = appFontFamily(),
+                                    color = MaterialTheme.colors.onSurface
+                                )
                             )
 
                             ExposedDropdownMenu(
@@ -374,7 +384,11 @@ fun BookingDialog(
                             }
                         }
                     },
-                    singleLine = true
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontFamily = appFontFamily(),
+                        color = MaterialTheme.colors.onSurface
+                    )
                 )
 
                 if (editEnabled && !contactsPermissionGranted) {
@@ -449,7 +463,11 @@ fun BookingDialog(
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = { Icon(Icons.Default.Phone, null) },
                     isError = triedSave && editEnabled && !phoneOk,
-                    singleLine = true
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontFamily = appFontFamily(),
+                        color = MaterialTheme.colors.onSurface
+                    )
                 )
 
                 Spacer(Modifier.height(12.dp))
@@ -496,7 +514,11 @@ fun BookingDialog(
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = serviceExpanded)
                             },
                             isError = triedSave && editEnabled && !serviceOk,
-                            singleLine = true
+                            singleLine = true,
+                            textStyle = TextStyle(
+                                fontFamily = appFontFamily(),
+                                color = MaterialTheme.colors.onSurface
+                            )
                         )
 
                         ExposedDropdownMenu(
@@ -568,7 +590,11 @@ fun BookingDialog(
                             }
                         },
                         isError = triedSave && editEnabled && !serviceOk,
-                        singleLine = true
+                        singleLine = true,
+                        textStyle = TextStyle(
+                            fontFamily = appFontFamily(),
+                            color = MaterialTheme.colors.onSurface
+                        )
                     )
 
                     Text(
@@ -592,7 +618,11 @@ fun BookingDialog(
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = { Icon(Icons.Default.Payments, null) },
                     isError = triedSave && editEnabled && !priceOk,
-                    singleLine = true
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontFamily = appFontFamily(),
+                        color = MaterialTheme.colors.onSurface
+                    )
                 )
 
                 Spacer(Modifier.height(16.dp))

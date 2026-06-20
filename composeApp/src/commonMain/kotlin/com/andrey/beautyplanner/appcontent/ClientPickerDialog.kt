@@ -28,6 +28,8 @@ import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.ClientSuggestion
 import com.andrey.beautyplanner.ClientSuggestions
 import com.andrey.beautyplanner.Locales
+import androidx.compose.ui.text.TextStyle
+import com.andrey.beautyplanner.appcontent.appFontFamily
 
 @Composable
 fun ClientPickerDialog(
@@ -72,7 +74,11 @@ fun ClientPickerDialog(
                     onValueChange = { query = it },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    label = { Text(Locales.t("stats_client_filter")) }
+                    label = { Text(Locales.t("stats_client_filter")) },
+                    textStyle = TextStyle(
+                        fontFamily = appFontFamily(),
+                        color = MaterialTheme.colors.onSurface
+                    )
                 )
 
                 LazyColumn(

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.appcontent.approot.AppRootState
+import com.andrey.beautyplanner.appcontent.appFontFamily
 
 @Composable
 fun AppearanceSettingsScreen(state: AppRootState) {
@@ -233,6 +234,7 @@ fun AppearanceSettingsScreen(state: AppRootState) {
                         )
                     },
                     textStyle = TextStyle(
+                        fontFamily = appFontFamily(),
                         fontSize = (16 * fontScale).sp,
                         color = onSurface
                     )
