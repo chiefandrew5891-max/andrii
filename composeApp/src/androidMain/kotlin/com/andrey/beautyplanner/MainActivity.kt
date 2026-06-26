@@ -10,6 +10,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import android.content.Intent
+import com.andrey.beautyplanner.auth.GoogleSignInFallbackBridge
+import com.andrey.beautyplanner.auth.GoogleSignInFallbackResult
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
+import kotlinx.coroutines.CompletableDeferred
 
 class MainActivity : ComponentActivity() {
 
@@ -65,12 +71,52 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private var pendingGoogleFallbackResult: CompletableDeferred<GoogleSignInFallbackResult>? = null
+
+    private val googleSignInFallbackLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val deferred = pendingGoogleFallbackResult
+        pendingGoogleFallbackResult = null
+
+        if (deferred == null) return@registerForActivityResult
+
+        if (result.resultCode != RESULT_OK) {
+            deferred.complete(GoogleSignInFallbackResult.Cancelled)
+            return@registerForActivityResult
+        }
+
+        try {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            val account = task.getResult(ApiException::class.java)
+
+            val idToken = account?.idToken
+            if (idToken.isNullOrBlank()) {
+                deferred.complete(
+                    GoogleSignInFallbackResult.Error("Google ID token is missing")
+                )
+            } else {
+                deferred.complete(
+                    GoogleSignInFallbackResult.Success(idToken)
+                )
+            }
+        } catch (e: Exception) {
+            deferred.complete(
+                GoogleSignInFallbackResult.Error(e.message ?: "Google sign-in failed")
+            )
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         com.andrey.beautyplanner.notifications.NotificationsPlatform.init(applicationContext)
         AndroidAppContext.context = applicationContext
         AndroidAppContext.activity = this
+        GoogleSignInFallbackBridge.launchSignInIntent = { intent: Intent, deferred ->
+            pendingGoogleFallbackResult = deferred
+            googleSignInFallbackLauncher.launch(intent)
+        }
 
         ContactsAutocompleteAndroid.init(
             context = applicationContext,

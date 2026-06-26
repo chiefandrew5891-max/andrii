@@ -38,6 +38,8 @@ data class ScheduleDateOverride(
     val unblockAll: Boolean = true
 )
 enum class Screen {
+    AUTH_WELCOME,
+    AUTH_EMAIL,
     MONTH,
     DAY_DETAILS,
     SETTINGS,

@@ -28,8 +28,6 @@ fun DeveloperAccessScreen(
     accessState: AccessState,
     onEnablePremium: () -> Unit,
     onDisablePremium: () -> Unit,
-    onResetTrial: () -> Unit,
-    onExpireTrial: () -> Unit,
     onLogoutDeveloperMode: () -> Unit
 ) {
     val fontScale = AppSettings.getFontScale()
@@ -93,7 +91,7 @@ fun DeveloperAccessScreen(
             )
 
             Text(
-                text = "${Locales.t("developer_premium_unlocked")}: ${AppSettings.premiumUnlocked}",
+                text = "${Locales.t("developer_premium_unlocked")}: ${AppSettings.developerPremiumOverrideEnabled}",
                 color = onSurface.copy(alpha = 0.7f),
                 fontSize = (13 * fontScale).sp
             )
@@ -108,16 +106,6 @@ fun DeveloperAccessScreen(
             SecondaryActionButton(
                 text = Locales.t("developer_disable_premium"),
                 onClick = onDisablePremium
-            )
-
-            SecondaryActionButton(
-                text = Locales.t("developer_reset_trial"),
-                onClick = onResetTrial
-            )
-
-            SecondaryActionButton(
-                text = Locales.t("developer_expire_trial"),
-                onClick = onExpireTrial
             )
 
             Spacer(Modifier.height(16.dp))

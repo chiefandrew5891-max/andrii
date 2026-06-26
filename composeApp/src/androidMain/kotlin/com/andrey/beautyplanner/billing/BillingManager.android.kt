@@ -42,7 +42,12 @@ actual class BillingManager actual constructor() {
                 ) { ok, message ->
                     pendingPurchaseContinuation = null
                     if (ok) {
-                        callback(PurchaseResult.Success)
+                        callback(
+                            PurchaseResult.Success(
+                                productId = PREMIUM_SUBS_PRODUCT_ID,
+                                purchaseToken = purchase.purchaseToken
+                            )
+                        )
                     } else {
                         callback(
                             PurchaseResult.Error(
@@ -313,17 +318,12 @@ actual class BillingManager actual constructor() {
 
         fun finalizeEntitlement() {
             val now = System.currentTimeMillis()
-
             AppSettings.premiumSubscribedProductId = productId
             AppSettings.premiumSubscriptionToken = purchase.purchaseToken
             AppSettings.premiumSubscriptionStartMillis = purchase.purchaseTime
             AppSettings.premiumSubscriptionAutoRenewing = purchase.isAutoRenewing
-            AppSettings.premiumSubscriptionState = "ACTIVE"
+            AppSettings.premiumSubscriptionState = "PENDING_BACKEND_VERIFICATION"
             AppSettings.premiumLastVerifiedAtMillis = now
-
-            // На этом этапе expiry вручную НЕ рисуем.
-            AppSettings.premiumSubscriptionExpiryMillis = 0L
-
             AppSettings.persist()
             done(true, null)
         }

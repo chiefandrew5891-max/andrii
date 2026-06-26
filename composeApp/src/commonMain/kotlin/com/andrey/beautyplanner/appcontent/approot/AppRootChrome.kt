@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.Screen
+import com.andrey.beautyplanner.auth.SignInProvider
 
 @Composable
 fun AppRootChrome(
@@ -52,7 +53,6 @@ fun AppRootChrome(
     fun DrawerItem(title: String, selected: Boolean, onClick: () -> Unit) {
         val itemBg =
             if (selected) MaterialTheme.colors.primary.copy(alpha = 0.12f) else Color.Transparent
-
         TextButton(
             onClick = onClick,
             modifier = Modifier.fillMaxWidth(),
@@ -68,6 +68,51 @@ fun AppRootChrome(
                 color = onSurface
             )
         }
+    }
+
+    @Composable
+    fun DrawerActionItem(title: String, onClick: () -> Unit) {
+        TextButton(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.textButtonColors(
+                backgroundColor = Color.Transparent,
+                contentColor = onSurface
+            )
+        ) {
+            Text(
+                text = title,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start,
+                color = onSurface
+            )
+        }
+    }
+
+    @Composable
+    fun DrawerInfoItem(title: String) {
+        Text(
+            text = title,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            color = onSurface.copy(alpha = 0.82f),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+
+    @Composable
+    fun DrawerSectionTitle(title: String) {
+        Text(
+            text = title,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 2.dp, start = 12.dp, end = 12.dp),
+            color = onSurface.copy(alpha = 0.72f),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 
     Surface(
@@ -88,6 +133,56 @@ fun AppRootChrome(
                         fontWeight = FontWeight.Bold,
                         color = onSurface
                     )
+
+                    Divider()
+
+                    DrawerSectionTitle(Locales.t("account_current"))
+
+                    val authUser = state.currentAuthUser
+                    val isSignedInUser =
+                        authUser != null && authUser.provider != SignInProvider.ANONYMOUS
+
+                    if (!isSignedInUser) {
+                        DrawerInfoItem(
+                            title = Locales.t("account_anonymous")
+                        )
+
+                        DrawerActionItem(
+                            title = Locales.t("account_sign_in")
+                        ) {
+                            state.closeDrawer()
+                            state.openSignInScreen()
+                        }
+                    } else {
+                        val accountLabel = when {
+                            authUser?.email?.isNotBlank() == true -> authUser.email
+                            authUser?.displayName?.isNotBlank() == true -> authUser.displayName
+                            else -> when (authUser?.provider) {
+                                SignInProvider.GOOGLE -> "Google"
+                                SignInProvider.EMAIL -> "Email"
+                                SignInProvider.APPLE -> "Apple"
+                                else -> Locales.t("account_current")
+                            }
+                        }
+
+                        DrawerInfoItem(
+                            title = accountLabel
+                        )
+
+                        DrawerActionItem(
+                            title = Locales.t("account_switch")
+                        ) {
+                            state.closeDrawer()
+                            state.switchAccount()
+                        }
+
+                        DrawerActionItem(
+                            title = Locales.t("account_sign_out")
+                        ) {
+                            state.closeDrawer()
+                            state.signOutCompletely()
+                        }
+                    }
 
                     Divider()
 
@@ -129,7 +224,6 @@ fun AppRootChrome(
             }
         ) {
             val isHomeScreen = state.currentScreen == Screen.MONTH
-
             val isNestedScreen =
                 state.currentScreen == Screen.DAY_DETAILS ||
                         state.currentScreen == Screen.SERVICE_TEMPLATES ||
@@ -139,7 +233,8 @@ fun AppRootChrome(
                         state.currentScreen == Screen.BACKUP_SETTINGS ||
                         state.currentScreen == Screen.PRIVACY_POLICY ||
                         state.currentScreen == Screen.NOTIFICATION_SETTINGS ||
-                        state.currentScreen == Screen.PREMIUM_ACCESS
+                        state.currentScreen == Screen.PREMIUM_ACCESS ||
+                        state.currentScreen == Screen.AUTH_WELCOME
 
             val showBackButton = !isHomeScreen
 
@@ -192,7 +287,6 @@ fun AppRootChrome(
                                             modifier = Modifier.size(24.dp)
                                         )
                                     }
-
                                     Spacer(Modifier.width(4.dp))
                                 }
 

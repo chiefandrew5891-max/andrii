@@ -35,6 +35,8 @@ import com.andrey.beautyplanner.appcontent.AppearanceSettingsScreen
 import com.andrey.beautyplanner.appcontent.DeveloperAccessScreen
 import com.andrey.beautyplanner.appcontent.BackupSettingsScreen
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.andrey.beautyplanner.appcontent.AuthWelcomeScreen
+import com.andrey.beautyplanner.appcontent.AuthEmailScreen
 
 
 @Composable
@@ -142,6 +144,30 @@ fun AppRootContent(
                 },
                 onOpenDeveloperAccess = {
                     state.navigateTo(Screen.DEVELOPER_ACCESS)
+                }
+            )
+
+            Screen.AUTH_WELCOME -> AuthWelcomeScreen(
+                errorMessage = state.authErrorMessage,
+                onContinueWithGoogle = {
+                    state.continueWithGoogle()
+                },
+                onContinueWithEmail = {
+                    state.openEmailSignInScreen()
+                },
+                onRegisterWithEmail = {
+                    state.openEmailRegisterScreen()
+                },
+                onContinueAnonymously = {
+                    state.continueAnonymously()
+                }
+            )
+
+            Screen.AUTH_EMAIL -> AuthEmailScreen(
+                isRegisterMode = state.authEmailRegisterMode,
+                errorMessage = state.authErrorMessage,
+                onSubmit = { email, password, confirmPassword ->
+                    state.submitEmailAuth(email, password, confirmPassword)
                 }
             )
 
@@ -556,26 +582,12 @@ fun AppRootContent(
             Screen.DEVELOPER_ACCESS -> DeveloperAccessScreen(
                 accessState = state.accessState,
                 onEnablePremium = {
-                    AppSettings.premiumUnlocked = true
+                    AppSettings.developerPremiumOverrideEnabled = true
                     AppSettings.persist()
                     state.refreshAccessState()
                 },
                 onDisablePremium = {
-                    AppSettings.premiumUnlocked = false
-                    AppSettings.persist()
-                    state.refreshAccessState()
-                },
-                onResetTrial = {
-                    AppSettings.trialStartedAtMillis = Clock.System.now().toEpochMilliseconds()
-                    AppSettings.premiumUnlocked = false
-                    AppSettings.persist()
-                    state.refreshAccessState()
-                },
-                onExpireTrial = {
-                    val now = Clock.System.now().toEpochMilliseconds()
-                    val fifteenDaysMillis = 15L * 24L * 60L * 60L * 1000L
-                    AppSettings.trialStartedAtMillis = now - fifteenDaysMillis
-                    AppSettings.premiumUnlocked = false
+                    AppSettings.developerPremiumOverrideEnabled = false
                     AppSettings.persist()
                     state.refreshAccessState()
                 },
