@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     kotlin("plugin.serialization") version "2.0.0"
+    alias(libs.plugins.googleServices)
 }
 
 kotlin {
@@ -59,6 +60,14 @@ kotlin {
                 implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.6.11")
                 implementation("androidx.browser:browser:1.8.0")
                 implementation(libs.googlePlayBilling)
+
+                implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+                implementation("com.google.firebase:firebase-auth-ktx:23.2.0")
+                implementation("com.google.firebase:firebase-functions-ktx:21.1.0")
+
+                implementation("androidx.credentials:credentials:1.3.0")
+                implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+                implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
             }
         }
 

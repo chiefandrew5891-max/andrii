@@ -12,6 +12,21 @@ object Locales {
 
     private val strings = mapOf(
         "ru" to mapOf(
+            // Вход и регистрация
+            "account_sign_in" to "Войти / зарегистрироваться",
+            "account_switch" to "Сменить аккаунт",
+            "account_sign_out" to "Выйти",
+            "account_current" to "Текущий аккаунт",
+            "account_anonymous" to "Гостевой режим",
+            "auth_title" to "Вход",
+            "auth_subtitle" to "Войдите, чтобы сохранить доступ к данным и покупкам на новом устройстве.",
+            "auth_google" to "Продолжить с Google",
+            "auth_anonymous" to "Продолжить без входа",
+            "auth_skip_hint" to "Вы сможете привязать аккаунт позже.",
+            "auth_error_generic" to "Не удалось выполнить вход.",
+            "auth_google_no_credentials" to "Не удалось найти доступный Google-аккаунт на устройстве. Проверьте, добавлен ли аккаунт Google и обновлены ли сервисы Google Play.",
+            "auth_google_cancelled" to "Вход через Google был отменён.",
+            "auth_google_failed" to "Не удалось выполнить вход через Google.",
             //Backup and restore
             "premium_required_backup" to "Резервное копирование доступно только во время пробного периода или с Premium-подпиской.",
             "booking_new_title" to "Новая запись",
@@ -385,6 +400,21 @@ object Locales {
         ),
 
         "en" to mapOf(
+            // Вход и регистрация
+            "account_sign_in" to "Sign in / Register",
+            "account_switch" to "Switch account",
+            "account_sign_out" to "Sign out",
+            "account_current" to "Current account",
+            "account_anonymous" to "Guest mode",
+            "auth_title" to "Sign in",
+            "auth_subtitle" to "Sign in to keep access to your data and purchases on a new device.",
+            "auth_google" to "Continue with Google",
+            "auth_anonymous" to "Continue without signing in",
+            "auth_skip_hint" to "You can link an account later.",
+            "auth_error_generic" to "Sign-in failed.",
+            "auth_google_no_credentials" to "No available Google account was found on this device. Check that a Google account is added and Google Play services are up to date.",
+            "auth_google_cancelled" to "Google sign-in was cancelled.",
+            "auth_google_failed" to "Google sign-in failed.",
             //Backup and restore
             "premium_required_backup" to "Backup is available only during trial or with Premium subscription.",
             "booking_new_title" to "New appointment",
@@ -751,6 +781,21 @@ object Locales {
 
         // Итальянский и украинский блоки оставляю как у тебя, но добавляю статусы в конец каждого.
         "it" to mapOf(
+            // Вход и регистрация
+            "account_sign_in" to "Accedi / Registrati",
+            "account_switch" to "Cambia account",
+            "account_sign_out" to "Esci",
+            "account_current" to "Account corrente",
+            "account_anonymous" to "Modalità ospite",
+            "auth_title" to "Accesso",
+            "auth_subtitle" to "Accedi per mantenere l’accesso ai tuoi dati e acquisti su un nuovo dispositivo.",
+            "auth_google" to "Continua con Google",
+            "auth_anonymous" to "Continua senza accesso",
+            "auth_skip_hint" to "Potrai collegare un account in seguito.",
+            "auth_error_generic" to "Accesso non riuscito.",
+            "auth_google_no_credentials" to "Nessun account Google disponibile trovato su questo dispositivo. Verifica che un account Google sia stato aggiunto e che Google Play Services sia aggiornato.",
+            "auth_google_cancelled" to "L'accesso con Google è stato annullato.",
+            "auth_google_failed" to "Accesso con Google non riuscito.",
             //Backup and restore
             "premium_required_backup" to "Il backup è disponibile solo durante il periodo di prova o con l'abbonamento Premium.",
             "booking_new_title" to "Nuovo appuntamento",
@@ -1115,6 +1160,21 @@ object Locales {
         ),
 
         "uk" to mapOf(
+            // Вход и регистрация
+            "account_sign_in" to "Увійти / Зареєструватися",
+            "account_switch" to "Змінити акаунт",
+            "account_sign_out" to "Вийти",
+            "account_current" to "Поточний акаунт",
+            "account_anonymous" to "Гостьовий режим",
+            "auth_title" to "Вхід",
+            "auth_subtitle" to "Увійдіть, щоб зберегти доступ до даних і покупок на новому пристрої.",
+            "auth_google" to "Продовжити з Google",
+            "auth_anonymous" to "Продовжити без входу",
+            "auth_skip_hint" to "Ви зможете прив’язати акаунт пізніше.",
+            "auth_error_generic" to "Не вдалося виконати вхід.",
+            "auth_google_no_credentials" to "На цьому пристрої не знайдено доступного Google-акаунта. Переконайтеся, що Google-акаунт додано, а сервіси Google Play оновлено.",
+            "auth_google_cancelled" to "Вхід через Google було скасовано.",
+            "auth_google_failed" to "Не вдалося виконати вхід через Google.",
             //Backup and restore
             "premium_required_backup" to "Резервне копіювання доступне лише під час пробного періоду або з Premium-підпискою.",
             "booking_new_title" to "Новий запис",

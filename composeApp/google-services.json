@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "405856030276",
+    "project_id": "beautyplanner-idak",
+    "storage_bucket": "beautyplanner-idak.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405856030276:android:60da267512d3ccffcdb611",
+        "android_client_info": {
+          "package_name": "com.andrey.beautyplanner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "405856030276-fem3r3051cc55ee37nnaei56bv9mi2mr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.andrey.beautyplanner",
+            "certificate_hash": "c24f220b3af4b37cb591d225cf7d216227d536f9"
+          }
+        },
+        {
+          "client_id": "405856030276-q6o32ptk0jjp010ie7itrqfhnmkrbgr2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJMZ_G0ET0u2tHoBAhQPjBwMdlMB36cMg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "405856030276-q6o32ptk0jjp010ie7itrqfhnmkrbgr2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

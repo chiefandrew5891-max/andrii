@@ -93,6 +93,12 @@ private data class SettingsSnapshot(
     val premiumSubscriptionExpiryMillis: Long = 0L,
     val premiumSubscriptionAutoRenewing: Boolean = false,
     val premiumLastVerifiedAtMillis: Long = 0L,
+    val installId: String = "",
+    val backendUserId: String = "",
+    val cachedAccessTier: String = "FREE_LIMITED",
+    val cachedTrialEndsAtMillis: Long = 0L,
+    val cachedHasPremium: Boolean = false,
+    val cachedSubscriptionState: String = "NONE",
 
     val serviceTemplates: List<ServiceTemplate> = emptyList(),
     val weeklyBlockedIntervals: List<WeeklyBlockedInterval> = emptyList(),
@@ -101,7 +107,8 @@ private data class SettingsSnapshot(
     // --- security ---
     val pinEnabled: Boolean = false,
     val adminPinHash: String = "",
-    val developerModeUnlocked: Boolean = false
+    val developerModeUnlocked: Boolean = false,
+    val developerPremiumOverrideEnabled: Boolean = false
 )
 
 object AppSettings {
@@ -153,6 +160,7 @@ object AppSettings {
     private var adminPinHash by mutableStateOf("")
     var developerModeUnlocked by mutableStateOf(false)
     var previewFontScaleOverride by mutableStateOf<Float?>(null)
+    var developerPremiumOverrideEnabled by mutableStateOf(false)
 
     fun currencySymbol(): String {
         return if (useShortTextCurrency) {
@@ -313,6 +321,12 @@ object AppSettings {
     var premiumSubscriptionExpiryMillis by mutableStateOf(0L)
     var premiumSubscriptionAutoRenewing by mutableStateOf(false)
     var premiumLastVerifiedAtMillis by mutableStateOf(0L)
+    var installId by mutableStateOf("")
+    var backendUserId by mutableStateOf("")
+    var cachedAccessTier by mutableStateOf("FREE_LIMITED")
+    var cachedTrialEndsAtMillis by mutableStateOf(0L)
+    var cachedHasPremium by mutableStateOf(false)
+    var cachedSubscriptionState by mutableStateOf("NONE")
 
     private fun normalizeFontSizeMode(value: String): String {
         return when (value.trim()) {
@@ -448,6 +462,13 @@ object AppSettings {
         premiumSubscriptionAutoRenewing = snapshot.premiumSubscriptionAutoRenewing
         premiumLastVerifiedAtMillis = snapshot.premiumLastVerifiedAtMillis
 
+        installId = snapshot.installId
+        backendUserId = snapshot.backendUserId
+        cachedAccessTier = snapshot.cachedAccessTier
+        cachedTrialEndsAtMillis = snapshot.cachedTrialEndsAtMillis
+        cachedHasPremium = snapshot.cachedHasPremium
+        cachedSubscriptionState = snapshot.cachedSubscriptionState
+
         serviceTemplates = if (snapshot.serviceTemplates.isNotEmpty()) {
             snapshot.serviceTemplates
         } else {
@@ -460,6 +481,7 @@ object AppSettings {
         pinEnabled = snapshot.pinEnabled
         adminPinHash = snapshot.adminPinHash
         developerModeUnlocked = snapshot.developerModeUnlocked
+        developerPremiumOverrideEnabled = snapshot.developerPremiumOverrideEnabled
 
         val code = languageCodes[selectedLanguage] ?: "en"
         Locales.currentLanguage = code
@@ -505,8 +527,14 @@ object AppSettings {
 
             pinEnabled = pinEnabled,
             adminPinHash = adminPinHash,
-            developerModeUnlocked = developerModeUnlocked
-
+            developerModeUnlocked = developerModeUnlocked,
+            developerPremiumOverrideEnabled = developerPremiumOverrideEnabled,
+            installId = installId,
+            backendUserId = backendUserId,
+            cachedAccessTier = cachedAccessTier,
+            cachedTrialEndsAtMillis = cachedTrialEndsAtMillis,
+            cachedHasPremium = cachedHasPremium,
+            cachedSubscriptionState = cachedSubscriptionState,
         )
 
         runCatching {
