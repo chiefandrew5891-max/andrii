@@ -74,7 +74,7 @@ fun BackupSettingsScreen(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = Locales.t("backup_pin_required_hint"),
-                    color = onSurface.copy(alpha = 0.60f),
+                    color = onSurface.copy(alpha = 0.72f),
                     fontSize = (12 * fontScale).sp
                 )
             }

@@ -230,16 +230,32 @@ fun SetPinDialog(
                     )
 
                     Spacer(Modifier.height(12.dp))
-
+                    val validFormat = pin.length in 4..8
                     OutlinedTextField(
-                        value = confirmPin,
-                        onValueChange = { confirmPin = it.filter { ch -> ch.isDigit() }.take(8) },
-                        label = { Text(Locales.t("pin_confirm_label")) },
+                        value = pin,
+                        onValueChange = { v -> pin = v.filter { it.isDigit() }.take(8) },
+                        label = { Text(Locales.t("pin_label")) },
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         modifier = Modifier.fillMaxWidth(),
-                        isError = tried && (!confirmValid || !pinsMatch)
+                        isError = tried && !validFormat,
+                        textStyle = TextStyle(
+                            fontFamily = appFontFamily(),
+                            color = MaterialTheme.colors.onSurface
+                        ),
+                        colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = MaterialTheme.colors.onSurface,
+                            focusedBorderColor = MaterialTheme.colors.primary,
+                            unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.28f),
+                            focusedLabelColor = MaterialTheme.colors.primary,
+                            unfocusedLabelColor = MaterialTheme.colors.onSurface.copy(alpha = 0.68f),
+                            cursorColor = MaterialTheme.colors.primary,
+                            backgroundColor = MaterialTheme.colors.surface,
+                            placeholderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.50f),
+                            errorBorderColor = MaterialTheme.colors.error,
+                            errorCursorColor = MaterialTheme.colors.error
+                        )
                     )
 
                     if (tried && !pinValid) {

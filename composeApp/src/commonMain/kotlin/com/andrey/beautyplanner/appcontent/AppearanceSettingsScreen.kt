@@ -230,13 +230,23 @@ fun AppearanceSettingsScreen(state: AppRootState) {
                     placeholder = {
                         Text(
                             text = Locales.t("user_name_placeholder"),
-                            color = onSurface.copy(alpha = 0.45f)
+                            color = onSurface.copy(alpha = 0.50f)
                         )
                     },
                     textStyle = TextStyle(
                         fontFamily = appFontFamily(),
                         fontSize = (16 * fontScale).sp,
                         color = onSurface
+                    ),
+                    colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                        textColor = onSurface,
+                        focusedBorderColor = MaterialTheme.colors.primary,
+                        unfocusedBorderColor = onSurface.copy(alpha = 0.28f),
+                        focusedLabelColor = MaterialTheme.colors.primary,
+                        unfocusedLabelColor = onSurface.copy(alpha = 0.68f),
+                        cursorColor = MaterialTheme.colors.primary,
+                        backgroundColor = MaterialTheme.colors.surface,
+                        placeholderColor = onSurface.copy(alpha = 0.50f)
                     )
                 )
             }

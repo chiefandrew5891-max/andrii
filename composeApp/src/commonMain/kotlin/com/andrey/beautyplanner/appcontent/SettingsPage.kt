@@ -150,16 +150,28 @@ fun SettingsPage(
                         placeholder = {
                             Text(
                                 text = Locales.t("developer_password_hint"),
-                                color = onSurface.copy(alpha = 0.45f)
+                                color = onSurface.copy(alpha = 0.50f)
                             )
                         },
                         shape = RoundedCornerShape(12.dp),
-                        textStyle = TextStyle(
+                        textStyle = androidx.compose.ui.text.TextStyle(
                             fontFamily = appFontFamily(),
                             fontSize = (15 * fontScale).sp,
                             color = onSurface
                         ),
-                        isError = developerPasswordError
+                        isError = developerPasswordError,
+                        colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = onSurface,
+                            focusedBorderColor = MaterialTheme.colors.primary,
+                            unfocusedBorderColor = onSurface.copy(alpha = 0.28f),
+                            focusedLabelColor = MaterialTheme.colors.primary,
+                            unfocusedLabelColor = onSurface.copy(alpha = 0.68f),
+                            cursorColor = MaterialTheme.colors.primary,
+                            backgroundColor = MaterialTheme.colors.surface,
+                            placeholderColor = onSurface.copy(alpha = 0.50f),
+                            errorBorderColor = MaterialTheme.colors.error,
+                            errorCursorColor = MaterialTheme.colors.error
+                        )
                     )
 
                     if (developerPasswordError) {
@@ -338,7 +350,7 @@ fun SettingsPage(
                     {
                         Text(
                             text = Locales.t("backup_pin_required_hint"),
-                            color = onSurface.copy(alpha = 0.60f),
+                            color = onSurface.copy(alpha = 0.72f),
                             fontSize = (12 * fontScale).sp
                         )
                     }
@@ -488,7 +500,7 @@ fun SettingsPage(
                     .fillMaxWidth()
                     .padding(top = 2.dp, bottom = 4.dp)
                     .clickable { onOpenPrivacyPolicy() },
-                color = onSurface.copy(alpha = 0.60f),
+                color = onSurface.copy(alpha = 0.72f),
                 fontSize = (11 * fontScale).sp,
                 textDecoration = TextDecoration.Underline
             )

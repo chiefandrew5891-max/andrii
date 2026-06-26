@@ -142,7 +142,7 @@ fun DeveloperAccessScreen(
             Text(
                 text = Locales.t("support_phone_hint"),
                 fontSize = (12 * fontScale).sp,
-                color = onSurface.copy(alpha = 0.60f)
+                color = onSurface.copy(alpha = 0.72f)
             )
 
             PrimaryActionButton(

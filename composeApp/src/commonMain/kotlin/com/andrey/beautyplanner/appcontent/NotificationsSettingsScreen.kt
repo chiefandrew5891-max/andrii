@@ -110,7 +110,7 @@ fun NotificationsSettingsScreen() {
             Text(
                 text = Locales.t("notifications_settings_hint"),
                 fontSize = (14 * fontScale).sp,
-                color = onBg.copy(alpha = 0.7f)
+                color = onBg.copy(alpha = 0.82f)
             )
             androidx.compose.material.Divider()
             androidx.compose.foundation.layout.Row(
@@ -292,7 +292,7 @@ fun NotificationsSettingsScreen() {
             Text(
                 text = "${Locales.t("remind_summary")}: $summary",
                 fontSize = (13 * fontScale).sp,
-                color = onSurface.copy(alpha = 0.60f)
+                color = onSurface.copy(alpha = 0.72f)
             )
         }
     }

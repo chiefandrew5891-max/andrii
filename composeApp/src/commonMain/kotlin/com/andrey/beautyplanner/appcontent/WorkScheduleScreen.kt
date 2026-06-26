@@ -318,8 +318,12 @@ private fun TimeDropdown(
             colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
                 textColor = MaterialTheme.colors.onSurface,
                 focusedBorderColor = MaterialTheme.colors.primary,
-                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.22f),
-                backgroundColor = MaterialTheme.colors.surface
+                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.28f),
+                focusedLabelColor = MaterialTheme.colors.primary,
+                unfocusedLabelColor = MaterialTheme.colors.onSurface.copy(alpha = 0.68f),
+                cursorColor = MaterialTheme.colors.primary,
+                backgroundColor = MaterialTheme.colors.surface,
+                placeholderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.50f)
             )
         )
 

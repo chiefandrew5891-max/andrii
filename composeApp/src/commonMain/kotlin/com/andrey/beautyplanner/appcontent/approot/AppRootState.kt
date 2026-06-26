@@ -122,7 +122,8 @@ class AppRootState(
                 background = Color(0xFF121212),
                 surface = Color(0xFF1E1E1E),
                 onPrimary = Color.Black,
-                onSurface = Color.White
+                onSurface = Color.White,
+                onBackground = Color.White
             )
         } else {
             lightColors(
@@ -130,7 +131,8 @@ class AppRootState(
                 background = Color.White,
                 surface = Color.White,
                 onPrimary = Color.White,
-                onSurface = Color.Black
+                onSurface = Color.Black,
+                onBackground = Color.Black
             )
         }
 

@@ -69,7 +69,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         com.andrey.beautyplanner.notifications.NotificationsPlatform.init(applicationContext)
-
         AndroidAppContext.context = applicationContext
         AndroidAppContext.activity = this
 
@@ -86,13 +85,13 @@ class MainActivity : ComponentActivity() {
             }
         )
 
-        // Bind BackupFilePicker implementations (IMPORTANT)
         BackupFilePicker.exportImpl = { suggestedFileName, json ->
             val name = suggestedFileName.trim().ifBlank { "beautyplanner-backup" }
             val finalName = if (name.endsWith(".json", ignoreCase = true)) name else "$name.json"
             pendingExportJson = json
             exportLauncher.launch(finalName)
         }
+
         BackupFilePicker.importImpl = { onPicked, onError ->
             pendingImportOnPicked = onPicked
             pendingImportOnError = onError
@@ -100,7 +99,6 @@ class MainActivity : ComponentActivity() {
         }
 
         AppSettings.load()
-
         WindowCompat.setDecorFitsSystemWindows(window, false)
         maybeRequestPostNotificationsPermission()
 
