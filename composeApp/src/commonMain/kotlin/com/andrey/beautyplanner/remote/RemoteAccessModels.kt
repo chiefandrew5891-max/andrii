@@ -12,5 +12,8 @@ data class AccessStatusResponse(
     val hasPremium: Boolean,
     val trialDaysLeft: Int,
     val subscriptionState: String,
-    val premiumProductId: String
+    val premiumProductId: String,
+    val subscriptionExpiryMillis: Long = 0L,
+    val subscriptionAutoRenewing: Boolean = false,
+    val subscriptionOrderId: String = ""
 )

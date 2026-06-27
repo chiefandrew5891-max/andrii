@@ -116,7 +116,10 @@ actual object BackendBridge {
                             hasPremium = map["hasPremium"] as? Boolean ?: false,
                             trialDaysLeft = (map["trialDaysLeft"] as? Number)?.toInt() ?: 0,
                             subscriptionState = map["subscriptionState"] as? String ?: "NONE",
-                            premiumProductId = map["premiumProductId"] as? String ?: ""
+                            premiumProductId = map["premiumProductId"] as? String ?: "",
+                            subscriptionExpiryMillis = (map["subscriptionExpiryMillis"] as? Number)?.toLong() ?: 0L,
+                            subscriptionAutoRenewing = map["subscriptionAutoRenewing"] as? Boolean ?: false,
+                            subscriptionOrderId = map["subscriptionOrderId"] as? String ?: ""
                         )
                         cont.resume(parsed)
                     } catch (e: Exception) {

@@ -64,7 +64,6 @@ private data class SettingsSnapshot(
     val isDarkMode: Boolean = false,
     val selectedLanguage: String = "Русский",
     val fontSizeMode: String = "medium",
-
     val ownerName: String = "",
 
     val notificationsEnabled: Boolean = true,
@@ -92,7 +91,9 @@ private data class SettingsSnapshot(
     val premiumSubscriptionStartMillis: Long = 0L,
     val premiumSubscriptionExpiryMillis: Long = 0L,
     val premiumSubscriptionAutoRenewing: Boolean = false,
+    val premiumOrderId: String = "",
     val premiumLastVerifiedAtMillis: Long = 0L,
+
     val installId: String = "",
     val backendUserId: String = "",
     val lastAuthenticatedAppOpenAtMillis: Long = 0L,
@@ -105,7 +106,6 @@ private data class SettingsSnapshot(
     val weeklyBlockedIntervals: List<WeeklyBlockedInterval> = emptyList(),
     val scheduleDateOverrides: List<ScheduleDateOverride> = emptyList(),
 
-    // --- security ---
     val pinEnabled: Boolean = false,
     val adminPinHash: String = "",
     val developerModeUnlocked: Boolean = false,
@@ -113,7 +113,6 @@ private data class SettingsSnapshot(
 )
 
 object AppSettings {
-
     const val SHOW_DEVELOPER_PREMIUM_TOOLS = true
     private val storage: SettingsStorage by lazy { createSettingsStorage() }
 
@@ -123,19 +122,17 @@ object AppSettings {
     var isDarkMode by mutableStateOf(false)
     var selectedLanguage by mutableStateOf(
         run {
-            // Получаем код языка системы (например, "it", "ru", "uk") через системную локаль Android/iOS
             val systemLanguageCode = androidx.compose.ui.text.intl.Locale.current.language.lowercase()
             when (systemLanguageCode) {
                 "it" -> "Italiano"
                 "uk" -> "Українська"
                 "ru" -> "Русский"
-                else -> "English" // Если язык немецкий, испанский и т.д. — включаем Английский по умолчанию
+                else -> "English"
             }
         }
     )
 
     var fontSizeMode by mutableStateOf("medium")
-
     var ownerName by mutableStateOf("")
 
     var notificationsEnabled by mutableStateOf(true)
@@ -163,6 +160,30 @@ object AppSettings {
     var previewFontScaleOverride by mutableStateOf<Float?>(null)
     var developerPremiumOverrideEnabled by mutableStateOf(false)
 
+    val languageCodes = mapOf(
+        "Italiano" to "it",
+        "Русский" to "ru",
+        "English" to "en",
+        "Українська" to "uk"
+    )
+
+    var premiumSubscriptionState by mutableStateOf("NONE")
+    var premiumSubscribedProductId by mutableStateOf("")
+    var premiumSubscriptionToken by mutableStateOf("")
+    var premiumSubscriptionStartMillis by mutableStateOf(0L)
+    var premiumSubscriptionExpiryMillis by mutableStateOf(0L)
+    var premiumSubscriptionAutoRenewing by mutableStateOf(false)
+    var premiumOrderId by mutableStateOf("")
+    var premiumLastVerifiedAtMillis by mutableStateOf(0L)
+
+    var installId by mutableStateOf("")
+    var backendUserId by mutableStateOf("")
+    var lastAuthenticatedAppOpenAtMillis by mutableStateOf(0L)
+    var cachedAccessTier by mutableStateOf("FREE_LIMITED")
+    var cachedTrialEndsAtMillis by mutableStateOf(0L)
+    var cachedHasPremium by mutableStateOf(false)
+    var cachedSubscriptionState by mutableStateOf("NONE")
+
     fun currencySymbol(): String {
         return if (useShortTextCurrency) {
             when (selectedCurrency) {
@@ -180,6 +201,7 @@ object AppSettings {
             }
         }
     }
+
     fun currencySymbolFor(
         currencyCode: String,
         useShortText: Boolean = useShortTextCurrency
@@ -210,6 +232,7 @@ object AppSettings {
         if (trimmed.isBlank()) return ""
         return "$trimmed ${currencySymbolFor(currencyCode, useShortText)}"
     }
+
     fun saveCurrencySynchronously(newCurrency: String, useShortText: Boolean) {
         selectedCurrency = newCurrency
         useShortTextCurrency = useShortText
@@ -284,6 +307,7 @@ object AppSettings {
 
         return if (total > 0) listOf(total) else emptyList()
     }
+
     fun isSilentNotificationSound(): Boolean {
         return notificationSoundType == "SILENT"
     }
@@ -299,6 +323,7 @@ object AppSettings {
             else -> Locales.t("notif_sound_default")
         }
     }
+
     fun notificationChannelKey(): String {
         return when (notificationSoundType) {
             "SILENT" -> "silent"
@@ -307,28 +332,6 @@ object AppSettings {
             else -> "default"
         }
     }
-
-    val languageCodes = mapOf(
-        "Italiano" to "it",
-        "Русский" to "ru",
-        "English" to "en",
-        "Українська" to "uk"
-    )
-
-    var premiumSubscriptionState by mutableStateOf("NONE")
-    var premiumSubscribedProductId by mutableStateOf("")
-    var premiumSubscriptionToken by mutableStateOf("")
-    var premiumSubscriptionStartMillis by mutableStateOf(0L)
-    var premiumSubscriptionExpiryMillis by mutableStateOf(0L)
-    var premiumSubscriptionAutoRenewing by mutableStateOf(false)
-    var premiumLastVerifiedAtMillis by mutableStateOf(0L)
-    var installId by mutableStateOf("")
-    var backendUserId by mutableStateOf("")
-    var lastAuthenticatedAppOpenAtMillis by mutableStateOf(0L)
-    var cachedAccessTier by mutableStateOf("FREE_LIMITED")
-    var cachedTrialEndsAtMillis by mutableStateOf(0L)
-    var cachedHasPremium by mutableStateOf(false)
-    var cachedSubscriptionState by mutableStateOf("NONE")
 
     private fun normalizeFontSizeMode(value: String): String {
         return when (value.trim()) {
@@ -462,6 +465,7 @@ object AppSettings {
         premiumSubscriptionStartMillis = snapshot.premiumSubscriptionStartMillis
         premiumSubscriptionExpiryMillis = snapshot.premiumSubscriptionExpiryMillis
         premiumSubscriptionAutoRenewing = snapshot.premiumSubscriptionAutoRenewing
+        premiumOrderId = snapshot.premiumOrderId
         premiumLastVerifiedAtMillis = snapshot.premiumLastVerifiedAtMillis
 
         installId = snapshot.installId
@@ -502,6 +506,9 @@ object AppSettings {
             notificationSoundId = notificationSoundId,
             notificationSoundDisplayName = notificationSoundDisplayName,
 
+            selectedCurrency = selectedCurrency,
+            useShortTextCurrency = useShortTextCurrency,
+
             reminderDaysBefore = reminderDaysBefore,
             reminderHoursBefore = reminderHoursBefore,
             reminderMinutesBefore = reminderMinutesBefore,
@@ -513,25 +520,15 @@ object AppSettings {
             premiumProductId = premiumProductId,
             premiumPurchaseToken = premiumPurchaseToken,
 
-            serviceTemplates = serviceTemplates,
-            weeklyBlockedIntervals = weeklyBlockedIntervals,
-            scheduleDateOverrides = scheduleDateOverrides,
-
             premiumSubscriptionState = premiumSubscriptionState,
             premiumSubscribedProductId = premiumSubscribedProductId,
             premiumSubscriptionToken = premiumSubscriptionToken,
             premiumSubscriptionStartMillis = premiumSubscriptionStartMillis,
             premiumSubscriptionExpiryMillis = premiumSubscriptionExpiryMillis,
             premiumSubscriptionAutoRenewing = premiumSubscriptionAutoRenewing,
+            premiumOrderId = premiumOrderId,
             premiumLastVerifiedAtMillis = premiumLastVerifiedAtMillis,
 
-            selectedCurrency = selectedCurrency,
-            useShortTextCurrency = useShortTextCurrency,
-
-            pinEnabled = pinEnabled,
-            adminPinHash = adminPinHash,
-            developerModeUnlocked = developerModeUnlocked,
-            developerPremiumOverrideEnabled = developerPremiumOverrideEnabled,
             installId = installId,
             backendUserId = backendUserId,
             lastAuthenticatedAppOpenAtMillis = lastAuthenticatedAppOpenAtMillis,
@@ -539,6 +536,15 @@ object AppSettings {
             cachedTrialEndsAtMillis = cachedTrialEndsAtMillis,
             cachedHasPremium = cachedHasPremium,
             cachedSubscriptionState = cachedSubscriptionState,
+
+            serviceTemplates = serviceTemplates,
+            weeklyBlockedIntervals = weeklyBlockedIntervals,
+            scheduleDateOverrides = scheduleDateOverrides,
+
+            pinEnabled = pinEnabled,
+            adminPinHash = adminPinHash,
+            developerModeUnlocked = developerModeUnlocked,
+            developerPremiumOverrideEnabled = developerPremiumOverrideEnabled
         )
 
         runCatching {

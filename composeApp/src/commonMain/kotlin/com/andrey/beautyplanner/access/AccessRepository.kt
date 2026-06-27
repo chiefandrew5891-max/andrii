@@ -12,12 +12,13 @@ object AccessRepository {
         AppSettings.trialStartedAtMillis = remote.trialStartedAtMillis
         AppSettings.premiumSubscriptionState = remote.subscriptionState
         AppSettings.premiumSubscribedProductId = remote.premiumProductId
-
+        AppSettings.premiumSubscriptionExpiryMillis = remote.subscriptionExpiryMillis
+        AppSettings.premiumSubscriptionAutoRenewing = remote.subscriptionAutoRenewing
+        AppSettings.premiumOrderId = remote.subscriptionOrderId
         AppSettings.cachedAccessTier = remote.tier
         AppSettings.cachedTrialEndsAtMillis = remote.trialEndsAtMillis
         AppSettings.cachedHasPremium = remote.hasPremium
         AppSettings.cachedSubscriptionState = remote.subscriptionState
-
         AppSettings.persist()
     }
 

@@ -164,7 +164,10 @@ actual class BillingManager actual constructor() {
         }
     }
 
-    actual suspend fun purchasePremium(productId: String): PurchaseResult {
+    actual suspend fun purchasePremium(
+        productId: String,
+        obfuscatedAccountId: String
+    ): PurchaseResult {
         if (!billingClient.isReady) {
             return PurchaseResult.Error("Billing service is not connected.")
         }
@@ -194,9 +197,11 @@ actual class BillingManager actual constructor() {
 
             val flowParams = BillingFlowParams.newBuilder()
                 .setProductDetailsParamsList(listOf(productParams))
+                .setObfuscatedAccountId(obfuscatedAccountId)
                 .build()
 
             val result = billingClient.launchBillingFlow(activity, flowParams)
+
             if (result.responseCode != BillingClient.BillingResponseCode.OK) {
                 pendingPurchaseContinuation = null
                 if (cont.isActive) {

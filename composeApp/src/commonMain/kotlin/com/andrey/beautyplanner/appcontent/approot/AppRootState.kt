@@ -643,7 +643,16 @@ class AppRootState(
                 errorMessage = null
             )
 
-            when (val result = billingManager.purchasePremium(product.productId)) {
+            val accountId = currentAuthUser?.uid?.ifBlank { null }
+                ?: AppSettings.backendUserId.ifBlank { null }
+                ?: IdentityManager.getOrCreateInstallId()
+
+            when (
+                val result = billingManager.purchasePremium(
+                    productId = product.productId,
+                    obfuscatedAccountId = accountId
+                )
+            ) {
                 is PurchaseResult.Success -> {
                     runCatching {
                         val remote = com.andrey.beautyplanner.remote.BackendBridge.verifySubscription(

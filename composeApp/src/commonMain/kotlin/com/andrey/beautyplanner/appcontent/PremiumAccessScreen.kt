@@ -23,6 +23,7 @@ import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.billing.BillingStatus
 import com.andrey.beautyplanner.billing.BillingUiState
 import com.andrey.beautyplanner.billing.PREMIUM_SUBS_PRODUCT_ID
+import kotlinx.datetime.Clock
 
 @Composable
 fun PremiumAccessScreen(
@@ -47,8 +48,11 @@ fun PremiumAccessScreen(
         it.productId == PREMIUM_SUBS_PRODUCT_ID
     }
 
+    val isPremiumActive =
+        billingUiState.ownedPremium || accessState.tier == AccessTier.PREMIUM
+
     val buyButtonText = when {
-        billingUiState.ownedPremium || accessState.tier == AccessTier.PREMIUM ->
+        isPremiumActive ->
             Locales.t("premium_already_owned")
 
         premiumProduct != null && premiumProduct.formattedPrice.isNotBlank() ->
@@ -63,12 +67,30 @@ fun PremiumAccessScreen(
     }
 
     val buyEnabled =
-        !billingUiState.ownedPremium &&
-                accessState.tier != AccessTier.PREMIUM &&
+        !isPremiumActive &&
                 billingUiState.status != BillingStatus.PURCHASING &&
                 billingUiState.status != BillingStatus.RESTORING &&
                 premiumProduct != null &&
                 premiumProduct.offerToken.isNotBlank()
+
+    val subscriptionStateText = subscriptionStateLabel(AppSettings.premiumSubscriptionState)
+    val expiryMillis = AppSettings.premiumSubscriptionExpiryMillis
+    val daysLeft = calculateSubscriptionDaysLeft(
+        expiryMillis = expiryMillis,
+        nowMillis = Clock.System.now().toEpochMilliseconds()
+    )
+    val expiryText = formatSubscriptionExpiry(expiryMillis)
+    val autoRenewEnabled = AppSettings.premiumSubscriptionAutoRenewing
+    val autoRenewText = if (autoRenewEnabled) {
+        Locales.t("premium_subscription_auto_renew_on")
+    } else {
+        Locales.t("premium_subscription_auto_renew_off")
+    }
+
+    val showCancelledButActiveNotice =
+        isPremiumActive &&
+                expiryMillis > Clock.System.now().toEpochMilliseconds() &&
+                !autoRenewEnabled
 
     Column(
         modifier = Modifier
@@ -125,6 +147,56 @@ fun PremiumAccessScreen(
                 PremiumBullet(Locales.t("premium_feature_stats"), fontScale)
                 PremiumBullet(Locales.t("premium_feature_backup"), fontScale)
                 PremiumBullet(Locales.t("premium_feature_future"), fontScale)
+
+                Spacer(modifier = Modifier.padding(top = 24.dp))
+
+                Text(
+                    text = Locales.t("premium_subscription_status_title"),
+                    fontSize = (16 * fontScale).sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colors.onBackground
+                )
+
+                Spacer(modifier = Modifier.padding(top = 8.dp))
+
+                Text(
+                    text = "${Locales.t("premium_status_label")}: $subscriptionStateText",
+                    fontSize = (14 * fontScale).sp,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.88f)
+                )
+
+                if (expiryMillis > 0L) {
+                    Spacer(modifier = Modifier.padding(top = 6.dp))
+                    Text(
+                        text = "${Locales.t("premium_subscription_expires")}: $expiryText",
+                        fontSize = (14 * fontScale).sp,
+                        color = MaterialTheme.colors.onBackground.copy(alpha = 0.88f)
+                    )
+
+                    Spacer(modifier = Modifier.padding(top = 6.dp))
+                    Text(
+                        text = "${Locales.t("premium_subscription_days_left")}: ${Locales.daysCount(daysLeft)}",
+                        fontSize = (14 * fontScale).sp,
+                        color = MaterialTheme.colors.onBackground.copy(alpha = 0.88f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.padding(top = 6.dp))
+                Text(
+                    text = "${Locales.t("premium_subscription_auto_renew")}: $autoRenewText",
+                    fontSize = (14 * fontScale).sp,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.88f)
+                )
+
+                if (showCancelledButActiveNotice) {
+                    Spacer(modifier = Modifier.padding(top = 10.dp))
+                    Text(
+                        text = "${Locales.t("premium_subscription_state_canceled")} • ${Locales.t("premium_subscription_expires")}: $expiryText",
+                        fontSize = (13 * fontScale).sp,
+                        color = MaterialTheme.colors.primary.copy(alpha = 0.90f),
+                        lineHeight = (18 * fontScale).sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.padding(top = 24.dp))
 
@@ -187,12 +259,14 @@ fun PremiumAccessScreen(
                     enabled = billingUiState.status != BillingStatus.PURCHASING
                 )
 
-                Spacer(modifier = Modifier.padding(top = 10.dp))
+                if (!isPremiumActive) {
+                    Spacer(modifier = Modifier.padding(top = 10.dp))
 
-                SecondaryActionButton(
-                    text = Locales.t("premium_continue_free_btn"),
-                    onClick = onContinueFree
-                )
+                    SecondaryActionButton(
+                        text = Locales.t("premium_continue_free_btn"),
+                        onClick = onContinueFree
+                    )
+                }
             }
         }
     }

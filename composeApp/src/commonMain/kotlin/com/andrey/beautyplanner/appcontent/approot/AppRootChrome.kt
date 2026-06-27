@@ -1,5 +1,6 @@
 package com.andrey.beautyplanner.appcontent.approot
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -31,20 +33,22 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.Screen
 import com.andrey.beautyplanner.auth.SignInProvider
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
+import com.andrey.beautyplanner.appcontent.calculateSubscriptionDaysLeft
+import com.andrey.beautyplanner.appcontent.formatSubscriptionExpiry
+import com.andrey.beautyplanner.appcontent.subscriptionStateLabel
+import kotlinx.datetime.Clock
+
 @Composable
 fun AppRootChrome(
     state: AppRootState,
@@ -95,19 +99,6 @@ fun AppRootChrome(
     }
 
     @Composable
-    fun DrawerInfoItem(title: String) {
-        Text(
-            text = title,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            color = onSurface.copy(alpha = 0.82f),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-
-    @Composable
     fun DrawerSectionTitle(title: String) {
         Text(
             text = title,
@@ -154,12 +145,8 @@ fun AppRootChrome(
         if (name.isNotBlank()) {
             val parts = name.split(" ").filter { it.isNotBlank() }
             return when {
-                parts.size >= 2 -> {
-                    (parts[0].take(1) + parts[1].take(1)).uppercase()
-                }
-                else -> {
-                    name.take(2).uppercase()
-                }
+                parts.size >= 2 -> (parts[0].take(1) + parts[1].take(1)).uppercase()
+                else -> name.take(2).uppercase()
             }
         }
 
@@ -234,6 +221,50 @@ fun AppRootChrome(
         }
     }
 
+    @Composable
+    fun DrawerSubscriptionInfo() {
+        val nowMillis = Clock.System.now().toEpochMilliseconds()
+        val isPremiumActive = AppSettings.cachedHasPremium
+        val expiryMillis = AppSettings.premiumSubscriptionExpiryMillis
+        val stateLabel = if (isPremiumActive) {
+            subscriptionStateLabel(AppSettings.premiumSubscriptionState)
+        } else {
+            Locales.t("premium_subscription_inactive")
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = "${Locales.t("premium_subscription_status_compact")}: $stateLabel",
+                color = onSurface.copy(alpha = 0.72f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            if (isPremiumActive && expiryMillis > nowMillis) {
+                val daysLeft = calculateSubscriptionDaysLeft(
+                    expiryMillis = expiryMillis,
+                    nowMillis = nowMillis
+                )
+
+                Spacer(Modifier.padding(top = 2.dp))
+
+                Text(
+                    text = "${Locales.t("premium_subscription_expires")}: ${formatSubscriptionExpiry(expiryMillis)} • ${Locales.daysCount(daysLeft)}",
+                    color = onSurface.copy(alpha = 0.54f),
+                    fontSize = 11.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+
     Surface(
         color = bg,
         contentColor = onBg
@@ -269,6 +300,8 @@ fun AppRootChrome(
                             provider = SignInProvider.ANONYMOUS
                         )
 
+                        DrawerSubscriptionInfo()
+
                         DrawerActionItem(
                             title = Locales.t("account_sign_in")
                         ) {
@@ -300,6 +333,8 @@ fun AppRootChrome(
                             subtitle = subtitle,
                             provider = authUser?.provider
                         )
+
+                        DrawerSubscriptionInfo()
 
                         DrawerActionItem(
                             title = Locales.t("account_switch")
@@ -357,7 +392,6 @@ fun AppRootChrome(
         ) {
             val isAuthWelcomeScreen = state.currentScreen == Screen.AUTH_WELCOME
             val isAuthEmailScreen = state.currentScreen == Screen.AUTH_EMAIL
-            val isAuthScreen = isAuthWelcomeScreen || isAuthEmailScreen
 
             val isHomeScreen = state.currentScreen == Screen.MONTH
             val isNestedScreen =
