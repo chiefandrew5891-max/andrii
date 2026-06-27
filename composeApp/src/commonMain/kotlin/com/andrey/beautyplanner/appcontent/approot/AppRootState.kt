@@ -30,6 +30,8 @@ class AppRootState(
     private val scope: CoroutineScope,
 ) {
     private val billingManager = BillingManager()
+    private val authenticatedSessionTimeoutMillis =
+        7L * 24L * 60L * 60L * 1000L
 
     var currentAuthUser by mutableStateOf<AuthUser?>(null)
 
@@ -193,6 +195,30 @@ class AppRootState(
                 )
             )
         }
+    fun sendPasswordReset(email: String) {
+        val cleanEmail = email.trim()
+
+        if (!cleanEmail.contains("@") || !cleanEmail.contains(".")) {
+            authErrorMessage = Locales.t("auth_email_invalid")
+            return
+        }
+
+        scope.launch {
+            when (val result = AuthGateway.sendPasswordReset(cleanEmail)) {
+                is SignInResult.Success -> {
+                    authErrorMessage = Locales.t("auth_password_reset_sent")
+                }
+
+                is SignInResult.Cancelled -> {
+                    authErrorMessage = Locales.t("auth_password_reset_failed")
+                }
+
+                is SignInResult.Error -> {
+                    authErrorMessage = mapAuthErrorMessage(result.message)
+                }
+            }
+        }
+    }
 
     fun refreshAccessState(nowMillis: Long = Clock.System.now().toEpochMilliseconds()) {
         accessState = AccessManager.getAccessState(nowMillis)
@@ -284,29 +310,59 @@ class AppRootState(
             syncSubscriptionState()
         }
     }
+    suspend fun enforceAuthenticatedSessionTimeoutIfNeeded() {
+        val currentUser = AuthGateway.getCurrentUser() ?: return
+
+        if (currentUser.provider == SignInProvider.ANONYMOUS) {
+            return
+        }
+
+        val lastOpen = AppSettings.lastAuthenticatedAppOpenAtMillis
+        val now = Clock.System.now().toEpochMilliseconds()
+
+        if (lastOpen > 0L && now - lastOpen > authenticatedSessionTimeoutMillis) {
+            AuthGateway.signOut()
+            AuthGateway.clearCredentialState()
+            currentAuthUser = null
+            AppSettings.backendUserId = ""
+            AppSettings.cachedAccessTier = "FREE_LIMITED"
+            AppSettings.cachedTrialEndsAtMillis = 0L
+            AppSettings.cachedHasPremium = false
+            AppSettings.cachedSubscriptionState = "NONE"
+            AppSettings.developerPremiumOverrideEnabled = false
+            AppSettings.lastAuthenticatedAppOpenAtMillis = 0L
+            AppSettings.persist()
+            refreshAccessState(now)
+            throw IllegalStateException("Authenticated session expired due to inactivity")
+        }
+
+        AppSettings.lastAuthenticatedAppOpenAtMillis = now
+        AppSettings.persist()
+    }
     suspend fun bootstrapAuthenticatedUser(
         providerOverride: SignInProvider? = null
     ) {
         val installId = IdentityManager.getOrCreateInstallId()
 
         val currentUser = AuthGateway.getCurrentUser()
-            ?: when (val signIn = AuthGateway.signInAnonymously()) {
-                is SignInResult.Success -> signIn.user
-                is SignInResult.Cancelled -> {
-                    throw IllegalStateException("Anonymous sign-in cancelled")
-                }
-                is SignInResult.Error -> {
-                    throw IllegalStateException(signIn.message)
-                }
-            }
+            ?: throw IllegalStateException("No authenticated user session found")
 
-        val effectiveProvider = providerOverride ?: currentUser.provider
+        if (providerOverride == null && currentUser.provider == SignInProvider.ANONYMOUS) {
+            throw IllegalStateException("Anonymous session is not restored automatically")
+        }
+
+        val backendAuthProvider = when (providerOverride ?: currentUser.provider) {
+            SignInProvider.GOOGLE -> "google"
+            SignInProvider.EMAIL -> "password"
+            SignInProvider.APPLE -> "apple"
+            SignInProvider.ANONYMOUS -> "anonymous"
+        }
 
         val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
             installId = installId,
             firebaseUid = currentUser.uid,
             platform = "android",
-            authProvider = effectiveProvider.name.lowercase(),
+            authProvider = backendAuthProvider,
             email = currentUser.email,
             displayName = currentUser.displayName
         )
@@ -316,6 +372,7 @@ class AppRootState(
         refreshAccessState(Clock.System.now().toEpochMilliseconds())
         authResolved = true
         authErrorMessage = null
+        currentScreen = Screen.MONTH
     }
     fun continueWithGoogle() {
         scope.launch {
@@ -341,6 +398,8 @@ class AppRootState(
                         )
 
                         currentAuthUser = result.user
+                        AppSettings.lastAuthenticatedAppOpenAtMillis = Clock.System.now().toEpochMilliseconds()
+                        AppSettings.persist()
                         refreshAccessState()
                         authResolved = true
                         authErrorMessage = null
@@ -363,7 +422,31 @@ class AppRootState(
     fun continueAnonymously() {
         scope.launch {
             runCatching {
-                bootstrapAuthenticatedUser(SignInProvider.ANONYMOUS)
+                val signIn = AuthGateway.signInAnonymously()
+                val user = when (signIn) {
+                    is SignInResult.Success -> signIn.user
+                    is SignInResult.Cancelled -> {
+                        throw IllegalStateException("Anonymous sign-in cancelled")
+                    }
+                    is SignInResult.Error -> {
+                        throw IllegalStateException(signIn.message)
+                    }
+                }
+
+                val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
+                    installId = IdentityManager.getOrCreateInstallId(),
+                    firebaseUid = user.uid,
+                    platform = "android",
+                    authProvider = "anonymous",
+                    email = user.email,
+                    displayName = user.displayName
+                )
+
+                currentAuthUser = user
+                com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
+                refreshAccessState()
+                authResolved = true
+                authErrorMessage = null
                 currentScreen = Screen.MONTH
             }.onFailure {
                 authErrorMessage = mapAuthErrorMessage(it.message)
@@ -382,6 +465,7 @@ class AppRootState(
                 AuthGateway.clearCredentialState()
                 currentAuthUser = null
                 AppSettings.backendUserId = ""
+                AppSettings.lastAuthenticatedAppOpenAtMillis = 0L
                 AppSettings.cachedAccessTier = "FREE_LIMITED"
                 AppSettings.cachedTrialEndsAtMillis = 0L
                 AppSettings.cachedHasPremium = false
@@ -404,6 +488,7 @@ class AppRootState(
                 AuthGateway.clearCredentialState()
                 currentAuthUser = null
                 AppSettings.backendUserId = ""
+                AppSettings.lastAuthenticatedAppOpenAtMillis = 0L
                 AppSettings.cachedAccessTier = "FREE_LIMITED"
                 AppSettings.cachedTrialEndsAtMillis = 0L
                 AppSettings.cachedHasPremium = false
@@ -484,6 +569,8 @@ class AppRootState(
                         )
 
                         currentAuthUser = result.user
+                        AppSettings.lastAuthenticatedAppOpenAtMillis = Clock.System.now().toEpochMilliseconds()
+                        AppSettings.persist()
                         refreshAccessState()
                         authResolved = true
                         authErrorMessage = null
@@ -832,7 +919,6 @@ fun rememberAppRootState(): AppRootState {
     LaunchedEffect(Unit) {
         val startCode = AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "en"
         Locales.currentLanguage = startCode
-
         val nowMillis = Clock.System.now().toEpochMilliseconds()
 
         runCatching { DataManager.loadFromDatabase() }
@@ -844,10 +930,24 @@ fun rememberAppRootState(): AppRootState {
             }
 
         runCatching {
+            state.enforceAuthenticatedSessionTimeoutIfNeeded()
             state.bootstrapAuthenticatedUser()
+        }.onSuccess {
+            state.currentScreen = Screen.MONTH
         }.onFailure {
             state.authResolved = false
-            state.authErrorMessage = state.mapAuthErrorMessage(it.message)
+
+            val raw = it.message.orEmpty()
+            state.authErrorMessage =
+                if (
+                    raw.contains("No authenticated user session found", ignoreCase = true) ||
+                    raw.contains("Anonymous session is not restored automatically", ignoreCase = true)
+                ) {
+                    null
+                } else {
+                    state.mapAuthErrorMessage(raw)
+                }
+
             state.currentScreen = Screen.AUTH_WELCOME
         }
 

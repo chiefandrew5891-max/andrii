@@ -13,6 +13,9 @@ object Locales {
     private val strings = mapOf(
         "ru" to mapOf(
             // Вход и регистрация
+            "auth_password_reset" to "Забыли пароль?",
+            "auth_password_reset_sent" to "Письмо для сброса пароля отправлено.",
+            "auth_password_reset_failed" to "Не удалось отправить письмо для сброса пароля.",
             "auth_email_sign_in" to "Войти по email",
             "auth_email_register" to "Регистрация по email",
             "auth_email_title" to "Вход или регистрация",
@@ -132,6 +135,12 @@ object Locales {
             "developer_expire_trial" to "Завершить Trial",
 
             // Premium screen
+            "billing_account_binding_title" to "Привязка покупки",
+            "billing_account_binding_message" to "Премиум будет привязан к текущему аккаунту приложения:",
+            "billing_account_binding_google_play_note" to "Покупка оформляется через аккаунт Google Play устройства. Аккаунт Google Play и аккаунт приложения могут не совпадать.",
+            "billing_account_binding_unknown" to "Аккаунт не определён",
+            "billing_refund_info_title" to "Возврат и поддержка",
+            "billing_refund_info_message" to "Для возврата средств может потребоваться номер заказа Google Play или письмо-подтверждение покупки.",
             "premium_buy_btn" to "Купить Premium",
             "premium_restore_btn" to "Восстановить покупки",
             "premium_loading_price" to "Загрузка цены...",
@@ -416,6 +425,9 @@ object Locales {
 
         "en" to mapOf(
             // Вход и регистрация
+            "auth_password_reset" to "Forgot password?",
+            "auth_password_reset_sent" to "Password reset email has been sent.",
+            "auth_password_reset_failed" to "Failed to send password reset email.",
             "auth_email_sign_in" to "Sign in with email",
             "auth_email_register" to "Register with email",
             "auth_email_title" to "Sign in or register",
@@ -528,6 +540,12 @@ object Locales {
             "developer_expire_trial" to "Expire Trial",
 
             // Premium screen
+            "billing_account_binding_title" to "Purchase binding",
+            "billing_account_binding_message" to "Premium will be linked to the current app account:",
+            "billing_account_binding_google_play_note" to "The purchase is processed through the device's Google Play account. Your Google Play account and your app account may be different.",
+            "billing_account_binding_unknown" to "Account not identified",
+            "billing_refund_info_title" to "Refunds and support",
+            "billing_refund_info_message" to "For refunds, you may need your Google Play order number or purchase confirmation email.",
             "premium_buy_btn" to "Buy Premium",
             "premium_restore_btn" to "Restore purchases",
             "premium_loading_price" to "Loading price...",
@@ -812,6 +830,9 @@ object Locales {
         // Итальянский и украинский блоки оставляю как у тебя, но добавляю статусы в конец каждого.
         "it" to mapOf(
             // Вход и регистрация
+            "auth_password_reset" to "Password dimenticata?",
+            "auth_password_reset_sent" to "L'email per il ripristino della password è stata inviata.",
+            "auth_password_reset_failed" to "Impossibile inviare l'email di ripristino password.",
             "auth_email_sign_in" to "Accedi con email",
             "auth_email_register" to "Registrati con email",
             "auth_email_title" to "Accesso o registrazione",
@@ -924,6 +945,12 @@ object Locales {
             "developer_expire_trial" to "Termina Trial",
 
             // Premium screen
+            "billing_account_binding_title" to "Collegamento dell'acquisto",
+            "billing_account_binding_message" to "Premium sarà collegato all'account corrente dell'app:",
+            "billing_account_binding_google_play_note" to "L'acquisto viene elaborato tramite l'account Google Play del dispositivo. L'account Google Play e l'account dell'app possono essere diversi.",
+            "billing_account_binding_unknown" to "Account non identificato",
+            "billing_refund_info_title" to "Rimborsi e supporto",
+            "billing_refund_info_message" to "Per i rimborsi potrebbe essere necessario il numero d'ordine di Google Play o l'email di conferma dell'acquisto.",
             "premium_buy_btn" to "Acquista Premium",
             "premium_restore_btn" to "Ripristina acquisti",
             "premium_loading_price" to "Caricamento prezzo...",
@@ -1206,6 +1233,9 @@ object Locales {
 
         "uk" to mapOf(
             // Вход и регистрация
+            "auth_password_reset" to "Забули пароль?",
+            "auth_password_reset_sent" to "Лист для скидання пароля відправлено.",
+            "auth_password_reset_failed" to "Не вдалося надіслати лист для скидання пароля.",
             "auth_email_sign_in" to "Увійти через email",
             "auth_email_register" to "Реєстрація через email",
             "auth_email_title" to "Вхід або реєстрація",
@@ -1318,6 +1348,12 @@ object Locales {
             "developer_expire_trial" to "Завершити Trial",
 
             // Premium screen
+            "billing_account_binding_title" to "Прив’язка покупки",
+            "billing_account_binding_message" to "Преміум буде прив’язано до поточного акаунта застосунку:",
+            "billing_account_binding_google_play_note" to "Покупка оформлюється через акаунт Google Play на пристрої. Акаунт Google Play та акаунт застосунку можуть відрізнятися.",
+            "billing_account_binding_unknown" to "Акаунт не визначено",
+            "billing_refund_info_title" to "Повернення коштів і підтримка",
+            "billing_refund_info_message" to "Для повернення коштів може знадобитися номер замовлення Google Play або лист-підтвердження покупки.",
             "premium_buy_btn" to "Купити Premium",
             "premium_restore_btn" to "Відновити покупки",
             "premium_loading_price" to "Завантаження ціни...",

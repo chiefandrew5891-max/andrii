@@ -29,6 +29,12 @@ actual object AuthGateway {
         )
     }
 
+    actual suspend fun sendPasswordReset(email: String): SignInResult {
+        return SignInResult.Error(
+            "TODO: implement Firebase password reset on iOS"
+        )
+    }
+
     actual suspend fun signOut() {
     }
 

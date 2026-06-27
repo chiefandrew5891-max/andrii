@@ -29,6 +29,7 @@ fun PremiumAccessScreen(
     accessState: AccessState,
     message: String,
     billingUiState: BillingUiState,
+    accountLabel: String,
     onBack: () -> Unit,
     onContinueFree: () -> Unit,
     onUnlockPremium: () -> Unit,
@@ -124,6 +125,51 @@ fun PremiumAccessScreen(
                 PremiumBullet(Locales.t("premium_feature_stats"), fontScale)
                 PremiumBullet(Locales.t("premium_feature_backup"), fontScale)
                 PremiumBullet(Locales.t("premium_feature_future"), fontScale)
+
+                Spacer(modifier = Modifier.padding(top = 24.dp))
+
+                Text(
+                    text = Locales.t("billing_account_binding_title"),
+                    fontSize = (16 * fontScale).sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colors.onBackground
+                )
+
+                Spacer(modifier = Modifier.padding(top = 8.dp))
+
+                Text(
+                    text = Locales.t("billing_account_binding_message"),
+                    fontSize = (14 * fontScale).sp,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.85f),
+                    lineHeight = (20 * fontScale).sp
+                )
+
+                Spacer(modifier = Modifier.padding(top = 4.dp))
+
+                Text(
+                    text = accountLabel,
+                    fontSize = (15 * fontScale).sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colors.primary
+                )
+
+                Spacer(modifier = Modifier.padding(top = 8.dp))
+
+                Text(
+                    text = Locales.t("billing_account_binding_google_play_note"),
+                    fontSize = (12 * fontScale).sp,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.65f),
+                    lineHeight = (18 * fontScale).sp
+                )
+
+                Spacer(modifier = Modifier.padding(top = 8.dp))
+
+                Text(
+                    text = Locales.t("billing_refund_info_message"),
+                    fontSize = (12 * fontScale).sp,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.65f),
+                    lineHeight = (18 * fontScale).sp
+                )
 
                 Spacer(modifier = Modifier.padding(top = 28.dp))
 

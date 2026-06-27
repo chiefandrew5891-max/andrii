@@ -39,7 +39,12 @@ import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.Screen
 import com.andrey.beautyplanner.auth.SignInProvider
-
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 @Composable
 fun AppRootChrome(
     state: AppRootState,
@@ -115,6 +120,120 @@ fun AppRootChrome(
         )
     }
 
+    @Composable
+    fun accountAvatarColors(provider: SignInProvider?): Pair<Color, Color> {
+        return when (provider) {
+            SignInProvider.GOOGLE -> (
+                    MaterialTheme.colors.primary.copy(alpha = 0.18f) to
+                            MaterialTheme.colors.primary
+                    )
+
+            SignInProvider.EMAIL -> (
+                    Color(0xFF7E57C2).copy(alpha = 0.18f) to
+                            Color(0xFF7E57C2)
+                    )
+
+            SignInProvider.APPLE -> (
+                    MaterialTheme.colors.onSurface.copy(alpha = 0.14f) to
+                            MaterialTheme.colors.onSurface.copy(alpha = 0.88f)
+                    )
+
+            SignInProvider.ANONYMOUS, null -> (
+                    MaterialTheme.colors.onSurface.copy(alpha = 0.10f) to
+                            MaterialTheme.colors.onSurface.copy(alpha = 0.65f)
+                    )
+        }
+    }
+
+    fun buildAccountInitials(
+        displayName: String?,
+        email: String?,
+        provider: SignInProvider?
+    ): String {
+        val name = displayName.orEmpty().trim()
+        if (name.isNotBlank()) {
+            val parts = name.split(" ").filter { it.isNotBlank() }
+            return when {
+                parts.size >= 2 -> {
+                    (parts[0].take(1) + parts[1].take(1)).uppercase()
+                }
+                else -> {
+                    name.take(2).uppercase()
+                }
+            }
+        }
+
+        val cleanEmail = email.orEmpty().trim()
+        if (cleanEmail.isNotBlank()) {
+            val localPart = cleanEmail.substringBefore("@").trim()
+            if (localPart.isNotBlank()) {
+                return localPart.take(2).uppercase()
+            }
+        }
+
+        return when (provider) {
+            SignInProvider.GOOGLE -> "G"
+            SignInProvider.EMAIL -> "E"
+            SignInProvider.APPLE -> "A"
+            SignInProvider.ANONYMOUS, null -> "G"
+        }
+    }
+
+    @Composable
+    fun DrawerAccountHeader(
+        initials: String,
+        title: String,
+        subtitle: String? = null,
+        provider: SignInProvider? = null
+    ) {
+        val (avatarBg, avatarText) = accountAvatarColors(provider)
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(avatarBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = initials,
+                    color = avatarText,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            }
+
+            Spacer(Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    color = onSurface.copy(alpha = 0.92f),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                if (!subtitle.isNullOrBlank()) {
+                    Text(
+                        text = subtitle,
+                        color = onSurface.copy(alpha = 0.62f),
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+
     Surface(
         color = bg,
         contentColor = onBg
@@ -143,8 +262,11 @@ fun AppRootChrome(
                         authUser != null && authUser.provider != SignInProvider.ANONYMOUS
 
                     if (!isSignedInUser) {
-                        DrawerInfoItem(
-                            title = Locales.t("account_anonymous")
+                        DrawerAccountHeader(
+                            initials = "G",
+                            title = Locales.t("account_anonymous"),
+                            subtitle = null,
+                            provider = SignInProvider.ANONYMOUS
                         )
 
                         DrawerActionItem(
@@ -154,19 +276,29 @@ fun AppRootChrome(
                             state.openSignInScreen()
                         }
                     } else {
-                        val accountLabel = when {
-                            authUser?.email?.isNotBlank() == true -> authUser.email
+                        val title = when {
                             authUser?.displayName?.isNotBlank() == true -> authUser.displayName
-                            else -> when (authUser?.provider) {
-                                SignInProvider.GOOGLE -> "Google"
-                                SignInProvider.EMAIL -> "Email"
-                                SignInProvider.APPLE -> "Apple"
-                                else -> Locales.t("account_current")
-                            }
+                            authUser?.email?.isNotBlank() == true -> authUser.email
+                            else -> Locales.t("account_current")
                         }
 
-                        DrawerInfoItem(
-                            title = accountLabel
+                        val subtitle = when {
+                            authUser?.email?.isNotBlank() == true &&
+                                    authUser.displayName.isNotBlank() -> authUser.email
+                            else -> null
+                        }
+
+                        val initials = buildAccountInitials(
+                            displayName = authUser?.displayName,
+                            email = authUser?.email,
+                            provider = authUser?.provider
+                        )
+
+                        DrawerAccountHeader(
+                            initials = initials,
+                            title = title,
+                            subtitle = subtitle,
+                            provider = authUser?.provider
                         )
 
                         DrawerActionItem(
@@ -223,6 +355,10 @@ fun AppRootChrome(
                 }
             }
         ) {
+            val isAuthWelcomeScreen = state.currentScreen == Screen.AUTH_WELCOME
+            val isAuthEmailScreen = state.currentScreen == Screen.AUTH_EMAIL
+            val isAuthScreen = isAuthWelcomeScreen || isAuthEmailScreen
+
             val isHomeScreen = state.currentScreen == Screen.MONTH
             val isNestedScreen =
                 state.currentScreen == Screen.DAY_DETAILS ||
@@ -233,82 +369,112 @@ fun AppRootChrome(
                         state.currentScreen == Screen.BACKUP_SETTINGS ||
                         state.currentScreen == Screen.PRIVACY_POLICY ||
                         state.currentScreen == Screen.NOTIFICATION_SETTINGS ||
-                        state.currentScreen == Screen.PREMIUM_ACCESS ||
-                        state.currentScreen == Screen.AUTH_WELCOME
-
-            val showBackButton = !isHomeScreen
+                        state.currentScreen == Screen.PREMIUM_ACCESS
 
             Scaffold(
                 modifier = Modifier.statusBarsPadding(),
                 topBar = {
-                    TopAppBar(
-                        backgroundColor = MaterialTheme.colors.surface,
-                        elevation = 2.dp,
-                        contentPadding = PaddingValues(horizontal = 8.dp)
-                    ) {
-                        Box(Modifier.fillMaxSize()) {
-                            IconButton(
-                                onClick = {
-                                    if (showBackButton) {
-                                        state.navigateBack()
-                                    } else {
-                                        state.openDrawer()
-                                    }
-                                },
-                                modifier = Modifier.align(Alignment.CenterStart)
-                            ) {
-                                Icon(
-                                    imageVector = if (showBackButton) {
-                                        Icons.AutoMirrored.Filled.Reply
-                                    } else {
-                                        Icons.Default.Menu
-                                    },
-                                    contentDescription = if (showBackButton) {
-                                        Locales.t("cd_back")
-                                    } else {
-                                        Locales.t("cd_menu")
-                                    },
-                                    tint = MaterialTheme.colors.primary
-                                )
-                            }
+                    when {
+                        isAuthWelcomeScreen -> {
+                            // no top bar on the root auth screen
+                        }
 
-                            Row(
-                                modifier = Modifier.align(Alignment.CenterEnd),
-                                verticalAlignment = Alignment.CenterVertically
+                        isAuthEmailScreen -> {
+                            TopAppBar(
+                                backgroundColor = MaterialTheme.colors.surface,
+                                elevation = 2.dp,
+                                contentPadding = PaddingValues(horizontal = 8.dp)
                             ) {
-                                if (isNestedScreen) {
+                                Box(Modifier.fillMaxSize()) {
                                     IconButton(
-                                        onClick = { state.navigateHome() }
+                                        onClick = {
+                                            state.currentScreen = Screen.AUTH_WELCOME
+                                        },
+                                        modifier = Modifier.align(Alignment.CenterStart)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Home,
-                                            contentDescription = Locales.t("nav_main"),
-                                            tint = MaterialTheme.colors.primary,
-                                            modifier = Modifier.size(24.dp)
+                                            imageVector = Icons.AutoMirrored.Filled.Reply,
+                                            contentDescription = Locales.t("cd_back"),
+                                            tint = MaterialTheme.colors.primary
                                         )
                                     }
-                                    Spacer(Modifier.width(4.dp))
                                 }
+                            }
+                        }
 
-                                IconButton(
-                                    onClick = {
-                                        if (state.currentScreen == Screen.SETTINGS) {
-                                            state.navigateHome()
-                                        } else {
-                                            state.screenHistory = emptyList()
-                                            state.currentScreen = Screen.SETTINGS
+                        else -> {
+                            val showBackButton = !isHomeScreen
+
+                            TopAppBar(
+                                backgroundColor = MaterialTheme.colors.surface,
+                                elevation = 2.dp,
+                                contentPadding = PaddingValues(horizontal = 8.dp)
+                            ) {
+                                Box(Modifier.fillMaxSize()) {
+                                    IconButton(
+                                        onClick = {
+                                            if (showBackButton) {
+                                                state.navigateBack()
+                                            } else {
+                                                state.openDrawer()
+                                            }
+                                        },
+                                        modifier = Modifier.align(Alignment.CenterStart)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (showBackButton) {
+                                                Icons.AutoMirrored.Filled.Reply
+                                            } else {
+                                                Icons.Default.Menu
+                                            },
+                                            contentDescription = if (showBackButton) {
+                                                Locales.t("cd_back")
+                                            } else {
+                                                Locales.t("cd_menu")
+                                            },
+                                            tint = MaterialTheme.colors.primary
+                                        )
+                                    }
+
+                                    Row(
+                                        modifier = Modifier.align(Alignment.CenterEnd),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        if (isNestedScreen) {
+                                            IconButton(
+                                                onClick = { state.navigateHome() }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Home,
+                                                    contentDescription = Locales.t("nav_main"),
+                                                    tint = MaterialTheme.colors.primary,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                            Spacer(Modifier.width(4.dp))
+                                        }
+
+                                        IconButton(
+                                            onClick = {
+                                                if (state.currentScreen == Screen.SETTINGS) {
+                                                    state.navigateHome()
+                                                } else {
+                                                    state.screenHistory = emptyList()
+                                                    state.currentScreen = Screen.SETTINGS
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Settings,
+                                                contentDescription = Locales.t("cd_settings"),
+                                                tint = if (state.currentScreen == Screen.SETTINGS) {
+                                                    MaterialTheme.colors.primary.copy(alpha = 0.5f)
+                                                } else {
+                                                    MaterialTheme.colors.primary
+                                                }
+                                            )
                                         }
                                     }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Settings,
-                                        contentDescription = Locales.t("cd_settings"),
-                                        tint = if (state.currentScreen == Screen.SETTINGS) {
-                                            MaterialTheme.colors.primary.copy(alpha = 0.5f)
-                                        } else {
-                                            MaterialTheme.colors.primary
-                                        }
-                                    )
                                 }
                             }
                         }

@@ -166,6 +166,29 @@ actual object AuthGateway {
             }
         }
     }
+    actual suspend fun sendPasswordReset(email: String): SignInResult {
+        return try {
+            suspendCancellableCoroutine<Unit> { cont ->
+                Firebase.auth.sendPasswordResetEmail(email.trim())
+                    .addOnSuccessListener { cont.resume(Unit) }
+                    .addOnFailureListener { cont.resumeWithException(it) }
+            }
+
+            SignInResult.Success(
+                AuthUser(
+                    uid = "",
+                    provider = SignInProvider.EMAIL,
+                    email = email.trim(),
+                    displayName = ""
+                )
+            )
+        } catch (e: Exception) {
+            Log.e("AuthGateway", "Password reset failed", e)
+            SignInResult.Error(
+                e.message ?: Locales.t("auth_password_reset_failed")
+            )
+        }
+    }
 
     actual suspend fun clearCredentialState() {
         val activity = AndroidAppContext.activity ?: return

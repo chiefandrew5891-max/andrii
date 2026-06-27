@@ -168,6 +168,9 @@ fun AppRootContent(
                 errorMessage = state.authErrorMessage,
                 onSubmit = { email, password, confirmPassword ->
                     state.submitEmailAuth(email, password, confirmPassword)
+                },
+                onForgotPassword = { email ->
+                    state.sendPasswordReset(email)
                 }
             )
 
@@ -474,6 +477,11 @@ fun AppRootContent(
                 accessState = state.accessState,
                 message = state.premiumRequiredMessage,
                 billingUiState = state.billingUiState,
+                accountLabel = when {
+                    state.currentAuthUser?.email?.isNotBlank() == true -> state.currentAuthUser?.email.orEmpty()
+                    state.currentAuthUser?.displayName?.isNotBlank() == true -> state.currentAuthUser?.displayName.orEmpty()
+                    else -> Locales.t("billing_account_binding_unknown")
+                },
                 onBack = {
                     state.closePremiumScreen()
                 },

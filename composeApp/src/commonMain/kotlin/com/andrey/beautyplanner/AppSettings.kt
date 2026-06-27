@@ -95,6 +95,7 @@ private data class SettingsSnapshot(
     val premiumLastVerifiedAtMillis: Long = 0L,
     val installId: String = "",
     val backendUserId: String = "",
+    val lastAuthenticatedAppOpenAtMillis: Long = 0L,
     val cachedAccessTier: String = "FREE_LIMITED",
     val cachedTrialEndsAtMillis: Long = 0L,
     val cachedHasPremium: Boolean = false,
@@ -323,6 +324,7 @@ object AppSettings {
     var premiumLastVerifiedAtMillis by mutableStateOf(0L)
     var installId by mutableStateOf("")
     var backendUserId by mutableStateOf("")
+    var lastAuthenticatedAppOpenAtMillis by mutableStateOf(0L)
     var cachedAccessTier by mutableStateOf("FREE_LIMITED")
     var cachedTrialEndsAtMillis by mutableStateOf(0L)
     var cachedHasPremium by mutableStateOf(false)
@@ -464,6 +466,7 @@ object AppSettings {
 
         installId = snapshot.installId
         backendUserId = snapshot.backendUserId
+        lastAuthenticatedAppOpenAtMillis = snapshot.lastAuthenticatedAppOpenAtMillis
         cachedAccessTier = snapshot.cachedAccessTier
         cachedTrialEndsAtMillis = snapshot.cachedTrialEndsAtMillis
         cachedHasPremium = snapshot.cachedHasPremium
@@ -531,6 +534,7 @@ object AppSettings {
             developerPremiumOverrideEnabled = developerPremiumOverrideEnabled,
             installId = installId,
             backendUserId = backendUserId,
+            lastAuthenticatedAppOpenAtMillis = lastAuthenticatedAppOpenAtMillis,
             cachedAccessTier = cachedAccessTier,
             cachedTrialEndsAtMillis = cachedTrialEndsAtMillis,
             cachedHasPremium = cachedHasPremium,
