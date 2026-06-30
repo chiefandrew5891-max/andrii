@@ -124,9 +124,37 @@ object AppSettings {
         run {
             val systemLanguageCode = androidx.compose.ui.text.intl.Locale.current.language.lowercase()
             when (systemLanguageCode) {
+                "ar" -> "العربية"
+                "bg" -> "Български"
+                "cs" -> "Čeština"
+                "da" -> "Dansk"
+                "de" -> "Deutsch"
+                "el" -> "Ελληνικά"
+                "es" -> "Español"
+                "et" -> "Eesti"
+                "fi" -> "Suomi"
+                "fr" -> "Français"
+                "hi" -> "हिन्दी"
+                "hu" -> "Magyar"
+                "id" -> "Bahasa Indonesia"
                 "it" -> "Italiano"
-                "uk" -> "Українська"
+                "ja" -> "日本語"
+                "ko" -> "한국어"
+                "lt" -> "Lietuvių"
+                "lv" -> "Latviešu"
+                "nl" -> "Nederlands"
+                "no" -> "Norsk"
+                "pl" -> "Polski"
+                "pt" -> "Português (Brasil)"
+                "ro" -> "Română"
                 "ru" -> "Русский"
+                "sk" -> "Slovenčina"
+                "sl" -> "Slovenščina"
+                "sr" -> "Srpski"
+                "sv" -> "Svenska"
+                "tr" -> "Türkçe"
+                "uk" -> "Українська"
+                "zh" -> "中文"
                 else -> "English"
             }
         }
@@ -160,11 +188,39 @@ object AppSettings {
     var previewFontScaleOverride by mutableStateOf<Float?>(null)
     var developerPremiumOverrideEnabled by mutableStateOf(false)
 
-    val languageCodes = mapOf(
-        "Italiano" to "it",
-        "Русский" to "ru",
+    val languageCodes = linkedMapOf(
+        "العربية" to "ar",
+        "Български" to "bg",
+        "Čeština" to "cs",
+        "Dansk" to "da",
+        "Deutsch" to "de",
+        "Ελληνικά" to "el",
         "English" to "en",
-        "Українська" to "uk"
+        "Español" to "es",
+        "Eesti" to "et",
+        "Suomi" to "fi",
+        "Français" to "fr",
+        "हिन्दी" to "hi",
+        "Magyar" to "hu",
+        "Bahasa Indonesia" to "id",
+        "Italiano" to "it",
+        "日本語" to "ja",
+        "한국어" to "ko",
+        "Lietuvių" to "lt",
+        "Latviešu" to "lv",
+        "Nederlands" to "nl",
+        "Norsk" to "no",
+        "Polski" to "pl",
+        "Português (Brasil)" to "pt-BR",
+        "Română" to "ro",
+        "Русский" to "ru",
+        "Slovenčina" to "sk",
+        "Slovenščina" to "sl",
+        "Srpski" to "sr",
+        "Svenska" to "sv",
+        "Türkçe" to "tr",
+        "Українська" to "uk",
+        "中文" to "zh"
     )
 
     var premiumSubscriptionState by mutableStateOf("NONE")
@@ -185,41 +241,18 @@ object AppSettings {
     var cachedSubscriptionState by mutableStateOf("NONE")
 
     fun currencySymbol(): String {
-        return if (useShortTextCurrency) {
-            when (selectedCurrency) {
-                "USD" -> "USD"
-                "RUB" -> "RUB"
-                "UAH" -> "UAH"
-                else -> "EUR"
-            }
-        } else {
-            when (selectedCurrency) {
-                "USD" -> "$"
-                "RUB" -> "₽"
-                "UAH" -> "₴"
-                else -> "€"
-            }
-        }
+        return currencySymbolFor(selectedCurrency, useShortTextCurrency)
     }
 
     fun currencySymbolFor(
         currencyCode: String,
         useShortText: Boolean = useShortTextCurrency
     ): String {
+        val code = currencyCode.uppercase()
         return if (useShortText) {
-            when (currencyCode.uppercase()) {
-                "USD" -> "USD"
-                "RUB" -> "RUB"
-                "UAH" -> "UAH"
-                else -> "EUR"
-            }
+            code
         } else {
-            when (currencyCode.uppercase()) {
-                "USD" -> "$"
-                "RUB" -> "₽"
-                "UAH" -> "₴"
-                else -> "€"
-            }
+            CurrencyCatalog.getSymbol(code)
         }
     }
 

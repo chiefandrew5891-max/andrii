@@ -113,6 +113,7 @@ class MainActivity : ComponentActivity() {
         com.andrey.beautyplanner.notifications.NotificationsPlatform.init(applicationContext)
         AndroidAppContext.context = applicationContext
         AndroidAppContext.activity = this
+        debugReadAndroidLocalePaths()
         GoogleSignInFallbackBridge.launchSignInIntent = { intent: Intent, deferred ->
             pendingGoogleFallbackResult = deferred
             googleSignInFallbackLauncher.launch(intent)

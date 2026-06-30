@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -24,26 +25,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
+import com.andrey.beautyplanner.CurrencyCatalog
+import com.andrey.beautyplanner.CurrencyNames
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.appcontent.approot.AppRootState
-import com.andrey.beautyplanner.appcontent.appFontFamily
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppearanceSettingsScreen(state: AppRootState) {
-    val languages = AppSettings.languageCodes.keys.toList()
+    val scope = rememberCoroutineScope()
 
+    val languages = AppSettings.languageCodes.keys.toList()
     val themeItems = listOf(
         "light" to Locales.t("theme_light"),
         "dark" to Locales.t("theme_dark")
     )
-
     val fontItems = listOf(
         "small" to Locales.t("font_small"),
         "medium" to Locales.t("font_medium"),
         "large" to Locales.t("font_large")
     )
 
-    val currencyItems = listOf("EUR (€)", "USD ($)", "RUB (₽)", "UAH (₴)")
+    val currentLangCode = Locales.currentLanguage
+    val currencyInfos = CurrencyCatalog.all
+    val currencyLabels = currencyInfos.map {
+        CurrencyNames.getDisplayLabel(it.code, currentLangCode)
+    }
 
     val fontScale = state.fontScale
     val onSurface = MaterialTheme.colors.onSurface
@@ -62,16 +69,11 @@ fun AppearanceSettingsScreen(state: AppRootState) {
             }
         )
     }
-    var selectedCurrencyDraft by remember {
-        mutableStateOf(
-            when (AppSettings.selectedCurrency) {
-                "USD" -> "USD ($)"
-                "RUB" -> "RUB (₽)"
-                "UAH" -> "UAH (₴)"
-                else -> "EUR (€)"
-            }
-        )
+
+    var selectedCurrencyCodeDraft by remember {
+        mutableStateOf(AppSettings.selectedCurrency)
     }
+
     var userNameDraft by remember { mutableStateOf(AppSettings.ownerName) }
     var useShortTextCurrencyDraft by remember { mutableStateOf(AppSettings.useShortTextCurrency) }
 
@@ -99,21 +101,16 @@ fun AppearanceSettingsScreen(state: AppRootState) {
         else -> "medium"
     }
 
-    val currentCurrencyValue = when (AppSettings.selectedCurrency) {
-        "USD" -> "USD ($)"
-        "RUB" -> "RUB (₽)"
-        "UAH" -> "UAH (₴)"
-        else -> "EUR (€)"
-    }
-
     val selectedThemeLabel = themeItems.first { it.first == selectedThemeDraftKey }.second
     val selectedFontLabel = fontItems.first { it.first == selectedFontDraftKey }.second
+    val selectedCurrencyLabel =
+        CurrencyNames.getDisplayLabel(selectedCurrencyCodeDraft, currentLangCode)
 
     val hasChanges =
         selectedLanguageDraft != AppSettings.selectedLanguage ||
                 selectedThemeDraftKey != currentThemeKey ||
                 selectedFontDraftKey != currentFontKey ||
-                selectedCurrencyDraft != currentCurrencyValue ||
+                selectedCurrencyCodeDraft != AppSettings.selectedCurrency ||
                 useShortTextCurrencyDraft != AppSettings.useShortTextCurrency ||
                 userNameDraft.trim() != AppSettings.ownerName.trim()
 
@@ -180,10 +177,13 @@ fun AppearanceSettingsScreen(state: AppRootState) {
 
             SettingsDropdown(
                 label = Locales.t("currency_label"),
-                selected = selectedCurrencyDraft,
-                items = currencyItems,
+                selected = selectedCurrencyLabel,
+                items = currencyLabels,
                 onSelect = { newValue ->
-                    selectedCurrencyDraft = newValue
+                    val index = currencyLabels.indexOf(newValue)
+                    if (index >= 0) {
+                        selectedCurrencyCodeDraft = currencyInfos[index].code
+                    }
                 }
             )
 
@@ -199,7 +199,6 @@ fun AppearanceSettingsScreen(state: AppRootState) {
                     fontSize = (16 * fontScale).sp,
                     color = onSurface
                 )
-
                 androidx.compose.material.Switch(
                     checked = useShortTextCurrencyDraft,
                     onCheckedChange = { useShortTextCurrencyDraft = it },
@@ -221,6 +220,7 @@ fun AppearanceSettingsScreen(state: AppRootState) {
                     fontWeight = FontWeight.SemiBold,
                     color = onSurface.copy(alpha = 0.85f)
                 )
+
                 OutlinedTextField(
                     value = userNameDraft,
                     onValueChange = { userNameDraft = it },
@@ -256,28 +256,33 @@ fun AppearanceSettingsScreen(state: AppRootState) {
             PrimaryActionButton(
                 text = Locales.t("save"),
                 onClick = {
-                    val targetCurrencyCode = when (selectedCurrencyDraft) {
-                        "USD ($)" -> "USD"
-                        "RUB (₽)" -> "RUB"
-                        "UAH (₴)" -> "UAH"
-                        else -> "EUR"
+                    scope.launch {
+                        state.showGlobalLoading(Locales.t("loading"))
+                        try {
+                            AppSettings.isDarkMode = (selectedThemeDraftKey == "dark")
+                            AppSettings.fontSizeMode = selectedFontDraftKey
+                            AppSettings.ownerName = userNameDraft.trim()
+                            AppSettings.saveCurrencySynchronously(
+                                selectedCurrencyCodeDraft,
+                                useShortTextCurrencyDraft
+                            )
+
+                            AppSettings.selectedLanguage = selectedLanguageDraft
+                            val code = AppSettings.languageCodes[selectedLanguageDraft] ?: "en"
+
+                            AppSettings.previewFontScaleOverride = null
+                            AppSettings.persist()
+
+                            Locales.onLanguageChanged(code)
+
+                            state.currentLiveDarkMode = AppSettings.isDarkMode
+                            state.fontScale = AppSettings.getFontScale()
+
+                            selectedLanguageDraft = AppSettings.selectedLanguage
+                        } finally {
+                            state.hideGlobalLoading()
+                        }
                     }
-
-                    AppSettings.isDarkMode = (selectedThemeDraftKey == "dark")
-                    AppSettings.fontSizeMode = selectedFontDraftKey
-                    AppSettings.ownerName = userNameDraft.trim()
-
-                    AppSettings.saveCurrencySynchronously(
-                        targetCurrencyCode,
-                        useShortTextCurrencyDraft
-                    )
-
-                    AppSettings.selectedLanguage = selectedLanguageDraft
-                    val code = AppSettings.languageCodes[selectedLanguageDraft] ?: "en"
-                    Locales.currentLanguage = code
-
-                    AppSettings.previewFontScaleOverride = null
-                    AppSettings.persist()
                 },
                 enabled = hasChanges
             )

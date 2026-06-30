@@ -6,8 +6,6 @@ import androidx.compose.runtime.setValue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import com.andrey.beautyplanner.generated.resources.Res
 
 object Locales {
 
@@ -15,72 +13,94 @@ object Locales {
         AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "ru"
     )
 
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
 
-    // Кэш загруженных языков: "ru" -> mapOf("key" to "value")
     private val strings = mutableMapOf<String, Map<String, String>>()
+    private var initialized = false
 
-    // вызывать один раз на старте
-    @OptIn(ExperimentalResourceApi::class)
     suspend fun init() {
+        if (initialized) return
+        ensureLoaded("ru")
+        ensureLoaded("en")
+        ensureLoaded(normalizeLang(currentLanguage))
+        initialized = true
+    }
+
+    suspend fun onLanguageChanged(langCode: String) {
+        currentLanguage = normalizeLang(langCode)
+        ensureLoaded("ru")
         ensureLoaded("en")
         ensureLoaded(currentLanguage)
     }
 
-    // если язык меняется из UI
-    @OptIn(ExperimentalResourceApi::class)
-    suspend fun onLanguageChanged(langCode: String) {
-        currentLanguage = langCode
-        ensureLoaded(langCode)
-        ensureLoaded("en")
-    }
-
-    // старый API
     fun t(key: String): String {
-        val cur = strings[currentLanguage]
-        val en = strings["en"]
-        return cur?.get(key) ?: en?.get(key) ?: key
+        val lang = normalizeLang(currentLanguage)
+        return strings[lang]?.get(key)
+            ?: strings["ru"]?.get(key)
+            ?: strings["en"]?.get(key)
+            ?: key
     }
 
-    // старый API сохранен
     fun daysCount(n: Int): String = tPlural("duration_days", n)
     fun hoursCount(n: Int): String = tPlural("duration_hours", n)
     fun minutesCount(n: Int): String = tPlural("duration_minutes", n)
 
-    // новый plural API (внутренний)
     fun tPlural(key: String, count: Int): String {
         val template = t(key)
+        if (!template.contains("plural")) {
+            return template.replace("{count}", count.toString())
+        }
         return formatPluralTemplate(template, count)
     }
 
-    // ---------------- loading ----------------
-
-    @OptIn(ExperimentalResourceApi::class)
     private suspend fun ensureLoaded(lang: String) {
-        if (strings.containsKey(lang)) return
-        strings[lang] = loadLang(lang)
+        val normalized = normalizeLang(lang)
+        if (strings.containsKey(normalized)) return
+        strings[normalized] = loadLang(normalized)
     }
 
-    @OptIn(ExperimentalResourceApi::class)
-    private suspend fun loadLang(lang: String): Map<String, String> {
-        val path = "files/locales/$lang.json"
+    private fun loadLang(lang: String): Map<String, String> {
+        val text = loadLocaleResourceText("locales/$lang.json") ?: return emptyMap()
         return try {
-            val bytes = Res.readBytes(path)
-            val text = bytes.decodeToString()
             val root = json.parseToJsonElement(text).jsonObject
             buildMap(root.size) {
-                for ((k, v) in root) put(k, v.jsonPrimitive.content)
+                for ((k, v) in root) {
+                    put(k, v.jsonPrimitive.content)
+                }
             }
         } catch (_: Throwable) {
             emptyMap()
         }
     }
 
-    // ---------------- plural parser ----------------
+    private fun normalizeLang(raw: String?): String {
+        val value = raw?.trim().orEmpty()
+        if (value.isBlank()) return "ru"
+
+        val supported = setOf(
+            "ar", "bg", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr",
+            "hi", "hu", "id", "it", "ja", "ko", "lt", "lv", "nl", "no", "pl",
+            "pt-BR", "ro", "ru", "sk", "sl", "sr", "sv", "tr", "uk", "zh"
+        )
+
+        val candidates = buildList {
+            add(value)
+            add(value.replace('_', '-'))
+            if (value.contains("-")) add(value.substringBefore("-"))
+            if (value.contains("_")) add(value.substringBefore("_"))
+        }.distinct()
+
+        for (c in candidates) {
+            if (supported.contains(c)) return c
+        }
+
+        return "ru"
+    }
 
     private fun formatPluralTemplate(template: String, count: Int): String {
-        // ожидаем ICU-подобный шаблон:
-        // {count, plural, one {# day} other {# days}}
         val marker = "plural,"
         val p = template.indexOf(marker)
         if (p == -1) return template.replace("{count}", count.toString())
@@ -89,7 +109,7 @@ object Locales {
         val body = if (bodyRaw.endsWith("}")) bodyRaw.dropLast(1).trim() else bodyRaw
 
         val forms = parsePluralForms(body)
-        val category = pluralCategoryFor(currentLanguage, count)
+        val category = pluralCategoryFor(normalizeLang(currentLanguage), count)
         val chosen = forms[category] ?: forms["other"] ?: template
         return chosen.replace("#", count.toString())
     }
@@ -109,6 +129,7 @@ object Locales {
                     break
                 }
             }
+
             if (found == null) {
                 i++
                 continue
@@ -122,6 +143,7 @@ object Locales {
             out[found] = txt
             i = next
         }
+
         return out
     }
 
@@ -144,6 +166,7 @@ object Locales {
             }
             i++
         }
+
         return Pair(sb.toString(), s.length)
     }
 
@@ -166,7 +189,8 @@ object Locales {
                 when {
                     x == 1 -> "one"
                     m10 in 2..4 && m100 !in 12..14 -> "few"
-                    else -> "many"
+                    m10 == 0 || m10 == 1 || m10 in 5..9 || m100 in 12..14 -> "many"
+                    else -> "other"
                 }
             }
             "cs", "sk" -> when {
@@ -188,8 +212,10 @@ object Locales {
                 x % 100 in 11..99 -> "many"
                 else -> "other"
             }
-            "ja", "zh", "ko", "tr", "id" -> "other"
+            "ja", "zh", "ko", "tr", "id", "hu" -> "other"
             else -> if (x == 1) "one" else "other"
         }
     }
 }
+
+expect fun loadLocaleResourceText(path: String): String?

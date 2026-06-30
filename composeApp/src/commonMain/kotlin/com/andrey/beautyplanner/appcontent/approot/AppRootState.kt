@@ -21,6 +21,9 @@ import com.andrey.beautyplanner.auth.AuthGateway
 import com.andrey.beautyplanner.auth.SignInProvider
 import com.andrey.beautyplanner.auth.SignInResult
 import com.andrey.beautyplanner.auth.AuthUser
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @Stable
 class AppRootState(
@@ -112,6 +115,9 @@ class AppRootState(
 
     var showSaveError by mutableStateOf<String?>(null)
 
+    var isGlobalLoading by mutableStateOf(false)
+    var globalLoadingMessage by mutableStateOf<String?>(null)
+
     data class ShiftItem(val apptId: String, val newStartMin: Int)
     data class ImportPreviewInfo(
         val isLegacy: Boolean,
@@ -195,6 +201,15 @@ class AppRootState(
                 )
             )
         }
+    fun showGlobalLoading(message: String? = null) {
+        globalLoadingMessage = message
+        isGlobalLoading = true
+    }
+
+    fun hideGlobalLoading() {
+        isGlobalLoading = false
+        globalLoadingMessage = null
+    }
     fun sendPasswordReset(email: String) {
         val cleanEmail = email.trim()
 
@@ -943,6 +958,8 @@ fun rememberAppRootState(): AppRootState {
     LaunchedEffect(Unit) {
         val startCode = AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "en"
         Locales.currentLanguage = startCode
+        Locales.init()
+
         val nowMillis = Clock.System.now().toEpochMilliseconds()
 
         runCatching { DataManager.loadFromDatabase() }
@@ -960,7 +977,6 @@ fun rememberAppRootState(): AppRootState {
             state.currentScreen = Screen.MONTH
         }.onFailure {
             state.authResolved = false
-
             val raw = it.message.orEmpty()
             state.authErrorMessage =
                 if (
@@ -971,7 +987,6 @@ fun rememberAppRootState(): AppRootState {
                 } else {
                     state.mapAuthErrorMessage(raw)
                 }
-
             state.currentScreen = Screen.AUTH_WELCOME
         }
 
