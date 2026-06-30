@@ -212,25 +212,26 @@ class AppRootState(
     }
     fun sendPasswordReset(email: String) {
         val cleanEmail = email.trim()
-
         if (!cleanEmail.contains("@") || !cleanEmail.contains(".")) {
             authErrorMessage = Locales.t("auth_email_invalid")
             return
         }
-
         scope.launch {
-            when (val result = AuthGateway.sendPasswordReset(cleanEmail)) {
-                is SignInResult.Success -> {
-                    authErrorMessage = Locales.t("auth_password_reset_sent")
+            showGlobalLoading(Locales.t("loading"))
+            try {
+                when (val result = AuthGateway.sendPasswordReset(cleanEmail)) {
+                    is SignInResult.Success -> {
+                        authErrorMessage = Locales.t("auth_password_reset_sent")
+                    }
+                    is SignInResult.Cancelled -> {
+                        authErrorMessage = Locales.t("auth_password_reset_failed")
+                    }
+                    is SignInResult.Error -> {
+                        authErrorMessage = mapAuthErrorMessage(result.message)
+                    }
                 }
-
-                is SignInResult.Cancelled -> {
-                    authErrorMessage = Locales.t("auth_password_reset_failed")
-                }
-
-                is SignInResult.Error -> {
-                    authErrorMessage = mapAuthErrorMessage(result.message)
-                }
+            } finally {
+                hideGlobalLoading()
             }
         }
     }
@@ -391,80 +392,83 @@ class AppRootState(
     }
     fun continueWithGoogle() {
         scope.launch {
-            when (val result = AuthGateway.signInWithGoogle()) {
-                is SignInResult.Success -> {
-                    runCatching {
-                        val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
-                            installId = IdentityManager.getOrCreateInstallId(),
-                            firebaseUid = result.user.uid,
-                            platform = "android",
-                            authProvider = result.user.provider.name.lowercase(),
-                            email = result.user.email,
-                            displayName = result.user.displayName
-                        )
-
-                        com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
-
-                        com.andrey.beautyplanner.remote.BackendBridge.syncIdentity(
-                            firebaseUid = result.user.uid,
-                            email = result.user.email,
-                            displayName = result.user.displayName,
-                            authProvider = result.user.provider.name.lowercase()
-                        )
-
-                        currentAuthUser = result.user
-                        AppSettings.lastAuthenticatedAppOpenAtMillis = Clock.System.now().toEpochMilliseconds()
-                        AppSettings.persist()
-                        refreshAccessState()
-                        authResolved = true
-                        authErrorMessage = null
-                        currentScreen = Screen.MONTH
-                    }.onFailure {
-                        authErrorMessage = mapAuthErrorMessage(it.message)
+            showGlobalLoading(Locales.t("loading"))
+            try {
+                when (val result = AuthGateway.signInWithGoogle()) {
+                    is SignInResult.Success -> {
+                        runCatching {
+                            val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
+                                installId = IdentityManager.getOrCreateInstallId(),
+                                firebaseUid = result.user.uid,
+                                platform = "android",
+                                authProvider = result.user.provider.name.lowercase(),
+                                email = result.user.email,
+                                displayName = result.user.displayName
+                            )
+                            com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
+                            com.andrey.beautyplanner.remote.BackendBridge.syncIdentity(
+                                firebaseUid = result.user.uid,
+                                email = result.user.email,
+                                displayName = result.user.displayName,
+                                authProvider = result.user.provider.name.lowercase()
+                            )
+                            currentAuthUser = result.user
+                            AppSettings.lastAuthenticatedAppOpenAtMillis = Clock.System.now().toEpochMilliseconds()
+                            AppSettings.persist()
+                            refreshAccessState()
+                            authResolved = true
+                            authErrorMessage = null
+                            currentScreen = Screen.MONTH
+                        }.onFailure {
+                            authErrorMessage = mapAuthErrorMessage(it.message)
+                        }
+                    }
+                    is SignInResult.Cancelled -> {
+                        authErrorMessage = Locales.t("auth_google_cancelled")
+                    }
+                    is SignInResult.Error -> {
+                        authErrorMessage = mapAuthErrorMessage(result.message)
                     }
                 }
-
-                is SignInResult.Cancelled -> {
-                    authErrorMessage = Locales.t("auth_google_cancelled")
-                }
-
-                is SignInResult.Error -> {
-                    authErrorMessage = mapAuthErrorMessage(result.message)
-                }
+            } finally {
+                hideGlobalLoading()
             }
         }
     }
     fun continueAnonymously() {
         scope.launch {
-            runCatching {
-                val signIn = AuthGateway.signInAnonymously()
-                val user = when (signIn) {
-                    is SignInResult.Success -> signIn.user
-                    is SignInResult.Cancelled -> {
-                        throw IllegalStateException("Anonymous sign-in cancelled")
+            showGlobalLoading(Locales.t("loading"))
+            try {
+                runCatching {
+                    val signIn = AuthGateway.signInAnonymously()
+                    val user = when (signIn) {
+                        is SignInResult.Success -> signIn.user
+                        is SignInResult.Cancelled -> {
+                            throw IllegalStateException("Anonymous sign-in cancelled")
+                        }
+                        is SignInResult.Error -> {
+                            throw IllegalStateException(signIn.message)
+                        }
                     }
-                    is SignInResult.Error -> {
-                        throw IllegalStateException(signIn.message)
-                    }
+                    val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
+                        installId = IdentityManager.getOrCreateInstallId(),
+                        firebaseUid = user.uid,
+                        platform = "android",
+                        authProvider = "anonymous",
+                        email = user.email,
+                        displayName = user.displayName
+                    )
+                    currentAuthUser = user
+                    com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
+                    refreshAccessState()
+                    authResolved = true
+                    authErrorMessage = null
+                    currentScreen = Screen.MONTH
+                }.onFailure {
+                    authErrorMessage = mapAuthErrorMessage(it.message)
                 }
-
-                val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
-                    installId = IdentityManager.getOrCreateInstallId(),
-                    firebaseUid = user.uid,
-                    platform = "android",
-                    authProvider = "anonymous",
-                    email = user.email,
-                    displayName = user.displayName
-                )
-
-                currentAuthUser = user
-                com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
-                refreshAccessState()
-                authResolved = true
-                authErrorMessage = null
-                currentScreen = Screen.MONTH
-            }.onFailure {
-                authErrorMessage = mapAuthErrorMessage(it.message)
+            } finally {
+                hideGlobalLoading()
             }
         }
     }
@@ -475,47 +479,57 @@ class AppRootState(
     }
     fun switchAccount() {
         scope.launch {
-            runCatching {
-                AuthGateway.signOut()
-                AuthGateway.clearCredentialState()
-                currentAuthUser = null
-                AppSettings.backendUserId = ""
-                AppSettings.lastAuthenticatedAppOpenAtMillis = 0L
-                AppSettings.cachedAccessTier = "FREE_LIMITED"
-                AppSettings.cachedTrialEndsAtMillis = 0L
-                AppSettings.cachedHasPremium = false
-                AppSettings.cachedSubscriptionState = "NONE"
-                AppSettings.developerPremiumOverrideEnabled = false
-                AppSettings.persist()
-                refreshAccessState()
-                screenHistory = emptyList()
-                currentScreen = Screen.AUTH_WELCOME
-                authErrorMessage = null
-            }.onFailure {
-                authErrorMessage = mapAuthErrorMessage(it.message)
+            showGlobalLoading(Locales.t("loading"))
+            try {
+                runCatching {
+                    AuthGateway.signOut()
+                    AuthGateway.clearCredentialState()
+                    currentAuthUser = null
+                    AppSettings.backendUserId = ""
+                    AppSettings.lastAuthenticatedAppOpenAtMillis = 0L
+                    AppSettings.cachedAccessTier = "FREE_LIMITED"
+                    AppSettings.cachedTrialEndsAtMillis = 0L
+                    AppSettings.cachedHasPremium = false
+                    AppSettings.cachedSubscriptionState = "NONE"
+                    AppSettings.developerPremiumOverrideEnabled = false
+                    AppSettings.persist()
+                    refreshAccessState()
+                    screenHistory = emptyList()
+                    currentScreen = Screen.AUTH_WELCOME
+                    authErrorMessage = null
+                }.onFailure {
+                    authErrorMessage = mapAuthErrorMessage(it.message)
+                }
+            } finally {
+                hideGlobalLoading()
             }
         }
     }
     fun signOutCompletely() {
         scope.launch {
-            runCatching {
-                AuthGateway.signOut()
-                AuthGateway.clearCredentialState()
-                currentAuthUser = null
-                AppSettings.backendUserId = ""
-                AppSettings.lastAuthenticatedAppOpenAtMillis = 0L
-                AppSettings.cachedAccessTier = "FREE_LIMITED"
-                AppSettings.cachedTrialEndsAtMillis = 0L
-                AppSettings.cachedHasPremium = false
-                AppSettings.cachedSubscriptionState = "NONE"
-                AppSettings.developerPremiumOverrideEnabled = false
-                AppSettings.persist()
-                refreshAccessState()
-                screenHistory = emptyList()
-                currentScreen = Screen.AUTH_WELCOME
-                authErrorMessage = null
-            }.onFailure {
-                authErrorMessage = mapAuthErrorMessage(it.message)
+            showGlobalLoading(Locales.t("loading"))
+            try {
+                runCatching {
+                    AuthGateway.signOut()
+                    AuthGateway.clearCredentialState()
+                    currentAuthUser = null
+                    AppSettings.backendUserId = ""
+                    AppSettings.lastAuthenticatedAppOpenAtMillis = 0L
+                    AppSettings.cachedAccessTier = "FREE_LIMITED"
+                    AppSettings.cachedTrialEndsAtMillis = 0L
+                    AppSettings.cachedHasPremium = false
+                    AppSettings.cachedSubscriptionState = "NONE"
+                    AppSettings.developerPremiumOverrideEnabled = false
+                    AppSettings.persist()
+                    refreshAccessState()
+                    screenHistory = emptyList()
+                    currentScreen = Screen.AUTH_WELCOME
+                    authErrorMessage = null
+                }.onFailure {
+                    authErrorMessage = mapAuthErrorMessage(it.message)
+                }
+            } finally {
+                hideGlobalLoading()
             }
         }
     }
@@ -539,69 +553,64 @@ class AppRootState(
     ) {
         val cleanEmail = email.trim()
         val cleanPassword = password
-
         if (!cleanEmail.contains("@") || !cleanEmail.contains(".")) {
             authErrorMessage = Locales.t("auth_email_invalid")
             return
         }
-
         if (cleanPassword.length < 6) {
             authErrorMessage = Locales.t("auth_password_too_short")
             return
         }
-
         if (authEmailRegisterMode && cleanPassword != confirmPassword) {
             authErrorMessage = Locales.t("auth_passwords_mismatch")
             return
         }
-
         scope.launch {
-            val result = if (authEmailRegisterMode) {
-                AuthGateway.registerWithEmail(cleanEmail, cleanPassword)
-            } else {
-                AuthGateway.signInWithEmail(cleanEmail, cleanPassword)
-            }
-
-            when (result) {
-                is SignInResult.Success -> {
-                    runCatching {
-                        val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
-                            installId = IdentityManager.getOrCreateInstallId(),
-                            firebaseUid = result.user.uid,
-                            platform = "android",
-                            authProvider = "password",
-                            email = result.user.email,
-                            displayName = result.user.displayName
-                        )
-
-                        com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
-
-                        com.andrey.beautyplanner.remote.BackendBridge.syncIdentity(
-                            firebaseUid = result.user.uid,
-                            email = result.user.email,
-                            displayName = result.user.displayName,
-                            authProvider = "password"
-                        )
-
-                        currentAuthUser = result.user
-                        AppSettings.lastAuthenticatedAppOpenAtMillis = Clock.System.now().toEpochMilliseconds()
-                        AppSettings.persist()
-                        refreshAccessState()
-                        authResolved = true
-                        authErrorMessage = null
-                        currentScreen = Screen.MONTH
-                    }.onFailure {
-                        authErrorMessage = mapAuthErrorMessage(it.message)
+            showGlobalLoading(Locales.t("loading"))
+            try {
+                val result = if (authEmailRegisterMode) {
+                    AuthGateway.registerWithEmail(cleanEmail, cleanPassword)
+                } else {
+                    AuthGateway.signInWithEmail(cleanEmail, cleanPassword)
+                }
+                when (result) {
+                    is SignInResult.Success -> {
+                        runCatching {
+                            val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
+                                installId = IdentityManager.getOrCreateInstallId(),
+                                firebaseUid = result.user.uid,
+                                platform = "android",
+                                authProvider = "password",
+                                email = result.user.email,
+                                displayName = result.user.displayName
+                            )
+                            com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
+                            com.andrey.beautyplanner.remote.BackendBridge.syncIdentity(
+                                firebaseUid = result.user.uid,
+                                email = result.user.email,
+                                displayName = result.user.displayName,
+                                authProvider = "password"
+                            )
+                            currentAuthUser = result.user
+                            AppSettings.lastAuthenticatedAppOpenAtMillis = Clock.System.now().toEpochMilliseconds()
+                            AppSettings.persist()
+                            refreshAccessState()
+                            authResolved = true
+                            authErrorMessage = null
+                            currentScreen = Screen.MONTH
+                        }.onFailure {
+                            authErrorMessage = mapAuthErrorMessage(it.message)
+                        }
+                    }
+                    is SignInResult.Cancelled -> {
+                        authErrorMessage = Locales.t("auth_error_generic")
+                    }
+                    is SignInResult.Error -> {
+                        authErrorMessage = mapAuthErrorMessage(result.message)
                     }
                 }
-
-                is SignInResult.Cancelled -> {
-                    authErrorMessage = Locales.t("auth_error_generic")
-                }
-
-                is SignInResult.Error -> {
-                    authErrorMessage = mapAuthErrorMessage(result.message)
-                }
+            } finally {
+                hideGlobalLoading()
             }
         }
     }

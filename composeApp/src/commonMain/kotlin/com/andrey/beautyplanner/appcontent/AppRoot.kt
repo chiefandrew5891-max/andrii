@@ -17,7 +17,6 @@ import com.andrey.beautyplanner.appcontent.approot.rememberAppRootState
 @Composable
 fun AppRoot() {
     val state = rememberAppRootState()
-
     MaterialTheme(colors = state.colors, typography = state.customTypography) {
         Surface(
             color = MaterialTheme.colors.background,
@@ -25,9 +24,7 @@ fun AppRoot() {
         ) {
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colors.onBackground) {
                 ProvideTextStyle(MaterialTheme.typography.body1) {
-                    Box(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
                         AppRootChrome(state = state) { padding ->
                             AppRootContent(state = state, padding = padding)
                             AppRootDialogs(state = state)
