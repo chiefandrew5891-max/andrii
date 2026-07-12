@@ -377,7 +377,7 @@ class AppRootState(
         val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
             installId = installId,
             firebaseUid = currentUser.uid,
-            platform = "android",
+            platform = getPlatform().backendPlatform,
             authProvider = backendAuthProvider,
             email = currentUser.email,
             displayName = currentUser.displayName
@@ -400,7 +400,7 @@ class AppRootState(
                             val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
                                 installId = IdentityManager.getOrCreateInstallId(),
                                 firebaseUid = result.user.uid,
-                                platform = "android",
+                                platform = getPlatform().backendPlatform,
                                 authProvider = result.user.provider.name.lowercase(),
                                 email = result.user.email,
                                 displayName = result.user.displayName
@@ -453,7 +453,7 @@ class AppRootState(
                     val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
                         installId = IdentityManager.getOrCreateInstallId(),
                         firebaseUid = user.uid,
-                        platform = "android",
+                        platform = getPlatform().backendPlatform,
                         authProvider = "anonymous",
                         email = user.email,
                         displayName = user.displayName
@@ -579,7 +579,7 @@ class AppRootState(
                             val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
                                 installId = IdentityManager.getOrCreateInstallId(),
                                 firebaseUid = result.user.uid,
-                                platform = "android",
+                                platform = getPlatform().backendPlatform,
                                 authProvider = "password",
                                 email = result.user.email,
                                 displayName = result.user.displayName
@@ -695,7 +695,11 @@ class AppRootState(
                             val remote = com.andrey.beautyplanner.remote.BackendBridge.verifySubscription(
                                 userId = AppSettings.backendUserId,
                                 productId = result.productId,
-                                purchaseToken = result.purchaseToken
+                                purchaseToken = result.purchaseToken,
+                                platform = getPlatform().backendPlatform.uppercase().let {
+                                    if (it == "IOS") "APP_STORE" else "PLAY"
+                                },
+                                transactionId = result.transactionId
                             )
                             com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
                             refreshAccessState()

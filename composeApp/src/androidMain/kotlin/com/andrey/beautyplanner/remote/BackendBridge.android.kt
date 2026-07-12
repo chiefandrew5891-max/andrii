@@ -56,7 +56,9 @@ actual object BackendBridge {
     actual suspend fun verifySubscription(
         userId: String,
         productId: String,
-        purchaseToken: String
+        purchaseToken: String,
+        platform: String,
+        transactionId: String
     ): AccessStatusResponse {
         ensureAuthenticated()
         return callFunction(
@@ -64,7 +66,9 @@ actual object BackendBridge {
             mapOf(
                 "userId" to userId,
                 "productId" to productId,
-                "purchaseToken" to purchaseToken
+                "purchaseToken" to purchaseToken,
+                "platform" to platform,
+                "transactionId" to transactionId
             )
         )
     }

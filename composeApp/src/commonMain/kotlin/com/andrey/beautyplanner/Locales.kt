@@ -8,9 +8,8 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 object Locales {
-
     var currentLanguage by mutableStateOf(
-        AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "ru"
+        AppSettings.languageCodes[AppSettings.selectedLanguage] ?: "en"
     )
 
     private val json = Json {
@@ -23,7 +22,6 @@ object Locales {
 
     suspend fun init() {
         if (initialized) return
-        ensureLoaded("ru")
         ensureLoaded("en")
         ensureLoaded(normalizeLang(currentLanguage))
         initialized = true
@@ -31,7 +29,6 @@ object Locales {
 
     suspend fun onLanguageChanged(langCode: String) {
         currentLanguage = normalizeLang(langCode)
-        ensureLoaded("ru")
         ensureLoaded("en")
         ensureLoaded(currentLanguage)
     }
@@ -39,7 +36,6 @@ object Locales {
     fun t(key: String): String {
         val lang = normalizeLang(currentLanguage)
         return strings[lang]?.get(key)
-            ?: strings["ru"]?.get(key)
             ?: strings["en"]?.get(key)
             ?: key
     }
@@ -78,7 +74,7 @@ object Locales {
 
     private fun normalizeLang(raw: String?): String {
         val value = raw?.trim().orEmpty()
-        if (value.isBlank()) return "ru"
+        if (value.isBlank()) return "en"
 
         val supported = setOf(
             "ar", "bg", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr",
@@ -97,7 +93,7 @@ object Locales {
             if (supported.contains(c)) return c
         }
 
-        return "ru"
+        return "en"
     }
 
     private fun formatPluralTemplate(template: String, count: Int): String {
@@ -107,7 +103,6 @@ object Locales {
 
         val bodyRaw = template.substring(p + marker.length).trim()
         val body = if (bodyRaw.endsWith("}")) bodyRaw.dropLast(1).trim() else bodyRaw
-
         val forms = parsePluralForms(body)
         val category = pluralCategoryFor(normalizeLang(currentLanguage), count)
         val chosen = forms[category] ?: forms["other"] ?: template

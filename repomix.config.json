@@ -1,0 +1,21 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "style": "xml",
+    "filePath": "/Users/chief_andrew/Desktop/repomix-temp.xml"
+  },
+  "ignore": {
+    "customPatterns": [
+      "**/build/**",
+      "build/**",
+      "composeApp/build/**",
+      "**/Pods/**",
+      "**/.gradle/**",
+      "**/.idea/**",
+      "composeApp/src/commonMain/composeResources/**",
+      "composeApp/src/androidMain/res/**",
+      "composeApp/src/androidMain/assets/locales/!(en.json)",
+      "iosApp/iosApp/locales/!(en.json)"
+    ]
+  }
+}

@@ -46,6 +46,7 @@ import com.andrey.beautyplanner.AccessState
 import com.andrey.beautyplanner.AccessTier
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.text.TextStyle
 import com.andrey.beautyplanner.appcontent.appFontFamily
 
@@ -573,7 +574,10 @@ fun SettingsDropdown(
 
             DropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { expanded = false }
+                onDismissRequest = { expanded = false },
+                modifier = Modifier
+                    .widthIn(min = 220.dp, max = 420.dp)
+                    .heightIn(max = 320.dp)
             ) {
                 items.forEach { item ->
                     DropdownMenuItem(

@@ -26,7 +26,8 @@ enum class BillingStatus {
 sealed class PurchaseResult {
     data class Success(
         val productId: String,
-        val purchaseToken: String
+        val purchaseToken: String,
+        val transactionId: String = ""
     ) : PurchaseResult()
 
     data object Cancelled : PurchaseResult()

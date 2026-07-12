@@ -45,7 +45,8 @@ actual class BillingManager actual constructor() {
                         callback(
                             PurchaseResult.Success(
                                 productId = PREMIUM_SUBS_PRODUCT_ID,
-                                purchaseToken = purchase.purchaseToken
+                                purchaseToken = purchase.purchaseToken,
+                                transactionId = ""
                             )
                         )
                     } else {

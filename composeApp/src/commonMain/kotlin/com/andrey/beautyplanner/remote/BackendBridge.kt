@@ -15,7 +15,9 @@ expect object BackendBridge {
     suspend fun verifySubscription(
         userId: String,
         productId: String,
-        purchaseToken: String
+        purchaseToken: String,
+        platform: String = "PLAY",
+        transactionId: String = ""
     ): AccessStatusResponse
 
     suspend fun getAccessStatus(userId: String): AccessStatusResponse

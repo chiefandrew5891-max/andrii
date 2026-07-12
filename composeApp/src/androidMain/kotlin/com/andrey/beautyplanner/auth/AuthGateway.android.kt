@@ -123,6 +123,10 @@ actual object AuthGateway {
         }
     }
 
+    actual suspend fun signInWithApple(): SignInResult {
+        return SignInResult.Error("Apple Sign-In is not available on Android in this version.")
+    }
+
     actual suspend fun registerWithEmail(email: String, password: String): SignInResult {
         return try {
             val authResult = suspendCancellableCoroutine<com.google.firebase.auth.AuthResult> { cont ->

@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.andrey.beautyplanner.notifications
 
 import platform.AVFAudio.AVAudioPlayer
@@ -9,20 +11,19 @@ actual object NotificationSoundPreviewPlayer {
 
     actual fun play(soundType: String, soundId: String) {
         stop()
-
         if (soundType != "BUNDLED" || soundId.isBlank()) return
 
         val fileName = soundId.substringBeforeLast(".")
         val extension = soundId.substringAfterLast(".", "")
 
-        val path = NSBundle.mainBundle.pathForResource(fileName, extension)
-        if (path == null) return
-
+        val path = NSBundle.mainBundle.pathForResource(fileName, extension) ?: return
         val url = NSURL.fileURLWithPath(path)
         val audioPlayer = AVAudioPlayer(contentsOfURL = url, error = null) ?: return
+
         audioPlayer.numberOfLoops = 0
         audioPlayer.prepareToPlay()
         audioPlayer.play()
+
         player = audioPlayer
     }
 
