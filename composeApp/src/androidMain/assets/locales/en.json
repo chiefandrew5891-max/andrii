@@ -411,5 +411,18 @@
     "unpaid_service": "Service",
     "unpaid_price": "Amount",
     "unpaid_done_status": "Completed",
-    "booking_price_invalid": "Enter numbers only"
+    "booking_price_invalid": "Enter numbers only",
+    "auth_show_password": "Show password",
+    "auth_email_not_verified": "Email not verified. Please confirm your email.",
+    "auth_email_verification_sent": "Verification email sent to:",
+    "auth_email_wrong_password": "Wrong password.",
+    "auth_email_user_not_found": "User not found.",
+    "auth_email_already_in_use": "This email is already in use.",
+    "auth_email_provider_disabled": "Email/password sign-in is not enabled.",
+    "auth_email_register_success_verify": "Registration successful. Please verify your email and then sign in.",
+    "auth_email_verification_required": "Please verify your email before signing in.",
+    "auth_email_reset_sent": "Password reset email sent.",
+    "auth_email_reset_failed": "Failed to send password reset email.",
+    "auth_email_sign_in_success": "Signed in successfully.",
+    "auth_email_register_success": "Registration successful."
 }

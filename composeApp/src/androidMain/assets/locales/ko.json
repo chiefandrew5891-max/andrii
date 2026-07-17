@@ -411,5 +411,18 @@
     "unpaid_service": "서비스",
     "unpaid_price": "금액",
     "unpaid_done_status": "완료",
-    "booking_price_invalid": "숫자만 입력해 주세요"
+    "booking_price_invalid": "숫자만 입력해 주세요",
+    "auth_show_password": "비밀번호 표시",
+    "auth_email_not_verified": "이메일이 인증되지 않았습니다. 이메일을 확인해 주세요.",
+    "auth_email_verification_sent": "인증 이메일이 다음 주소로 전송되었습니다:",
+    "auth_email_wrong_password": "잘못된 비밀번호입니다.",
+    "auth_email_user_not_found": "사용자를 찾을 수 없습니다.",
+    "auth_email_already_in_use": "이미 사용 중인 이메일입니다.",
+    "auth_email_provider_disabled": "이메일/비밀번호 로그인이 활성화되어 있지 않습니다.",
+    "auth_email_register_success_verify": "회원가입이 완료되었습니다. 이메일을 인증한 후 로그인해 주세요.",
+    "auth_email_verification_required": "로그인하기 전에 이메일을 인증해 주세요.",
+    "auth_email_reset_sent": "비밀번호 재설정 이메일이 전송되었습니다.",
+    "auth_email_reset_failed": "비밀번호 재설정 이메일 전송에 실패했습니다.",
+    "auth_email_sign_in_success": "로그인에 성공했습니다.",
+    "auth_email_register_success": "회원가입이 완료되었습니다."
 }

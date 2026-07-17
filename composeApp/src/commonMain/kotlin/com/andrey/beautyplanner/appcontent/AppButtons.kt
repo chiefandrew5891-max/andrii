@@ -1,8 +1,13 @@
 package com.andrey.beautyplanner.appcontent
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -18,7 +23,8 @@ import androidx.compose.ui.unit.dp
 
 private val DefaultActionButtonMaxWidth = 420.dp
 private val DefaultActionButtonHeight = 44.dp
-private val DefaultActionButtonShape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+private val DefaultActionButtonShape =
+    androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
 
 @Composable
 fun PrimaryActionButton(
@@ -110,6 +116,59 @@ fun DangerActionButton(
                 color = if (enabled) Color.Red else Color.Red.copy(alpha = 0.45f),
                 fontWeight = FontWeight.SemiBold
             )
+        }
+    }
+}
+
+@Composable
+fun BrandedAuthButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    backgroundColor: Color,
+    contentColor: Color,
+    borderColor: Color = Color.Transparent,
+    leadingContent: @Composable () -> Unit
+) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Button(
+            onClick = onClick,
+            enabled = enabled,
+            modifier = Modifier
+                .widthIn(max = DefaultActionButtonMaxWidth)
+                .fillMaxWidth()
+                .height(54.dp),
+            shape = DefaultActionButtonShape,
+            elevation = ButtonDefaults.elevation(
+                defaultElevation = 2.dp,
+                pressedElevation = 4.dp,
+                disabledElevation = 0.dp
+            ),
+            border = BorderStroke(1.dp, borderColor),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = backgroundColor,
+                contentColor = contentColor,
+                disabledBackgroundColor = backgroundColor.copy(alpha = 0.55f),
+                disabledContentColor = contentColor.copy(alpha = 0.55f)
+            ),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                leadingContent()
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = text,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
     }
 }

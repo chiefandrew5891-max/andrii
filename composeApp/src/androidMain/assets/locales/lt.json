@@ -411,5 +411,18 @@
     "unpaid_service": "Paslauga",
     "unpaid_price": "Suma",
     "unpaid_done_status": "Atlikta",
-    "booking_price_invalid": "Įveskite tik skaičius"
+    "booking_price_invalid": "Įveskite tik skaičius",
+    "auth_show_password": "Rodyti slaptažodį",
+    "auth_email_not_verified": "El. paštas nepatvirtintas. Prašome patvirtinti savo el. paštą.",
+    "auth_email_verification_sent": "Patvirtinimo el. laiškas išsiųstas adresu:",
+    "auth_email_wrong_password": "Neteisingas slaptažodis.",
+    "auth_email_user_not_found": "Vartotojas nerastas.",
+    "auth_email_already_in_use": "Šis el. paštas jau naudojamas.",
+    "auth_email_provider_disabled": "Prisijungimas el. paštu / slaptažodžiu neįjungtas.",
+    "auth_email_register_success_verify": "Registracija sėkminga. Prieš prisijungdami, patvirtinkite savo el. paštą.",
+    "auth_email_verification_required": "Prieš prisijungdami, patvirtinkite savo el. paštą.",
+    "auth_email_reset_sent": "Slaptažodžio nustatymo iš naujo el. laiškas išsiųstas.",
+    "auth_email_reset_failed": "Nepavyko išsiųsti slaptažodžio nustatymo iš naujo el. laiškų.",
+    "auth_email_sign_in_success": "Sėkmingai prisijungta.",
+    "auth_email_register_success": "Registracija sėkminga."
 }

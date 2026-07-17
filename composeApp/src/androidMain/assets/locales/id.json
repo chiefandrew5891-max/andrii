@@ -411,5 +411,18 @@
     "unpaid_service": "Layanan",
     "unpaid_price": "Jumlah",
     "unpaid_done_status": "Selesai",
-    "booking_price_invalid": "Masukkan angka saja"
+    "booking_price_invalid": "Masukkan angka saja",
+    "auth_show_password": "Tampilkan kata sandi",
+    "auth_email_not_verified": "Email belum diverifikasi. Silakan konfirmasi email Anda.",
+    "auth_email_verification_sent": "Email verifikasi dikirim ke:",
+    "auth_email_wrong_password": "Kata sandi salah.",
+    "auth_email_user_not_found": "Pengguna tidak ditemukan.",
+    "auth_email_already_in_use": "Email ini sudah digunakan.",
+    "auth_email_provider_disabled": "Masuk dengan email/kata sandi tidak diaktifkan.",
+    "auth_email_register_success_verify": "Pendaftaran berhasil. Silakan verifikasi email Anda lalu masuk.",
+    "auth_email_verification_required": "Silakan verifikasi email Anda sebelum masuk.",
+    "auth_email_reset_sent": "Email pengaturan ulang kata sandi telah dikirim.",
+    "auth_email_reset_failed": "Gagal mengirim email pengaturan ulang kata sandi.",
+    "auth_email_sign_in_success": "Berhasil masuk.",
+    "auth_email_register_success": "Pendaftaran berhasil."
 }

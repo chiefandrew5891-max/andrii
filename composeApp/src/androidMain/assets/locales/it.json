@@ -411,5 +411,18 @@
     "unpaid_service": "Servizio",
     "unpaid_price": "Importo",
     "unpaid_done_status": "Completato",
-    "booking_price_invalid": "Inserisci solo numeri"
+    "booking_price_invalid": "Inserisci solo numeri",
+    "auth_show_password": "Mostra password",
+    "auth_email_not_verified": "Email non verificata. Per favore, conferma la tua email.",
+    "auth_email_verification_sent": "Email di verifica inviata a:",
+    "auth_email_wrong_password": "Password errata.",
+    "auth_email_user_not_found": "Utente non trovato.",
+    "auth_email_already_in_use": "Questa email è già in uso.",
+    "auth_email_provider_disabled": "L'accesso con email/password non è abilitato.",
+    "auth_email_register_success_verify": "Registrazione completata con successo. Per favore, verifica la tua email e poi accedi.",
+    "auth_email_verification_required": "Per favor, verifica la tua email prima di accedere.",
+    "auth_email_reset_sent": "Email di reimpostazione della password inviata.",
+    "auth_email_reset_failed": "Impossibile inviare l'email di reimpostazione della password.",
+    "auth_email_sign_in_success": "Accesso effettuato con successo.",
+    "auth_email_register_success": "Registrazione completata con successo."
 }

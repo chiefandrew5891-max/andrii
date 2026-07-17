@@ -411,5 +411,18 @@
     "unpaid_service": "Usluga",
     "unpaid_price": "Iznos",
     "unpaid_done_status": "Završeno",
-    "booking_price_invalid": "Unesite samo brojeve"
+    "booking_price_invalid": "Unesite samo brojeve",
+    "auth_show_password": "Prikaži lozinku",
+    "auth_email_not_verified": "E-mail nije verifikovan. Molimo potvrdite svoj e-mail.",
+    "auth_email_verification_sent": "Verifikacioni e-mail je poslat na:",
+    "auth_email_wrong_password": "Netačna lozinka.",
+    "auth_email_user_not_found": "Korisnik nije pronađen.",
+    "auth_email_already_in_use": "Ova e-mail adresa je već u upotrebi.",
+    "auth_email_provider_disabled": "Prijava putem e-maila/lozinke nije omogućena.",
+    "auth_email_register_success_verify": "Registracija uspešna. Molimo verifikujte svoj e-mail, a zatim se prijavite.",
+    "auth_email_verification_required": "Molimo verifikujte svoj e-mail pre prijave.",
+    "auth_email_reset_sent": "E-mail za resetovanje lozinke je poslat.",
+    "auth_email_reset_failed": "Slanje e-maila za resetovanje lozinke nije uspelo.",
+    "auth_email_sign_in_success": "Uspešno ste se prijavili.",
+    "auth_email_register_success": "Registracija uspešna."
 }

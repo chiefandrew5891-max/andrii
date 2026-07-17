@@ -89,6 +89,7 @@ fun DayDetailsView(
         }
     }
     val nowMin = remember(nowTimeHm) { parseHmToMinutes(nowTimeHm) ?: 0 }
+    val currentHourStartMin = remember(nowMin) { (nowMin / 60) * 60 }
 
     val monthKeyGen = when (date.monthNumber) {
         1 -> "month_jan_gen"
@@ -204,6 +205,13 @@ fun DayDetailsView(
 
                 val startHm = minutesToHm(b.startMin)
                 val endHm = minutesToHm(b.endMin)
+                val slotStartMin = b.startMin
+
+                val blockedByPastTime =
+                    b.kind == Block.Kind.FREE &&
+                            date == today &&
+                            slotStartMin < currentHourStartMin
+
                 val blockedBySchedule =
                     b.kind == Block.Kind.FREE &&
                             date >= today &&
@@ -253,6 +261,8 @@ fun DayDetailsView(
                         }
                     )
                 } else {
+                    val slotDisabled = date < today || blockedByPastTime || blockedBySchedule
+
                     Card(
                         elevation = 0.dp,
                         shape = RoundedCornerShape(14.dp),
@@ -263,13 +273,13 @@ fun DayDetailsView(
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = LocalIndication.current,
-                                enabled = date >= today && !blockedBySchedule,
+                                enabled = !slotDisabled,
                                 onClick = { onTimeClick(startHm) }
                             ),
                         backgroundColor = Color.Transparent,
                         border = BorderStroke(
                             1.dp,
-                            if (date < today || blockedBySchedule) {
+                            if (slotDisabled) {
                                 MaterialTheme.colors.onSurface.copy(alpha = 0.06f)
                             } else {
                                 MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
@@ -290,7 +300,7 @@ fun DayDetailsView(
                                     text = startHm,
                                     fontSize = (16 * fontScale).sp,
                                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                    color = if (date < today || blockedBySchedule) {
+                                    color = if (slotDisabled) {
                                         MaterialTheme.colors.onSurface.copy(alpha = 0.28f)
                                     } else {
                                         MaterialTheme.colors.onSurface.copy(alpha = 0.55f)
@@ -298,12 +308,12 @@ fun DayDetailsView(
                                 )
                             }
                             Text(
-                                text = if (date < today || blockedBySchedule) {
+                                text = if (slotDisabled) {
                                     Locales.t("unavailable")
                                 } else {
                                     Locales.t("free")
                                 },
-                                color = if (date < today || blockedBySchedule) {
+                                color = if (slotDisabled) {
                                     MaterialTheme.colors.onSurface.copy(alpha = 0.18f)
                                 } else {
                                     MaterialTheme.colors.onSurface.copy(alpha = 0.35f)

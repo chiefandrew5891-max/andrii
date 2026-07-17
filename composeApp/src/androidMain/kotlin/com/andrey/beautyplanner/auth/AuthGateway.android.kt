@@ -107,6 +107,17 @@ actual object AuthGateway {
             val user = authResult.user
                 ?: return SignInResult.Error(Locales.t("auth_email_sign_in_failed"))
 
+            suspendCancellableCoroutine<Unit> { cont ->
+                user.reload()
+                    .addOnSuccessListener { cont.resume(Unit) }
+                    .addOnFailureListener { cont.resumeWithException(it) }
+            }
+
+            if (!user.isEmailVerified) {
+                Firebase.auth.signOut()
+                return SignInResult.Error(Locales.t("auth_email_not_verified"))
+            }
+
             SignInResult.Success(
                 AuthUser(
                     uid = user.uid,
@@ -129,14 +140,35 @@ actual object AuthGateway {
 
     actual suspend fun registerWithEmail(email: String, password: String): SignInResult {
         return try {
-            val authResult = suspendCancellableCoroutine<com.google.firebase.auth.AuthResult> { cont ->
-                Firebase.auth.createUserWithEmailAndPassword(email.trim(), password)
+            val cleanEmail = email.trim()
+
+            suspendCancellableCoroutine<com.google.firebase.auth.AuthResult> { cont ->
+                Firebase.auth.createUserWithEmailAndPassword(cleanEmail, password)
                     .addOnSuccessListener { cont.resume(it) }
                     .addOnFailureListener { cont.resumeWithException(it) }
             }
 
-            val user = authResult.user
+            val currentUser = Firebase.auth.currentUser
                 ?: return SignInResult.Error(Locales.t("auth_email_register_failed"))
+
+            suspendCancellableCoroutine<Unit> { cont ->
+                currentUser.sendEmailVerification()
+                    .addOnSuccessListener { cont.resume(Unit) }
+                    .addOnFailureListener { cont.resumeWithException(it) }
+            }
+
+            Firebase.auth.signOut()
+
+            val verifyResult = suspendCancellableCoroutine<com.google.firebase.auth.AuthResult> { cont ->
+                Firebase.auth.signInWithEmailAndPassword(cleanEmail, password)
+                    .addOnSuccessListener { cont.resume(it) }
+                    .addOnFailureListener { cont.resumeWithException(it) }
+            }
+
+            val user = verifyResult.user
+                ?: return SignInResult.Error(Locales.t("auth_email_register_failed"))
+
+            Firebase.auth.signOut()
 
             SignInResult.Success(
                 AuthUser(
@@ -170,6 +202,7 @@ actual object AuthGateway {
             }
         }
     }
+
     actual suspend fun sendPasswordReset(email: String): SignInResult {
         return try {
             suspendCancellableCoroutine<Unit> { cont ->

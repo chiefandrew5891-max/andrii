@@ -164,7 +164,7 @@ fun AppRootContent(
                     state.openEmailSignInScreen()
                 },
                 onRegisterWithEmail = {
-                    state.openEmailRegisterScreen()
+                    state.openEmailSignInScreen()
                 },
                 onContinueAnonymously = {
                     state.continueAnonymously()
@@ -174,6 +174,10 @@ fun AppRootContent(
             Screen.AUTH_EMAIL -> AuthEmailScreen(
                 isRegisterMode = state.authEmailRegisterMode,
                 errorMessage = state.authErrorMessage,
+                onModeChange = { isRegister ->
+                    state.authEmailRegisterMode = isRegister
+                    state.authErrorMessage = null
+                },
                 onSubmit = { email, password, confirmPassword ->
                     state.submitEmailAuth(email, password, confirmPassword)
                 },

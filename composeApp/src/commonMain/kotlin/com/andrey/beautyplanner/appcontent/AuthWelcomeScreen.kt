@@ -12,6 +12,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,39 +56,56 @@ fun AuthWelcomeScreen(
                 color = onBg.copy(alpha = 0.72f)
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
 
-            PrimaryActionButton(
+            BrandedAuthButton(
                 text = Locales.t("auth_google"),
-                onClick = onContinueWithGoogle
+                onClick = onContinueWithGoogle,
+                backgroundColor = Color.White,
+                contentColor = Color(0xFF1F1F1F),
+                borderColor = Color(0xFFDADCE0),
+                leadingContent = {
+                    GoogleIcon()
+                }
             )
 
             if (isAppleSignInSupported()) {
-                SecondaryActionButton(
+                BrandedAuthButton(
                     text = Locales.t("auth_apple"),
-                    onClick = onContinueWithApple
+                    onClick = onContinueWithApple,
+                    backgroundColor = Color.Black,
+                    contentColor = Color.White,
+                    borderColor = Color.Black,
+                    leadingContent = {
+                        AppleGlyphIcon()
+                    }
                 )
             }
 
-            SecondaryActionButton(
+            BrandedAuthButton(
                 text = Locales.t("auth_email_sign_in"),
-                onClick = onContinueWithEmail
+                onClick = onContinueWithEmail,
+                backgroundColor = Color.White,
+                contentColor = onSurface,
+                borderColor = onSurface.copy(alpha = 0.14f),
+                leadingContent = {
+                    MailIcon()
+                }
             )
 
-            SecondaryActionButton(
-                text = Locales.t("auth_email_register"),
-                onClick = onRegisterWithEmail
-            )
-
-            SecondaryActionButton(
+            BrandedAuthButton(
                 text = Locales.t("auth_anonymous"),
-                onClick = onContinueAnonymously
-            )
-
-            Text(
-                text = Locales.t("auth_skip_hint"),
-                fontSize = (12 * fontScale).sp,
-                color = onSurface.copy(alpha = 0.65f)
+                onClick = onContinueAnonymously,
+                backgroundColor = Color.White,
+                contentColor = onSurface,
+                borderColor = onSurface.copy(alpha = 0.14f),
+                leadingContent = {
+                    Text(
+                        text = "👤",
+                        color = MaterialTheme.colors.primary,
+                        fontSize = 18.sp
+                    )
+                }
             )
 
             if (!errorMessage.isNullOrBlank()) {

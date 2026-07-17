@@ -411,5 +411,18 @@
     "unpaid_service": "Pakalpojums",
     "unpaid_price": "Summa",
     "unpaid_done_status": "Pabeigts",
-    "booking_price_invalid": "Ievadiet tikai skaitļus"
+    "booking_price_invalid": "Ievadiet tikai skaitļus",
+    "auth_show_password": "Rādīt paroli",
+    "auth_email_not_verified": "E-pasts nav verificēts. Lūdzu, apstipriniet savu e-pastu.",
+    "auth_email_verification_sent": "Verifikācijas e-pasts nosūtīts uz:",
+    "auth_email_wrong_password": "Nepareiza parole.",
+    "auth_email_user_not_found": "Lietotājs nav atrasts.",
+    "auth_email_already_in_use": "Šis e-pasts jau tiek izmantots.",
+    "auth_email_provider_disabled": "Pieteikšanās ar e-pastu/paroli nav iespējota.",
+    "auth_email_register_success_verify": "Reģistrācija veiksmīga. Lūdzu, verificējiet savu e-pastu un pēc tam piesakieties.",
+    "auth_email_verification_required": "Pirms pieteikšanās, lūdzu, verificējiet savu e-pastu.",
+    "auth_email_reset_sent": "Paroles atiestatīšanas e-pasts ir nosūtīts.",
+    "auth_email_reset_failed": "Neizdevās nosūtīt paroles atiestatīšanas e-pastu.",
+    "auth_email_sign_in_success": "Pieteikšanās veiksmīga.",
+    "auth_email_register_success": "Reģistrācija veiksmīga."
 }

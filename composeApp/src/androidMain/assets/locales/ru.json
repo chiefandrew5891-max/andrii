@@ -411,5 +411,18 @@
     "unpaid_service": "Услуга",
     "unpaid_price": "Сумма",
     "unpaid_done_status": "Завершено",
-    "booking_price_invalid": "Вводите только цифры"
+    "booking_price_invalid": "Вводите только цифры",
+    "auth_show_password": "Показать пароль",
+    "auth_email_not_verified": "Email не подтвержден. Пожалуйста, подтвердите ваш статус.",
+    "auth_email_verification_sent": "Письмо с подтверждением отправлено на:",
+    "auth_email_wrong_password": "Неверный пароль.",
+    "auth_email_user_not_found": "Пользователь не найден.",
+    "auth_email_already_in_use": "Этот email уже используется.",
+    "auth_email_provider_disabled": "Вход по email и паролю отключен.",
+    "auth_email_register_success_verify": "Регистрация успешна. Пожалуйста, подтвердите email, а затем войдите в систему.",
+    "auth_email_verification_required": "Пожалуйста, подтвердите ваш email перед входом.",
+    "auth_email_reset_sent": "Письмо для сброса пароля отправлено.",
+    "auth_email_reset_failed": "Не удалось отправить письмо для сброса пароля.",
+    "auth_email_sign_in_success": "Вход выполнен успешно.",
+    "auth_email_register_success": "Регистрация успешна."
 }

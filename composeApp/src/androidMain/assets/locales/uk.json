@@ -411,5 +411,18 @@
     "unpaid_service": "Послуга",
     "unpaid_price": "Сума",
     "unpaid_done_status": "Завершено",
-    "booking_price_invalid": "Вводьте тільки цифри"
+    "booking_price_invalid": "Вводьте тільки цифри",
+    "auth_show_password": "Показати пароль",
+    "auth_email_not_verified": "Email не підтверджено. Будь ласка, підтвердіть свій email.",
+    "auth_email_verification_sent": "Лист із підтвердженням надіслано на:",
+    "auth_email_wrong_password": "Невірний пароль.",
+    "auth_email_user_not_found": "Користувача не знайдено.",
+    "auth_email_already_in_use": "Цей email вже використовується.",
+    "auth_email_provider_disabled": "Вхід за допомогою email/пароля не увімкнено.",
+    "auth_email_register_success_verify": "Реєстрація успішна. Будь ласка, підтвердіть свій email, а потім увійдіть.",
+    "auth_email_verification_required": "Будь ласка, підтвердіть свій email перед входом.",
+    "auth_email_reset_sent": "Лист для скидання пароля надіслано.",
+    "auth_email_reset_failed": "Не вдалося надіслати лист для скидання пароля.",
+    "auth_email_sign_in_success": "Вхід виконано успішно.",
+    "auth_email_register_success": "Реєстрація успішна."
 }

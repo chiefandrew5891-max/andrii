@@ -411,5 +411,18 @@
     "unpaid_service": "सेवा",
     "unpaid_price": "राशि",
     "unpaid_done_status": "पूरा हुआ",
-    "booking_price_invalid": "केवल संख्याएँ दर्ज करें"
+    "booking_price_invalid": "केवल संख्याएँ दर्ज करें",
+    "auth_show_password": "पासवर्ड दिखाएं",
+    "auth_email_not_verified": "ईमेल सत्यापित नहीं है. कृपया अपना ईमेल पुष्टि करें।",
+    "auth_email_verification_sent": "सत्यापन ईमेल इस पर भेजा गया:",
+    "auth_email_wrong_password": "गलत पासवर्ड।",
+    "auth_email_user_not_found": "उपयोगकर्ता नहीं मिला।",
+    "auth_email_already_in_use": "यह ईमेल पहले से ही उपयोग में है।",
+    "auth_email_provider_disabled": "ईमेल/पासवर्ड साइन-इन सक्षम नहीं है।",
+    "auth_email_register_success_verify": "पंजीकरण सफल रहा। कृपया अपना ईमेल सत्यापित करें और फिर साइन इन करें।",
+    "auth_email_verification_required": "कृपया साइन इन करने से पहले अपना ईमेल सत्यापित करें।",
+    "auth_email_reset_sent": "पासवर्ड रीसेट ईमेल भेजा गया।",
+    "auth_email_reset_failed": "पासवर्ड रीसेट ईमेल भेजने में विफल।",
+    "auth_email_sign_in_success": "सफलतापूर्वक साइन इन किया गया।",
+    "auth_email_register_success": "पंजीकरण सफल रहा।"
 }

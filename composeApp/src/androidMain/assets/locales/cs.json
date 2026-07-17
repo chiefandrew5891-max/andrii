@@ -411,5 +411,18 @@
     "unpaid_service": "Služba",
     "unpaid_price": "Částka",
     "unpaid_done_status": "Dokončeno",
-    "booking_price_invalid": "Zadejte pouze čísla"
+    "booking_price_invalid": "Zadejte pouze čísla",
+    "auth_show_password": "Zobrazit heslo",
+    "auth_email_not_verified": "E-mail není ověřen. Potvrďte prosím svůj e-mail.",
+    "auth_email_verification_sent": "Ověřovací e-mail byl zaslán na adresu:",
+    "auth_email_wrong_password": "Nesprávné heslo.",
+    "auth_email_user_not_found": "Uživatel nebyl nalezen.",
+    "auth_email_already_in_use": "Tento e-mail se již používá.",
+    "auth_email_provider_disabled": "Přihlášení pomocí e-mailu/hesla není povoleno.",
+    "auth_email_register_success_verify": "Registrace byla úspěšná. Ověřte prosím svůj e-mail a poté se přihlaste.",
+    "auth_email_verification_required": "Před přihlášením prosím ověřte svůj e-mail.",
+    "auth_email_reset_sent": "E-mail pro obnovení hesla byl odeslán.",
+    "auth_email_reset_failed": "Odeslání e-mailu pro obnovení hesla selhalo.",
+    "auth_email_sign_in_success": "Přihlášení proběhlo úspěšně.",
+    "auth_email_register_success": "Registrace byla úspěšná."
 }

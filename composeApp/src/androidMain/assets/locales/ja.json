@@ -411,5 +411,18 @@
     "unpaid_service": "サービス",
     "unpaid_price": "金額",
     "unpaid_done_status": "完了",
-    "booking_price_invalid": "半角数字のみ入力してください"
+    "booking_price_invalid": "半角数字のみ入力してください",
+    "auth_show_password": "パスワードを表示",
+    "auth_email_not_verified": "メールアドレスが確認されていません。メールを確認してください。",
+    "auth_email_verification_sent": "確認メールを送信しました:",
+    "auth_email_wrong_password": "パスワードが間違っています。",
+    "auth_email_user_not_found": "ユーザーが見つかりません。",
+    "auth_email_already_in_use": "このメールアドレスは既に使用されています。",
+    "auth_email_provider_disabled": "メールアドレスとパスワードによるログインは有効になっていません。",
+    "auth_email_register_success_verify": "登録が完了しました。メールアドレスを確認してからサインインしてください。",
+    "auth_email_verification_required": "サインインする前にメールアドレスを確認してください。",
+    "auth_email_reset_sent": "パスワード再設定メールを送信しました。",
+    "auth_email_reset_failed": "パスワード再設定メールの送信に失敗しました。",
+    "auth_email_sign_in_success": "サインインに成功しました。",
+    "auth_email_register_success": "登録が完了しました。"
 }

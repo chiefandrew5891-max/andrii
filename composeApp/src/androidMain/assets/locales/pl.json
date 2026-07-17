@@ -411,5 +411,18 @@
     "unpaid_service": "Usługa",
     "unpaid_price": "Kwota",
     "unpaid_done_status": "Zakończone",
-    "booking_price_invalid": "Wprowadź tylko cyfry"
+    "booking_price_invalid": "Wprowadź tylko cyfry",
+    "auth_show_password": "Pokaż hasło",
+    "auth_email_not_verified": "E-mail niezweryfikowany. Proszę potwierdzić swój e-mail.",
+    "auth_email_verification_sent": "E-mail weryfikacyjny wysłany na adres:",
+    "auth_email_wrong_password": "Błędne hasło.",
+    "auth_email_user_not_found": "Nie znaleziono użytkownika.",
+    "auth_email_already_in_use": "Ten e-mail jest już w użyciu.",
+    "auth_email_provider_disabled": "Logowanie za pomocą e-maila/hasła nie jest włączone.",
+    "auth_email_register_success_verify": "Rejestracja pomyślna. Proszę zweryfikować swój e-mail, a następnie się zalogować.",
+    "auth_email_verification_required": "Proszę zweryfikować swój e-mail przed zalogowaniem.",
+    "auth_email_reset_sent": "Wysłano e-mail do resetowania hasła.",
+    "auth_email_reset_failed": "Nie udało się wysłać e-maila do resetowania hasła.",
+    "auth_email_sign_in_success": "Zalogowano pomyślnie.",
+    "auth_email_register_success": "Rejestracja pomyślna."
 }

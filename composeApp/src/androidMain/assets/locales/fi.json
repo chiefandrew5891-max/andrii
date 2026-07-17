@@ -411,5 +411,18 @@
     "unpaid_service": "Palvelu",
     "unpaid_price": "Summa",
     "unpaid_done_status": "Valmis",
-    "booking_price_invalid": "Syötä vain numeroita"
+    "booking_price_invalid": "Syötä vain numeroita",
+    "auth_show_password": "Näytä salasana",
+    "auth_email_not_verified": "Sähköpostia ei ole vahvistettu. Vahvista sähköpostisi.",
+    "auth_email_verification_sent": "Vahvistussähköposti lähetetty osoitteeseen:",
+    "auth_email_wrong_password": "Väärä salasana.",
+    "auth_email_user_not_found": "Käyttäjää ei löytynyt.",
+    "auth_email_already_in_use": "Tämä sähköposti on jo käytössä.",
+    "auth_email_provider_disabled": "Sähköposti-/salasanakirjautuminen ei ole käytössä.",
+    "auth_email_register_success_verify": "Rekisteröinti onnistui. Vahvista sähköpostisi ja kirjaudu sitten sisään.",
+    "auth_email_verification_required": "Vahvista sähköpostisi ennen sisäänkirjautumista.",
+    "auth_email_reset_sent": "Salasanan palautussähköposti lähetetty.",
+    "auth_email_reset_failed": "Salasanan palautussähköpostin lähettäminen epäonnistui.",
+    "auth_email_sign_in_success": "Kirjautuminen onnistui.",
+    "auth_email_register_success": "Rekisteröinti onnistui."
 }

@@ -1,16 +1,49 @@
 package com.andrey.beautyplanner.auth
 
+import com.andrey.beautyplanner.Locales
+import com.andrey.beautyplanner.remote.BackendBridgeConnector
 import kotlinx.coroutines.CompletableDeferred
 
 actual object AuthGateway {
     private var localUser: AuthUser? = null
 
     actual suspend fun getCurrentUser(): AuthUser? {
-        return localUser
+        localUser?.let { return it }
+
+        val caller = BackendBridgeConnector.callBackend ?: return null
+        val deferred = CompletableDeferred<Map<String, String>>()
+
+        return try {
+            caller.invoke("__currentUser", emptyMap(), deferred)
+            val result = deferred.await()
+
+            val uid = result["uid"].orEmpty().trim()
+            if (uid.isBlank()) return null
+
+            val providerRaw = result["provider"].orEmpty().trim().uppercase()
+            val provider = when (providerRaw) {
+                "GOOGLE" -> SignInProvider.GOOGLE
+                "EMAIL" -> SignInProvider.EMAIL
+                "APPLE" -> SignInProvider.APPLE
+                "ANONYMOUS" -> SignInProvider.ANONYMOUS
+                else -> SignInProvider.ANONYMOUS
+            }
+
+            AuthUser(
+                uid = uid,
+                provider = provider,
+                email = result["email"].orEmpty(),
+                displayName = result["displayName"].orEmpty()
+            ).also {
+                localUser = it
+            }
+        } catch (_: Throwable) {
+            null
+        }
     }
 
     actual suspend fun signInAnonymously(): SignInResult {
-        val existing = localUser
+        val existing = getCurrentUser()
         if (existing != null) return SignInResult.Success(existing)
 
         val user = AuthUser(
@@ -52,21 +85,121 @@ actual object AuthGateway {
     }
 
     actual suspend fun signInWithEmail(email: String, password: String): SignInResult {
-        return SignInResult.Error("Email auth on iOS is not available yet.")
+        val bridge = EmailAuthBridgeConnector.signIn
+            ?: return SignInResult.Error("iOS email auth bridge is not connected.")
+
+        val reloadBridge = EmailAuthBridgeConnector.reloadCurrentUser
+            ?: return SignInResult.Error("iOS reload current user bridge is not connected.")
+
+        return try {
+            val deferred = CompletableDeferred<Map<String, String>>()
+            bridge.invoke(email.trim(), password, deferred)
+            deferred.await()
+
+            val reloadDeferred = CompletableDeferred<Map<String, String>>()
+            reloadBridge.invoke(reloadDeferred)
+            val reloaded = reloadDeferred.await()
+
+            val verified = reloaded["isEmailVerified"].equals("true", ignoreCase = true)
+
+            if (!verified) {
+                signOut()
+                return SignInResult.Error("auth_email_not_verified")
+            }
+
+            val user = mapUser(reloaded)
+            localUser = user
+            SignInResult.Success(user)
+        } catch (t: Throwable) {
+            SignInResult.Error(t.message ?: "Email sign-in failed on iOS.")
+        }
     }
 
     actual suspend fun registerWithEmail(email: String, password: String): SignInResult {
-        return SignInResult.Error("Email registration on iOS is not available yet.")
+        val registerBridge = EmailAuthBridgeConnector.registerUser
+            ?: return SignInResult.Error("iOS email auth bridge is not connected.")
+
+        val verificationBridge = EmailAuthBridgeConnector.sendEmailVerification
+            ?: return SignInResult.Error("iOS email verification bridge is not connected.")
+
+        return try {
+            val deferred = CompletableDeferred<Map<String, String>>()
+            registerBridge.invoke(email.trim(), password, deferred)
+            val result = deferred.await()
+
+            val verificationDeferred = CompletableDeferred<Map<String, String>>()
+            verificationBridge.invoke(verificationDeferred)
+            verificationDeferred.await()
+
+            val caller = BackendBridgeConnector.callBackend
+            if (caller != null) {
+                val signOutDeferred = CompletableDeferred<Map<String, String>>()
+                runCatching {
+                    caller.invoke("__signOut", emptyMap(), signOutDeferred)
+                    signOutDeferred.await()
+                }
+            }
+
+            localUser = null
+            SignInResult.Success(mapUser(result))
+        } catch (t: Throwable) {
+            SignInResult.Error(t.message ?: "Email registration failed on iOS.")
+        }
     }
 
     actual suspend fun sendPasswordReset(email: String): SignInResult {
-        return SignInResult.Error("Password reset on iOS is not available yet.")
+        val bridge = EmailAuthBridgeConnector.sendPasswordReset
+            ?: return SignInResult.Error("iOS password reset bridge is not connected.")
+
+        return try {
+            val deferred = CompletableDeferred<Map<String, String>>()
+            bridge.invoke(email.trim(), deferred)
+            deferred.await()
+
+            SignInResult.Success(
+                AuthUser(
+                    uid = "",
+                    provider = SignInProvider.EMAIL,
+                    email = email.trim(),
+                    displayName = ""
+                )
+            )
+        } catch (t: Throwable) {
+            SignInResult.Error(t.message ?: "Password reset failed on iOS.")
+        }
     }
 
     actual suspend fun signOut() {
+        val caller = BackendBridgeConnector.callBackend
+        if (caller != null) {
+            val deferred = CompletableDeferred<Map<String, String>>()
+            runCatching {
+                caller.invoke("__signOut", emptyMap(), deferred)
+                deferred.await()
+            }
+        }
         localUser = null
     }
 
     actual suspend fun clearCredentialState() {
+        localUser = null
+    }
+
+    private fun mapUser(result: Map<String, String>): AuthUser {
+        val providerRaw = result["provider"].orEmpty().trim().uppercase()
+        val provider = when (providerRaw) {
+            "GOOGLE" -> SignInProvider.GOOGLE
+            "EMAIL" -> SignInProvider.EMAIL
+            "APPLE" -> SignInProvider.APPLE
+            "ANONYMOUS" -> SignInProvider.ANONYMOUS
+            else -> SignInProvider.EMAIL
+        }
+
+        return AuthUser(
+            uid = result["uid"].orEmpty(),
+            provider = provider,
+            email = result["email"].orEmpty(),
+            displayName = result["displayName"].orEmpty()
+        )
     }
 }

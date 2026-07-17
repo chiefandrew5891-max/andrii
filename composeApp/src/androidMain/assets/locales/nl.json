@@ -411,5 +411,18 @@
     "unpaid_service": "Dienst",
     "unpaid_price": "Bedrag",
     "unpaid_done_status": "Voltooid",
-    "booking_price_invalid": "Voer alleen cijfers in"
+    "booking_price_invalid": "Voer alleen cijfers in",
+    "auth_show_password": "Wachtwoord weergeven",
+    "auth_email_not_verified": "E-mail niet geverifieerd. Bevestig je e-mailadres.",
+    "auth_email_verification_sent": "Verificatie-e-mail verzonden naar:",
+    "auth_email_wrong_password": "Onjuist wachtwoord.",
+    "auth_email_user_not_found": "Gebruiker niet gevonden.",
+    "auth_email_already_in_use": "Dit e-mailadres is al in gebruik.",
+    "auth_email_provider_disabled": "Inloggen met e-mail/wachtwoord is niet ingeschakeld.",
+    "auth_email_register_success_verify": "Registratie succesvol. Verifieer je e-mailadres en log vervolgens in.",
+    "auth_email_verification_required": "Verifieer je e-mailadres voordat je inlogt.",
+    "auth_email_reset_sent": "E-mail voor het opnieuw instellen van het wachtwoord verzonden.",
+    "auth_email_reset_failed": "Verzenden van e-mail voor het opnieuw instellen van het wachtwoord mislukt.",
+    "auth_email_sign_in_success": "Succesvol ingelogd.",
+    "auth_email_register_success": "Registratie succesvol."
 }

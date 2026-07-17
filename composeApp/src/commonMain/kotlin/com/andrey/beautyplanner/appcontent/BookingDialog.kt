@@ -42,6 +42,28 @@ private fun isValidPriceInput(value: String): Boolean {
     if (value.isBlank()) return false
     return value.matches(Regex("""^\d+([.,]\d{0,2})?$"""))
 }
+private fun filterPhoneInput(value: String): String {
+    val allowed = value.filter { ch ->
+        ch.isDigit() || ch == '+' || ch == ' ' || ch == '(' || ch == ')' || ch == '-'
+    }
+
+    val result = StringBuilder()
+    var plusUsed = false
+
+    allowed.forEachIndexed { index, ch ->
+        when {
+            ch.isDigit() || ch == ' ' || ch == '(' || ch == ')' || ch == '-' -> {
+                result.append(ch)
+            }
+            ch == '+' && !plusUsed && result.isEmpty() && index == 0 -> {
+                result.append(ch)
+                plusUsed = true
+            }
+        }
+    }
+
+    return result.toString().take(20)
+}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -500,7 +522,9 @@ fun BookingDialog(
 
                 OutlinedTextField(
                     value = phone,
-                    onValueChange = { newValue -> phone = newValue },
+                    onValueChange = { newValue ->
+                        phone = filterPhoneInput(newValue)
+                    },
                     enabled = editEnabled,
                     label = { Text(Locales.t("phone")) },
                     modifier = Modifier.fillMaxWidth(),

@@ -411,5 +411,18 @@
     "unpaid_service": "Tjeneste",
     "unpaid_price": "Beløp",
     "unpaid_done_status": "Fullført",
-    "booking_price_invalid": "Tast inn kun tall"
+    "booking_price_invalid": "Tast inn kun tall",
+    "auth_show_password": "Vis passord",
+    "auth_email_not_verified": "E-post ikke verifisert. Vennligst bekreft e-posten din.",
+    "auth_email_verification_sent": "Verifiserings-e-post sendt til:",
+    "auth_email_wrong_password": "Feil passord.",
+    "auth_email_user_not_found": "Bruker ikke funnet.",
+    "auth_email_already_in_use": "Denne e-postadressen er allerede i bruk.",
+    "auth_email_provider_disabled": "Innlogging med e-post/passord er ikke aktivert.",
+    "auth_email_register_success_verify": "Registrering vellykket. Vennligst verifiser e-posten din og logg deretter inn.",
+    "auth_email_verification_required": "Vennligst verifiser e-posten din før du logger inn.",
+    "auth_email_reset_sent": "E-post for tilbakestilling av passord er sendt.",
+    "auth_email_reset_failed": "Kunne ikke sende e-post for tilbakestilling av passord.",
+    "auth_email_sign_in_success": "Logget inn.",
+    "auth_email_register_success": "Registrering vellykket."
 }

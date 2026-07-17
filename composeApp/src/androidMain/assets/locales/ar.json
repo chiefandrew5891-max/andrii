@@ -411,5 +411,18 @@
     "unpaid_service": "الخدمة",
     "unpaid_price": "المبلغ",
     "unpaid_done_status": "مكتمل",
-    "booking_price_invalid": "أدخل أرقامًا فقط"
+    "booking_price_invalid": "أدخل أرقامًا فقط",
+    "auth_show_password": "إظهار كلمة المرور",
+    "auth_email_not_verified": "البريد الإلكتروني غير مؤكد. يرجى تأكيد بريدك الإلكتروني.",
+    "auth_email_verification_sent": "تم إرسال بريد التأكيد إلى:",
+    "auth_email_wrong_password": "كلمة المرور خاطئة.",
+    "auth_email_user_not_found": "المستخدم غير موجود.",
+    "auth_email_already_in_use": "البريد الإلكتروني مستخدم بالفعل.",
+    "auth_email_provider_disabled": "تسجيل الدخول بالبريد/كلمة المرور غير مفعّل.",
+    "auth_email_register_success_verify": "تم التسجيل بنجاح. يرجى تأكيد بريدك الإلكتروني ثم تسجيل الدخول.",
+    "auth_email_verification_required": "يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.",
+    "auth_email_reset_sent": "تم إرسال بريد إعادة تعيين كلمة المرور.",
+    "auth_email_reset_failed": "فشل إرسال بريد إعادة تعيين كلمة المرور.",
+    "auth_email_sign_in_success": "تم تسجيل الدخول بنجاح.",
+    "auth_email_register_success": "تم التسجيل بنجاح."
 }

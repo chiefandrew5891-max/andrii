@@ -411,5 +411,18 @@
     "unpaid_service": "Ydelse",
     "unpaid_price": "Beløb",
     "unpaid_done_status": "Gennemført",
-    "booking_price_invalid": "Indtast kun tal"
+    "booking_price_invalid": "Indtast kun tal",
+    "auth_show_password": "Vis adgangskode",
+    "auth_email_not_verified": "E-mail er ikke bekræftet. Bekræft venligst din e-mail.",
+    "auth_email_verification_sent": "Bekræftelses-e-mail sendt til:",
+    "auth_email_wrong_password": "Forkert adgangskode.",
+    "auth_email_user_not_found": "Bruger ikke fundet.",
+    "auth_email_already_in_use": "Denne e-mail er allerede i brug.",
+    "auth_email_provider_disabled": "Logind med e-mail/adgangskode er ikke aktiveret.",
+    "auth_email_register_success_verify": "Registrering fuldført. Bekræft venligst din e-mail, og log derefter ind.",
+    "auth_email_verification_required": "Bekræft venligst din e-mail, før du logger ind.",
+    "auth_email_reset_sent": "E-mail til nulstilling af adgangskode er sendt.",
+    "auth_email_reset_failed": "Kunne ikke sende e-mail til nulstilling af adgangskode.",
+    "auth_email_sign_in_success": "Logget ind med succes.",
+    "auth_email_register_success": "Registrering fuldført."
 }

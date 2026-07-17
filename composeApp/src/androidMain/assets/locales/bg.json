@@ -411,5 +411,18 @@
     "unpaid_service": "Услуга",
     "unpaid_price": "Сума",
     "unpaid_done_status": "Завършено",
-    "booking_price_invalid": "Въведете само цифри"
+    "booking_price_invalid": "Въведете само цифри",
+    "auth_show_password": "Показване на паролата",
+    "auth_email_not_verified": "Имейлът не е потвърден. Моля, потвърдете имейла си.",
+    "auth_email_verification_sent": "Имейлът за потвърждение е изпратен на:",
+    "auth_email_wrong_password": "Грешна парола.",
+    "auth_email_user_not_found": "Потребителят не е намерен.",
+    "auth_email_already_in_use": "Този имейл вече се използва.",
+    "auth_email_provider_disabled": "Влизането с имейл/парола не е активирано.",
+    "auth_email_register_success_verify": "Регистрацията е успешна. Моля, потвърдете имейла си и след това влезте.",
+    "auth_email_verification_required": "Моля, потвърдете имейла си преди да влезете.",
+    "auth_email_reset_sent": "Имейлът за възстановяване на паролата е изпратен.",
+    "auth_email_reset_failed": "Неуспешно изпращане на имейл за възстановяване на паролата.",
+    "auth_email_sign_in_success": "Влизането е успешно.",
+    "auth_email_register_success": "Регистрацията е успешна."
 }

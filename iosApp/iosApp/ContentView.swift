@@ -85,6 +85,143 @@ struct ComposeView: UIViewControllerRepresentable {
                 deferred.complete(value: successResult)
             }
         }
+        EmailAuthBridgeConnector().signIn = { email, password, deferred in
+            GoogleAuthBridge.signInWithEmail(email, password: password) { result, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: error as String)
+                        )
+                        return
+                    }
+
+                    guard let result = result else {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: "Email sign-in returned null result")
+                        )
+                        return
+                    }
+
+                    var mapped: [String: String] = [:]
+                    for (keyAny, valueAny) in result {
+                        guard let key = keyAny as? String else { continue }
+
+                        if let value = valueAny as? String {
+                            mapped[key] = value
+                        } else if let value = valueAny as? NSString {
+                            mapped[key] = value as String
+                        } else if let value = valueAny as? NSNumber {
+                            mapped[key] = value.stringValue
+                        } else {
+                            mapped[key] = "\(valueAny)"
+                        }
+                    }
+
+                    deferred.complete(value: mapped)
+                }
+            }
+        }
+
+        EmailAuthBridgeConnector().registerUser = { email, password, deferred in
+            GoogleAuthBridge.registerWithEmail(email, password: password) { result, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: error as String)
+                        )
+                        return
+                    }
+
+                    guard let result = result else {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: "Email registration returned null result")
+                        )
+                        return
+                    }
+
+                    var mapped: [String: String] = [:]
+                    for (keyAny, valueAny) in result {
+                        guard let key = keyAny as? String else { continue }
+
+                        if let value = valueAny as? String {
+                            mapped[key] = value
+                        } else if let value = valueAny as? NSString {
+                            mapped[key] = value as String
+                        } else if let value = valueAny as? NSNumber {
+                            mapped[key] = value.stringValue
+                        } else {
+                            mapped[key] = "\(valueAny)"
+                        }
+                    }
+
+                    deferred.complete(value: mapped)
+                }
+            }
+        }
+
+        EmailAuthBridgeConnector().sendPasswordReset = { email, deferred in
+            GoogleAuthBridge.sendPasswordReset(email) { error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: error as String)
+                        )
+                    } else {
+                        deferred.complete(value: [:])
+                    }
+                }
+            }
+        }
+        EmailAuthBridgeConnector().sendEmailVerification = { deferred in
+            GoogleAuthBridge.sendEmailVerification { error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: error as String)
+                        )
+                    } else {
+                        deferred.complete(value: [:])
+                    }
+                }
+            }
+        }
+
+        EmailAuthBridgeConnector().reloadCurrentUser = { deferred in
+            GoogleAuthBridge.reloadCurrentUser { result, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: error as String)
+                        )
+                        return
+                    }
+
+                    guard let result = result else {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: "Reload current user returned null result")
+                        )
+                        return
+                    }
+
+                    var mapped: [String: String] = [:]
+                    for (keyAny, valueAny) in result {
+                        guard let key = keyAny as? String else { continue }
+
+                        if let value = valueAny as? String {
+                            mapped[key] = value
+                        } else if let value = valueAny as? NSString {
+                            mapped[key] = value as String
+                        } else if let value = valueAny as? NSNumber {
+                            mapped[key] = value.stringValue
+                        } else {
+                            mapped[key] = "\(valueAny)"
+                        }
+                    }
+
+                    deferred.complete(value: mapped)
+                }
+            }
+        }
 
         BackendBridgeConnector().callBackend = { name, payload, deferred in
             if name == "__currentUser" {
@@ -95,6 +232,17 @@ struct ComposeView: UIViewControllerRepresentable {
                     result["displayName"] = currentUser["displayName"] as? String ?? ""
                     result["provider"] = currentUser["provider"] as? String ?? ""
                     deferred.complete(value: result)
+                } else {
+                    deferred.complete(value: [:])
+                }
+                return
+            }
+
+            if name == "__signOut" {
+                if let error = GoogleAuthBridge.signOutUser() {
+                    deferred.completeExceptionally(
+                        exception: KotlinIllegalStateException(message: error as String)
+                    )
                 } else {
                     deferred.complete(value: [:])
                 }
@@ -151,6 +299,60 @@ struct ComposeView: UIViewControllerRepresentable {
                         deferred.complete(value: result ?? [:])
                     }
                 }
+                        BackupCryptoBridgeConnector().encrypt = { plaintext, password, saltBase64, iterations, deferred in
+                            var error: NSError?
+                            let result = BackupCryptoBridge.encrypt(
+                                plaintext: plaintext,
+                                password: password,
+                                saltBase64: saltBase64,
+                                iterations: Int32(iterations),
+                                error: &error
+                            )
+
+                            if let error = error {
+                                deferred.completeExceptionally(
+                                    exception: KotlinIllegalStateException(message: error.localizedDescription)
+                                )
+                                return
+                            }
+
+                            guard let result = result as? [String: String] else {
+                                deferred.completeExceptionally(
+                                    exception: KotlinIllegalStateException(message: "Backup encryption returned invalid result")
+                                )
+                                return
+                            }
+
+                            deferred.complete(value: result)
+                        }
+
+                        BackupCryptoBridgeConnector().decrypt = { ciphertextBase64, password, saltBase64, ivBase64, iterations, deferred in
+                            var error: NSError?
+                            let result = BackupCryptoBridge.decrypt(
+                                ciphertextBase64: ciphertextBase64,
+                                password: password,
+                                saltBase64: saltBase64,
+                                ivBase64: ivBase64,
+                                iterations: Int32(iterations),
+                                error: &error
+                            )
+
+                            if let error = error {
+                                deferred.completeExceptionally(
+                                    exception: KotlinIllegalStateException(message: error.localizedDescription)
+                                )
+                                return
+                            }
+
+                            guard let result = result as String? else {
+                                deferred.completeExceptionally(
+                                    exception: KotlinIllegalStateException(message: "Backup decryption returned empty result")
+                                )
+                                return
+                            }
+
+                            deferred.complete(value: result)
+                        }
 
                 CloudSyncBridgeConnector().pushAppointments = { userId, appointments, deferred in
                     let mappedAppointments: [[String: String]] = appointments.map { item in

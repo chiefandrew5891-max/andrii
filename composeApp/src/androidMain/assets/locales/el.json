@@ -411,5 +411,18 @@
     "unpaid_service": "Υπηρεσία",
     "unpaid_price": "Ποσό",
     "unpaid_done_status": "Ολοκληρώθηκε",
-    "booking_price_invalid": "Εισαγάγετε μόνο αριθμούς"
+    "booking_price_invalid": "Εισαγάγετε μόνο αριθμούς",
+    "auth_show_password": "Εμφάνιση κωδικού πρόσβασης",
+    "auth_email_not_verified": "Το email δεν έχει επαληθευτεί. Παρακαλώ επιβεβαιώστε το email σας.",
+    "auth_email_verification_sent": "Το email επαλήθευσης στάλθηκε στο:",
+    "auth_email_wrong_password": "Λανθασμένος κωδικός πρόσβασης.",
+    "auth_email_user_not_found": "Ο χρήστης δεν βρέθηκε.",
+    "auth_email_already_in_use": "Αυτό το email χρησιμοποιείται ήδη.",
+    "auth_email_provider_disabled": "Η σύνδεση με email/κωδικό πρόσβασης δεν είναι ενεργοποιημένη.",
+    "auth_email_register_success_verify": "Η εγγραφή ήταν επιτυχής. Παρακαλώ επαληθεύστε το email σας και μετά συνδεθείτε.",
+    "auth_email_verification_required": "Παρακαλώ επαληθεύστε το email σας πριν συνδεθείτε.",
+    "auth_email_reset_sent": "Το email για την επαναφορά κωδικού πρόσβασης στάλθηκε.",
+    "auth_email_reset_failed": "Αποτυχία αποστολής email επαναφοράς κωδικού πρόσβασης.",
+    "auth_email_sign_in_success": "Επιτυχής σύνδεση.",
+    "auth_email_register_success": "Η εγγραφή ήταν επιτυχής."
 }

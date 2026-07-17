@@ -411,5 +411,18 @@
     "unpaid_service": "Storitev",
     "unpaid_price": "Znesek",
     "unpaid_done_status": "Zaključeno",
-    "booking_price_invalid": "Vnesite samo številke"
+    "booking_price_invalid": "Vnesite samo številke",
+    "auth_show_password": "Prikaži geslo",
+    "auth_email_not_verified": "E-pošta ni preverjena. Prosimo, potrdite svoj e-poštni naslov.",
+    "auth_email_verification_sent": "Verifikacijsko e-poštno sporočilo poslano na:",
+    "auth_email_wrong_password": "Napačno geslo.",
+    "auth_email_user_not_found": "Uporabnik ni bil najden.",
+    "auth_email_already_in_use": "Ta e-poštni naslov je že v uporabi.",
+    "auth_email_provider_disabled": "Prijava z e-pošto/geslom ni omogočena.",
+    "auth_email_register_success_verify": "Registracija uspešna. Preverite svoj e-poštni naslov in se nato prijavite.",
+    "auth_email_verification_required": "Pred prijavo preverite svoj e-poštni naslov.",
+    "auth_email_reset_sent": "E-poštno sporočilo za ponastavitev gesla je bilo poslano.",
+    "auth_email_reset_failed": "Pošiljanje e-poštnega sporočila za ponastavitev gesla ni uspelo.",
+    "auth_email_sign_in_success": "Uspešno prijavljeni.",
+    "auth_email_register_success": "Registracija uspešna."
 }

@@ -411,5 +411,18 @@
     "unpaid_service": "Tjänst",
     "unpaid_price": "Belopp",
     "unpaid_done_status": "Slutförd",
-    "booking_price_invalid": "Ange endast siffror"
+    "booking_price_invalid": "Ange endast siffror",
+    "auth_show_password": "Visa lösenord",
+    "auth_email_not_verified": "E-postadressen är inte verifierad. Bekräfta din e-post.",
+    "auth_email_verification_sent": "Verifieringsmejl skickat till:",
+    "auth_email_wrong_password": "Fel lösenord.",
+    "auth_email_user_not_found": "Användaren hittades inte.",
+    "auth_email_already_in_use": "Denna e-postadress används redan.",
+    "auth_email_provider_disabled": "Inloggning med e-post/lösenord är inte aktiverat.",
+    "auth_email_register_success_verify": "Registreringen lyckades. Verifiera din e-postadress och logga sedan in.",
+    "auth_email_verification_required": "Verifiera din e-postadress innan du loggar in.",
+    "auth_email_reset_sent": "E-post för återställning av lösenord har skickats.",
+    "auth_email_reset_failed": "Misslyckades med att skicka e-post för återställning av lösenord.",
+    "auth_email_sign_in_success": "Inloggningen lyckades.",
+    "auth_email_register_success": "Registreringen lyckades."
 }

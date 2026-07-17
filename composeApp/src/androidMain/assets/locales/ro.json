@@ -411,5 +411,18 @@
     "unpaid_service": "Serviciu",
     "unpaid_price": "Sumă",
     "unpaid_done_status": "Finalizat",
-    "booking_price_invalid": "Introduceți numai cifre"
+    "booking_price_invalid": "Introduceți numai cifre",
+    "auth_show_password": "Afișare parolă",
+    "auth_email_not_verified": "E-mail neverificat. Vă rugăm să vă confirmați e-mailul.",
+    "auth_email_verification_sent": "E-mail de verificare trimis la:",
+    "auth_email_wrong_password": "Parolă incorectă.",
+    "auth_email_user_not_found": "Utilizatorul nu a fost găsit.",
+    "auth_email_already_in_use": "Acest e-mail este deja utilizat.",
+    "auth_email_provider_disabled": "Autentificarea cu e-mail/parolă nu este activată.",
+    "auth_email_register_success_verify": "Înregistrare reușită. Vă rugăm să vă verificați e-mailul și apoi să vă autentificați.",
+    "auth_email_verification_required": "Vă rugăm să vă verificați e-mailul înainte de a vă autentifica.",
+    "auth_email_reset_sent": "E-mailul de resetare a parolei a fost trimis.",
+    "auth_email_reset_failed": "Trimiterea e-mailului de resetare a parolei a eșuat.",
+    "auth_email_sign_in_success": "Autentificare reușită.",
+    "auth_email_register_success": "Înregistrare reușită."
 }

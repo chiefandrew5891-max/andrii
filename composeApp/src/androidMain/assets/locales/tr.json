@@ -411,5 +411,18 @@
     "unpaid_service": "Hizmet",
     "unpaid_price": "Tutar",
     "unpaid_done_status": "Tamamlandı",
-    "booking_price_invalid": "Yalnızca sayı girin"
+    "booking_price_invalid": "Yalnızca sayı girin",
+    "auth_show_password": "Şifreyi göster",
+    "auth_email_not_verified": "E-posta doğrulanmadı. Lütfen e-postanızı onaylayın.",
+    "auth_email_verification_sent": "Doğrulama e-postası şuraya gönderildi:",
+    "auth_email_wrong_password": "Hatalı şifre.",
+    "auth_email_user_not_found": "Kullanıcı bulunamadı.",
+    "auth_email_already_in_use": "Bu e-posta adresi zaten kullanımda.",
+    "auth_email_provider_disabled": "E-posta/şifre ile giriş yapma etkinleştirilmemiş.",
+    "auth_email_register_success_verify": "Kayıt başarılı. Lütfen e-postanızı doğrulayın ve ardından giriş yapın.",
+    "auth_email_verification_required": "Giriş yapmadan önce lütfen e-postanızı doğrulayın.",
+    "auth_email_reset_sent": "Şifre sıfırlama e-postası gönderildi.",
+    "auth_email_reset_failed": "Şifre sıfırlama e-postası gönderilemedi.",
+    "auth_email_sign_in_success": "Başarıyla giriş yapıldı.",
+    "auth_email_register_success": "Kayıt başarılı."
 }

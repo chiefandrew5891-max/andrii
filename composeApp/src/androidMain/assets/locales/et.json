@@ -411,5 +411,18 @@
     "unpaid_service": "Teenus",
     "unpaid_price": "Summa",
     "unpaid_done_status": "Lõpetatud",
-    "booking_price_invalid": "Sisestage ainult numbreid"
+    "booking_price_invalid": "Sisestage ainult numbreid",
+    "auth_show_password": "Näita parooli",
+    "auth_email_not_verified": "E-mail on kinnitamata. Palun kinnitage oma e-mail.",
+    "auth_email_verification_sent": "Kinnitusmeil saadetud aadressile:",
+    "auth_email_wrong_password": "Vale parool.",
+    "auth_email_user_not_found": "Kasutajat ei leitud.",
+    "auth_email_already_in_use": "See e-mail on juba kasutusel.",
+    "auth_email_provider_disabled": "E-maili/parooliga sisselogimine ei ole lubatud.",
+    "auth_email_register_success_verify": "Registreerimine õnnestus. Palun kinnitage oma e-mail ja seejärel logige sisse.",
+    "auth_email_verification_required": "Palun kinnitage oma e-mail enne sisselogimist.",
+    "auth_email_reset_sent": "Parooli lähtestamise e-mail on saadetud.",
+    "auth_email_reset_failed": "Parooli lähtestamise e-maili saatmine ebaõnnestus.",
+    "auth_email_sign_in_success": "Sisselogimine õnnestus.",
+    "auth_email_register_success": "Registreerimine õnnestus."
 }

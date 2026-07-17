@@ -411,5 +411,18 @@
     "unpaid_service": "Szolgáltatás",
     "unpaid_price": "Összeg",
     "unpaid_done_status": "Befejezve",
-    "booking_price_invalid": "Csak számokat adjon meg"
+    "booking_price_invalid": "Csak számokat adjon meg",
+    "auth_show_password": "Jelszó megjelenítése",
+    "auth_email_not_verified": "Az e-mail cím nincs megerősítve. Kérjük, erősítse meg e-mail címét.",
+    "auth_email_verification_sent": "Megerősítő e-mail elküldve a következő címre:",
+    "auth_email_wrong_password": "Helytelen jelszó.",
+    "auth_email_user_not_found": "Felhasználó nem található.",
+    "auth_email_already_in_use": "Ez az e-mail cím már használatban van.",
+    "auth_email_provider_disabled": "Az e-mail/jelszó bejelentkezés nincs engedélyezve.",
+    "auth_email_register_success_verify": "Sikeres regisztráció. Kérjük, igazolja vissza e-mail címét, majd jelentkezzen be.",
+    "auth_email_verification_required": "Bejelentkezés előtt kérjük, igazolja vissza e-mail címét.",
+    "auth_email_reset_sent": "Jelszó-visszaállító e-mail elküldve.",
+    "auth_email_reset_failed": "Nem sikerült elküldeni a jelszó-visszaállító e-mailt.",
+    "auth_email_sign_in_success": "Sikeres bejelentkezés.",
+    "auth_email_register_success": "Sikeres regisztráció."
 }

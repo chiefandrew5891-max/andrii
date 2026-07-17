@@ -275,16 +275,12 @@ class AppRootState(
     }
     fun mapAuthErrorMessage(raw: String?): String {
         val text = raw?.trim().orEmpty()
-
-        if (text.isBlank()) {
-            return Locales.t("auth_error_generic")
-        }
+        if (text.isBlank()) return Locales.t("auth_error_generic")
 
         val lower = text.lowercase()
 
         return when {
-            lower == "internal" ||
-                    lower.contains("internal") ->
+            lower == "internal" || lower.contains("internal") ->
                 Locales.t("auth_error_generic")
 
             lower.contains("developer console is not set up correctly") ->
@@ -296,8 +292,40 @@ class AppRootState(
             lower.contains("cancel") ->
                 Locales.t("auth_google_cancelled")
 
-            else ->
+            lower.contains("auth_email_not_verified") ->
+                Locales.t("auth_email_not_verified")
+
+            lower.contains("password is invalid") ||
+                    lower.contains("wrong-password") ||
+                    lower.contains("invalid login credentials") ||
+                    lower.contains("invalid_login_credentials") ->
+                Locales.t("auth_email_wrong_password")
+
+            lower.contains("no user record") ||
+                    lower.contains("user-not-found") ||
+                    lower.contains("cannot find user") ->
+                Locales.t("auth_email_user_not_found")
+
+            lower.contains("email address is badly formatted") ||
+                    lower.contains("invalid-email") ->
+                Locales.t("auth_email_invalid")
+
+            lower.contains("email address is already in use") ||
+                    lower.contains("email-already-in-use") ||
+                    lower.contains("email is already in use") ->
+                Locales.t("auth_email_already_in_use")
+
+            lower.contains("password should be at least 6 characters") ||
+                    lower.contains("weak-password") ->
+                Locales.t("auth_password_too_short")
+
+            lower.contains("email/password accounts are not enabled") ->
+                Locales.t("auth_email_provider_disabled")
+
+            lower.contains("supplied auth credential is malformed or has expired") ->
                 Locales.t("auth_error_generic")
+
+            else -> text
         }
     }
     var screenHistory by mutableStateOf(listOf<Screen>())
@@ -732,65 +760,105 @@ class AppRootState(
     ) {
         val cleanEmail = email.trim()
         val cleanPassword = password
+
         if (!cleanEmail.contains("@") || !cleanEmail.contains(".")) {
             authErrorMessage = Locales.t("auth_email_invalid")
             return
         }
+
         if (cleanPassword.length < 6) {
             authErrorMessage = Locales.t("auth_password_too_short")
             return
         }
+
         if (authEmailRegisterMode && cleanPassword != confirmPassword) {
             authErrorMessage = Locales.t("auth_passwords_mismatch")
             return
         }
+
         scope.launch {
             showGlobalLoading(Locales.t("loading"))
             try {
-                val result = if (authEmailRegisterMode) {
-                    AuthGateway.registerWithEmail(cleanEmail, cleanPassword)
-                } else {
-                    AuthGateway.signInWithEmail(cleanEmail, cleanPassword)
-                }
-                when (result) {
-                    is SignInResult.Success -> {
-                        runCatching {
-                            val remote = com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
-                                installId = IdentityManager.getOrCreateInstallId(),
-                                firebaseUid = result.user.uid,
-                                platform = getPlatform().backendPlatform,
-                                authProvider = "password",
-                                email = result.user.email,
-                                displayName = result.user.displayName
-                            )
-                            com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
-                            com.andrey.beautyplanner.remote.BackendBridge.syncIdentity(
-                                firebaseUid = result.user.uid,
-                                email = result.user.email,
-                                displayName = result.user.displayName,
-                                authProvider = "password"
-                            )
-                            currentAuthUser = result.user
-                            AppSettings.localProfileUserId = result.user.uid
-                            AppSettings.lastAuthenticatedAppOpenAtMillis = Clock.System.now().toEpochMilliseconds()
-                            AppSettings.persist()
+                if (authEmailRegisterMode) {
+                    when (val result = AuthGateway.registerWithEmail(cleanEmail, cleanPassword)) {
+                        is SignInResult.Success -> {
+                            authEmailRegisterMode = false
+                            authErrorMessage =
+                                Locales.t("auth_email_verification_sent") + " " + cleanEmail
+                        }
 
-                            clearSessionLocalState()
-                            reloadAppointmentsForCurrentProfile()
-                            refreshAccessState()
-                            performCloudSyncIfEligible()
-                            authResolved = true
-                            authErrorMessage = null
-                            currentScreen = Screen.MONTH
-                        }.onFailure { error ->
-                            authErrorMessage = mapAuthErrorMessage(error.message)
+                        is SignInResult.Cancelled -> {
+                            authErrorMessage = Locales.t("auth_error_generic")
+                        }
+
+                        is SignInResult.Error -> {
+                            authErrorMessage = mapAuthErrorMessage(result.message)
                         }
                     }
-                    is SignInResult.Cancelled -> {
-                        authErrorMessage = Locales.t("auth_error_generic")
-                    }
-                    is SignInResult.Error -> {
-                        authErrorMessage = mapAuthErrorMessage(result.message)
+                } else {
+                    when (val result = AuthGateway.signInWithEmail(cleanEmail, cleanPassword)) {
+                        is SignInResult.Success -> {
+                            try {
+                                val remote = try {
+                                    com.andrey.beautyplanner.remote.BackendBridge.bootstrapUser(
+                                        installId = IdentityManager.getOrCreateInstallId(),
+                                        firebaseUid = result.user.uid,
+                                        platform = getPlatform().backendPlatform,
+                                        authProvider = "password",
+                                        email = result.user.email,
+                                        displayName = result.user.displayName
+                                    )
+                                } catch (e: Throwable) {
+                                    authErrorMessage = e.message ?: Locales.t("auth_email_sign_in_failed")
+                                    return@launch
+                                }
+
+                                com.andrey.beautyplanner.access.AccessRepository.applyRemoteStatus(remote)
+
+                                try {
+                                    com.andrey.beautyplanner.remote.BackendBridge.syncIdentity(
+                                        firebaseUid = result.user.uid,
+                                        email = result.user.email,
+                                        displayName = result.user.displayName,
+                                        authProvider = "password"
+                                    )
+                                } catch (e: Throwable) {
+                                    authErrorMessage = e.message ?: Locales.t("auth_email_sign_in_failed")
+                                    return@launch
+                                }
+
+                                currentAuthUser = result.user
+                                AppSettings.localProfileUserId = result.user.uid
+                                AppSettings.lastAuthenticatedAppOpenAtMillis =
+                                    Clock.System.now().toEpochMilliseconds()
+                                AppSettings.persist()
+
+                                clearSessionLocalState()
+                                reloadAppointmentsForCurrentProfile()
+                                refreshAccessState()
+
+                                try {
+                                    performCloudSyncIfEligible()
+                                } catch (e: Throwable) {
+                                    authErrorMessage = e.message ?: Locales.t("auth_email_sign_in_failed")
+                                    return@launch
+                                }
+
+                                authResolved = true
+                                authErrorMessage = null
+                                currentScreen = Screen.MONTH
+                            } catch (e: Throwable) {
+                                authErrorMessage = e.message ?: Locales.t("auth_email_sign_in_failed")
+                            }
+                        }
+
+                        is SignInResult.Cancelled -> {
+                            authErrorMessage = Locales.t("auth_error_generic")
+                        }
+
+                        is SignInResult.Error -> {
+                            authErrorMessage = mapAuthErrorMessage(result.message)
+                        }
                     }
                 }
             } finally {
