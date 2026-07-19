@@ -533,5 +533,13 @@
     "premium_guest_account_required_message": "Premiumはアプリのアカウントにリンクされています。サブスクリプションの購入または復元を行うには、サインインするかアカウントを作成してください。",
     "backup_guest_requires_account": "バックアップの エクスポートとインポートは、サインインしているアプリ アカウントでのみ利用できます。バックアップを使用するには、サインインするかアカウントを作成してください。",
     "premium_guest_account_label": "ゲストモード",
-    "premium_guest_binding_impossible_message": "Premiumをゲストモードにリンクすることはできません。定期購入するには、サインインするかアプリのアカウントを作成してください。"
+    "premium_guest_binding_impossible_message": "Premiumをゲストモードにリンクすることはできません。定期購入するには、サインインするかアプリのアカウントを作成してください。",
+    "privacy_policy_section_10_p3": "関連データの削除を希望する場合、またはご自身のデータについて質問がある場合は、以下の連絡先までお問い合わせください。",
+    "privacy_policy_section_11_title": "11. セキュリティ",
+    "privacy_policy_section_11_p1": "当社は、利用しているプラットフォームおよびインフラストラクチャ内でデータを保護するために、合理的な技術的および組織的安全対策を講じています。",
+    "privacy_policy_section_11_p2": "お使いのデバイス、アカウント、メール認証情報、およびバックアップパスワード（バックアップ暗号化を有効にしている場合）の安全性は、お客様ご自身の責任となります。",
+    "privacy_policy_section_12_title": "12. ポリシーの更新",
+    "privacy_policy_section_12_p1": "当社は本プライバシーポリシーを更新する場合があります。最新バージョンは、最終更新日とともにアプリ内に掲載されます。",
+    "privacy_policy_section_13_title": "13. お問い合わせ",
+    "privacy_policy_section_13_p1": "本プライバシーポリシー、データ処理、またはデータ削除の依頼についてご質問がある場合は、以下までご連絡ください。"
 }
