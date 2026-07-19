@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Bu Gizlilik Politikasını güncelleyebiliriz. Mevcut sürüm, en son güncelleme tarihiyle birlikte uygulamada yayınlanır.",
     "privacy_policy_section_13_title": "13. İletişim",
     "privacy_policy_section_13_p1": "Bu Gizlilik Politikası, veri işleme veya veri silme talepleri hakkında sorularınız varsa bizimle şu adresten iletişime geçebilirsiniz:",
-    "privacy_policy_contact_email_prefix": "İletişim e-postası:"
+    "privacy_policy_contact_email_prefix": "İletişim e-postası:",
+    "terms_of_use_beauty_planner": "Beauty Planner Kullanım Şartları",
+    "billing_store_note_ios": "Abonelik, Apple App Store hesabınız üzerinden işlenir. App Store hesabınız ile uygulama hesabınız farklı olabilir.",
+    "billing_privacy_notice_ios": "Satın alma ve abonelik doğrulaması, erişim durumunu onaylamak için Apple App Store / StoreKit ve uygulama arka plan hizmetleri (Firebase/Cloud Functions) aracılığıyla işlenir.",
+    "billing_refund_info_message_ios": "İadeler için Apple satın alma geçmişinize veya App Store'dan gelen abonelik onayına ihtiyacınız olabilir.",
+    "premium_guest_buy_requires_account": "Premium satın almak için giriş yapın veya bir hesap oluşturun",
+    "premium_guest_restore_requires_account": "Satın almaları geri yüklemek için giriş yapın veya bir hesap oluşturun",
+    "premium_guest_account_required_message": "Premium, uygulama hesabınıza bağlıdır. Aboneliğinizi satın almak veya geri yüklemek için giriş yapın veya bir hesap oluşturun."
 }

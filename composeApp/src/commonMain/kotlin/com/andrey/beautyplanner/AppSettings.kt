@@ -66,7 +66,7 @@ private data class SettingsSnapshot(
     val fontSizeMode: String = "medium",
     val ownerName: String = "",
 
-    val notificationsEnabled: Boolean = true,
+    val notificationsEnabled: Boolean = false,
     val notificationSoundType: String = NotificationSoundType.DEFAULT.name,
     val notificationSoundId: String = "",
     val notificationSoundDisplayName: String = "",
@@ -177,7 +177,7 @@ object AppSettings {
     var fontSizeMode by mutableStateOf("medium")
     var ownerName by mutableStateOf("")
 
-    var notificationsEnabled by mutableStateOf(true)
+    var notificationsEnabled by mutableStateOf(false)
     var notificationSoundType by mutableStateOf("DEFAULT")
     var notificationSoundId by mutableStateOf("")
     var notificationSoundDisplayName by mutableStateOf("")

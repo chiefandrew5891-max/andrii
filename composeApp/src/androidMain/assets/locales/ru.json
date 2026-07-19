@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Мы можем обновлять настоящую Политику конфиденциальности. Текущая версия публикуется в приложении с датой последнего обновления.",
     "privacy_policy_section_13_title": "13. Контакты",
     "privacy_policy_section_13_p1": "Если у вас есть вопросы об этой Политике конфиденциальности, обработке данных или запросах на удаление данных, вы можете связаться с нами по адресу:",
-    "privacy_policy_contact_email_prefix": "Контактный email:"
+    "privacy_policy_contact_email_prefix": "Контактный email:",
+    "terms_of_use_beauty_planner": "Условия использования Beauty Planner",
+    "billing_store_note_ios": "Подписка обрабатывается через ваш аккаунт Apple App Store. Ваш аккаунт App Store и аккаунт приложения могут отличаться.",
+    "billing_privacy_notice_ios": "Проверка покупки и подписки обрабатывается через Apple App Store / StoreKit и серверные службы приложения (Firebase/Cloud Functions) для подтверждения статуса доступа.",
+    "billing_refund_info_message_ios": "Для возврата средств вам может потребоваться история покупок Apple или подтверждение подписки из App Store.",
+    "premium_guest_buy_requires_account": "Войдите или создайте аккаунт, чтобы купить Premium",
+    "premium_guest_restore_requires_account": "Войдите или создайте аккаунт, чтобы восстановить покупки",
+    "premium_guest_account_required_message": "Premium привязывается к вашему аккаунту приложения. Войдите или создайте аккаунт, чтобы купить или восстановить подписку."
 }

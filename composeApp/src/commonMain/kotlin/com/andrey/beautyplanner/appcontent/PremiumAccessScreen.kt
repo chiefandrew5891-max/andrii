@@ -5,25 +5,32 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AccessState
 import com.andrey.beautyplanner.AccessTier
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
+import com.andrey.beautyplanner.StoreOpener
 import com.andrey.beautyplanner.billing.BillingStatus
 import com.andrey.beautyplanner.billing.BillingUiState
 import com.andrey.beautyplanner.billing.PREMIUM_SUBS_PRODUCT_ID
 import kotlinx.datetime.Clock
+import com.andrey.beautyplanner.getPlatform
+
+private const val TERMS_OF_USE_URL = "https://sites.google.com/view/beautyplanner/terms-of-use"
 
 @Composable
 fun PremiumAccessScreen(
@@ -31,12 +38,14 @@ fun PremiumAccessScreen(
     message: String,
     billingUiState: BillingUiState,
     accountLabel: String,
-    onBack: () -> Unit,
     onContinueFree: () -> Unit,
     onUnlockPremium: () -> Unit,
-    onRestorePurchases: () -> Unit
+    onRestorePurchases: () -> Unit,
+    onOpenPrivacyPolicy: () -> Unit
 ) {
+    val isIos = getPlatform().backendPlatform == "ios"
     val fontScale = AppSettings.getFontScale()
+    val linkColor = MaterialTheme.colors.primary
 
     val subtitle = when (accessState.tier) {
         AccessTier.TRIAL -> Locales.t("premium_trial_active_subtitle")
@@ -228,7 +237,11 @@ fun PremiumAccessScreen(
                 Spacer(modifier = Modifier.padding(top = 8.dp))
 
                 Text(
-                    text = Locales.t("billing_account_binding_google_play_note"),
+                    text = if (isIos) {
+                        Locales.t("billing_store_note_ios")
+                    } else {
+                        Locales.t("billing_account_binding_google_play_note")
+                    },
                     fontSize = (12 * fontScale).sp,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.65f),
                     lineHeight = (18 * fontScale).sp
@@ -237,7 +250,11 @@ fun PremiumAccessScreen(
                 Spacer(modifier = Modifier.padding(top = 6.dp))
 
                 Text(
-                    text = Locales.t("billing_privacy_notice"),
+                    text = if (isIos) {
+                        Locales.t("billing_privacy_notice_ios")
+                    } else {
+                        Locales.t("billing_privacy_notice")
+                    },
                     fontSize = (12 * fontScale).sp,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.65f),
                     lineHeight = (18 * fontScale).sp
@@ -264,7 +281,11 @@ fun PremiumAccessScreen(
                 Spacer(modifier = Modifier.padding(top = 8.dp))
 
                 Text(
-                    text = Locales.t("billing_refund_info_message"),
+                    text = if (isIos) {
+                        Locales.t("billing_refund_info_message_ios")
+                    } else {
+                        Locales.t("billing_refund_info_message")
+                    },
                     fontSize = (12 * fontScale).sp,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.65f),
                     lineHeight = (18 * fontScale).sp
@@ -292,6 +313,36 @@ fun PremiumAccessScreen(
                     SecondaryActionButton(
                         text = Locales.t("premium_continue_free_btn"),
                         onClick = onContinueFree
+                    )
+                }
+
+                Spacer(modifier = Modifier.padding(top = 20.dp))
+
+                TextButton(
+                    onClick = onOpenPrivacyPolicy,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = Locales.t("privacy_policy"),
+                        color = linkColor,
+                        textDecoration = TextDecoration.Underline,
+                        fontSize = (12 * fontScale).sp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                TextButton(
+                    onClick = {
+                        StoreOpener.open(TERMS_OF_USE_URL)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = Locales.t("terms_of_use_beauty_planner"),
+                        color = linkColor,
+                        textDecoration = TextDecoration.Underline,
+                        fontSize = (12 * fontScale).sp,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

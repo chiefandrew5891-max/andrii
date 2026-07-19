@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Wir können diese Datenschutzerklärung aktualisieren. Die aktuelle Version wird in der App mit dem Datum der letzten Aktualisierung veröffentlicht.",
     "privacy_policy_section_13_title": "13. Kontakt",
     "privacy_policy_section_13_p1": "Wenn Sie Fragen zu dieser Datenschutzerklärung, der Datenverarbeitung oder Anträgen auf Datenlöschung haben, können Sie uns kontaktieren unter:",
-    "privacy_policy_contact_email_prefix": "Kontakt-E-Mail:"
+    "privacy_policy_contact_email_prefix": "Kontakt-E-Mail:",
+    "terms_of_use_beauty_planner": "Nutzungsbedingungen für Beauty Planner",
+    "billing_store_note_ios": "Das Abonnement wird über Ihr Apple App Store-Konto abgewickelt. Ihr App Store-Konto und Ihr App-Konto können sich voneinander unterscheiden.",
+    "billing_privacy_notice_ios": "Die Kauf- und Abonnementüberprüfung erfolgt über den Apple App Store / StoreKit und die App-Backend-Dienste (Firebase/Cloud Functions), um den Zugriffsstatus zu bestätigen.",
+    "billing_refund_info_message_ios": "Für Rückerstattungen benötigen Sie möglicherweise Ihre Apple-Kaufhistorie oder die Abonnementbestätigung aus dem App Store.",
+    "premium_guest_buy_requires_account": "Melden Sie sich an oder erstellen Sie ein Konto, um Premium zu erwerben",
+    "premium_guest_restore_requires_account": "Melden Sie sich an oder erstellen Sie ein Konto, um Käufe wiederherzustellen",
+    "premium_guest_account_required_message": "Premium ist mit Ihrem App-Konto verknüpft. Melden Sie sich an oder erstellen Sie ein Konto, um Ihr Abonnement zu kaufen oder wiederherzustellen."
 }

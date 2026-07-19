@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Kami dapat memperbarui Kebijakan Privasi ini. Versi saat ini diterbitkan di aplikasi dengan tanggal pembaruan terakhir.",
     "privacy_policy_section_13_title": "13. Kontak",
     "privacy_policy_section_13_p1": "Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini, pemrosesan data, atau permintaan penghapusan data, Anda dapat menghubungi kami di:",
-    "privacy_policy_contact_email_prefix": "Email kontak:"
+    "privacy_policy_contact_email_prefix": "Email kontak:",
+    "terms_of_use_beauty_planner": "Syarat Penggunaan Beauty Planner",
+    "billing_store_note_ios": "Langganan diproses melalui akun Apple App Store Anda. Akun App Store dan akun aplikasi Anda mungkin berbeda.",
+    "billing_privacy_notice_ios": "Verifikasi pembelian dan langganan diproses melalui Apple App Store / StoreKit dan layanan backend aplikasi (Firebase/Cloud Functions) to mengonfirmasi status akses.",
+    "billing_refund_info_message_ios": "Untuk pengembalian dana, Anda mungkin memerlukan riwayat pembelian Apple atau konfirmasi langganan dari App Store.",
+    "premium_guest_buy_requires_account": "Masuk atau buat akun untuk membeli Premium",
+    "premium_guest_restore_requires_account": "Masuk atau buat akun untuk memulihkan pembelian",
+    "premium_guest_account_required_message": "Premium ditautkan ke akun aplikasi Anda. Masuk atau buat akun untuk membeli atau memulihkan langganan Anda."
 }

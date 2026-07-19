@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Galime atnaujinti šią privatumo politiką. Dabartinė versija skelbiama programėlėje su paskutinio atnaujinimo data.",
     "privacy_policy_section_13_title": "13. Kontaktai",
     "privacy_policy_section_13_p1": "Jei turite klausimų apie šią privatumo politiką, duomenų tvarkymą ar prašymus ištrinti duomenis, galite susisiekti su mumis adresu:",
-    "privacy_policy_contact_email_prefix": "Kontaktinis el. paštas:"
+    "privacy_policy_contact_email_prefix": "Kontaktinis el. paštas:",
+    "terms_of_use_beauty_planner": "Beauty Planner naudojimo sąlygos",
+    "billing_store_note_ios": "Prenumerata apdorojama per jūsų „Apple App Store“ paskyrą. Jūsų „App Store“ paskyra ir programėlės paskyra gali skirtis.",
+    "billing_privacy_notice_ios": "Pirkimo ir prenumeratos patvirtinimas atliekamas per „Apple App Store“ / „StoreKit“ ir programėlės fono paslaugas („Firebase“ / „Cloud Functions“), kad būtų patvirtinta prieigos būsena.",
+    "billing_refund_info_message_ios": "Dėl pinigų grąžinimo jums gali prireikti „Apple“ pirkimo istorijos arba prenumeratos patvirtinimo iš „App Store“.",
+    "premium_guest_buy_requires_account": "Prisijunkite arba susikurkite paskyrą, kad įsigytumėte „Premium“",
+    "premium_guest_restore_requires_account": "Prisijunkite arba susikurkite paskyrą, kad atkurtumėte pirkinius",
+    "premium_guest_account_required_message": "„Premium“ yra susieta su jūsų programėlės paskyra. Prisijunkite arba susikurkite paskyrą, kad įsigytumėte arba atkurtumėte prenumeratą."
 }

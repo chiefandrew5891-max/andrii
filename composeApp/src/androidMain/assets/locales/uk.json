@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Ми можемо оновлювати цю Політику конфіденційності. Поточна версія публікується в додатку з датою останнього оновлення.",
     "privacy_policy_section_13_title": "13. Контакти",
     "privacy_policy_section_13_p1": "Якщо у вас є запитання про цю Політику конфіденційності, обробку даних або запити на видалення даних, ви можете зв'язатися з нами за адресою:",
-    "privacy_policy_contact_email_prefix": "Контактний email:"
+    "privacy_policy_contact_email_prefix": "Контактний email:",
+    "terms_of_use_beauty_planner": "Умови використання Beauty Planner",
+    "billing_store_note_ios": "Передплата обробляється через ваш обліковий запис Apple App Store. Ваш обліковий запис App Store та обліковий запис додатка можуть відрізнятися.",
+    "billing_privacy_notice_ios": "Перевірка покупки та передплати обробляється через Apple App Store / StoreKit та серверні служби додатка (Firebase/Cloud Functions) для підтвердження статусу доступу.",
+    "billing_refund_info_message_ios": "Для повернення коштів вам може знадобитися історія покупок Apple або підтвердження передплати з App Store.",
+    "premium_guest_buy_requires_account": "Увійдіть або створіть обліковий запис, щоб купити Premium",
+    "premium_guest_restore_requires_account": "Увійдіть або створіть обліковий запис, щоб відновити покупки",
+    "premium_guest_account_required_message": "Premium прив'язується до вашого облікового запису додатка. Увійдіть або створіть обліковий запис, щоб купити або відновити передплату."
 }

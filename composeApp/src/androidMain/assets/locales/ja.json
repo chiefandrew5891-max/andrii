@@ -523,5 +523,12 @@
     "privacy_policy_section_10_title": "10. データの保持と削除について",
     "privacy_policy_section_10_p1": "お客様は、デバイス上のアプリのストレージを消去するか、作成したバックアップファイルを削除することで、ローカルデータを削除できます。",
     "privacy_policy_section_10_p2": "アカウントをご利用になる場合、関連するサーバー側のデータ（例：アクセスプロフィール、サブスクリプション状況、クラウドの予約/設定）は、削除されるまで、または技術的に正当化される保持期間中、アプリのインフラストラクチャに保存されることがあります。",
-    "privacy_policy_contact_email_prefix": "問い合わせメールアドレス："
+    "privacy_policy_contact_email_prefix": "問い合わせメールアドレス：",
+    "terms_of_use_beauty_planner": "Beauty Planner 利用規約",
+    "billing_store_note_ios": "サブスクリプションはApple App Storeアカウントを通じて処理されます。App Storeアカウントとアプリのアカウントは異なる場合があります。",
+    "billing_privacy_notice_ios": "購入およびサブスクリプションの確認は、アクセス状態を確認するためにApple App Store / StoreKitおよびアプリのバックエンドサービス（Firebase/Cloud Functions）を通じて処理されます。",
+    "billing_refund_info_message_ios": "返金には、Apple의購入履歴またはApp Storeからのサブスクリプション確認が必要になる場合があります。",
+    "premium_guest_buy_requires_account": "Premiumを購入するには、サインインするかアカウントを作成してください",
+    "premium_guest_restore_requires_account": "購入を復元するには、サインインするかアカウントを作成してください",
+    "premium_guest_account_required_message": "Premiumはアプリのアカウントにリンクされています。サブスクリプションの購入または復元を行うには、サインインするかアカウントを作成してください。"
 }

@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Vi kan opdatere denne privatlivspolitik. Den aktuelle version publiceres i appen med den seneste opdateringsdato.",
     "privacy_policy_section_13_title": "13. Kontakt",
     "privacy_policy_section_13_p1": "Hvis du har spørgsmål om denne privatlivspolitik, databehandling eller anmodninger om sletning af data, kan du kontakte us på:",
-    "privacy_policy_contact_email_prefix": "Kontakt e-mail:"
+    "privacy_policy_contact_email_prefix": "Kontakt e-mail:",
+    "terms_of_use_beauty_planner": "Vilkår for brug af Beauty Planner",
+    "billing_store_note_ios": "Abonnementet behandles via din Apple App Store-konto. Din App Store-konto og din app-konto kan være forskellige.",
+    "billing_privacy_notice_ios": "Købs- og abonnementsbekræftelse behandles via Apple App Store / StoreKit og app-backend-tjenester (Firebase/Cloud Functions) for at bekræfte adgangsstatus.",
+    "billing_refund_info_message_ios": "Ved refusion skal du muligvis bruge din Apple-købshistorik eller abonnementsbekræftelse fra App Store.",
+    "premium_guest_buy_requires_account": "Log ind eller opret en konto for at købe Premium",
+    "premium_guest_restore_requires_account": "Log ind eller opret en konto for at gendanne køb",
+    "premium_guest_account_required_message": "Premium er knyttet til din app-konto. Log ind eller opret en konto for at købe eller gendanne dit abonnement."
 }

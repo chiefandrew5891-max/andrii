@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "본 개인정보 처리방침은 업데이트될 수 있습니다. 현재 버전은 최신 업데이트 날짜와 함께 앱에 게시됩니다.",
     "privacy_policy_section_13_title": "13. 문의처",
     "privacy_policy_section_13_p1": "본 개인정보 처리방침, 데이터 처리 또는 데이터 삭제 요청에 대해 질문이 있는 경우 다음 주소로 문의하실 수 있습니다.",
-    "privacy_policy_contact_email_prefix": "문의 이메일:"
+    "privacy_policy_contact_email_prefix": "문의 이메일:",
+    "terms_of_use_beauty_planner": "Beauty Planner 이용 약관",
+    "billing_store_note_ios": "구독은 Apple App Store 계정을 통해 처리됩니다. App Store 계정과 앱 계정은 다를 수 있습니다.",
+    "billing_privacy_notice_ios": "구매 및 구독 확인은 액세스 상태를 확인하기 위해 Apple App Store / StoreKit 및 앱 백엔드 서비스(Firebase/Cloud Functions)를 통해 처리됩니다.",
+    "billing_refund_info_message_ios": "환불 시 Apple 구매 내역 또는 App Store의 구독 확인서가 필요할 수 있습니다.",
+    "premium_guest_buy_requires_account": "Premium을 구매하려면 로그인하거나 계정을 만드세요",
+    "premium_guest_restore_requires_account": "구매를 복원하려면 로그인하거나 계정을 만드세요",
+    "premium_guest_account_required_message": "Premium은 앱 계정과 연결되어 있습니다. 구독을 구매하거나 복원하려면 로그인하거나 계정을 만드세요."
 }

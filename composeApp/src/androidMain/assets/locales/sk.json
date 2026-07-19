@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Tieto zásady ochrany osobných údajov môžeme aktualizovať. Aktuálna verzia je zverejnená v aplikácii s dátumom poslednej aktualizácie.",
     "privacy_policy_section_13_title": "13. Kontakt",
     "privacy_policy_section_13_p1": "Ak máte otázky týkajúce sa týchto zásad ochrany osobných údajov, spracovania údajov alebo žiadostí o vymazanie údajov, môžete nás kontaktovať na adrese:",
-    "privacy_policy_contact_email_prefix": "Kontaktný e-mail:"
+    "privacy_policy_contact_email_prefix": "Kontaktný e-mail:",
+    "terms_of_use_beauty_planner": "Podmienky používania Beauty Planner",
+    "billing_store_note_ios": "Predplatné je spracované prostredníctvom vášho účtu Apple App Store. Váš účet App Store a účet v aplikácii sa môžu líšiť.",
+    "billing_privacy_notice_ios": "Overenie nákupu a predplatného prebieha prostredníctvom Apple App Store / StoreKit a backendových služieb aplikácie (Firebase/Cloud Functions) na potvrdenie stavu prístupu.",
+    "billing_refund_info_message_ios": "Pri vrátení peňazí môžete potrebovať históriu nákupov Apple alebo potvrdenie o predplatnom z App Store.",
+    "premium_guest_buy_requires_account": "Prihláste sa alebo si vytvorte účet na zakúpenie Premium",
+    "premium_guest_restore_requires_account": "Prihláste sa alebo si vytvorte účet na obnovenie nákupov",
+    "premium_guest_account_required_message": "Premium je prepojené s vaším účtom v aplikácii. Prihláste sa alebo si vytvorte účet na zakúpenie alebo obnovenie predplatného."
 }

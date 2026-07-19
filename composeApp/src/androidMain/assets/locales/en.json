@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "We may update this Privacy Policy. The current version is published in the app with the latest update date.",
     "privacy_policy_section_13_title": "13. Contact",
     "privacy_policy_section_13_p1": "If you have questions about this Privacy Policy, data processing, or data deletion requests, you can contact us at:",
-    "privacy_policy_contact_email_prefix": "Contact email:"
+    "privacy_policy_contact_email_prefix": "Contact email:",
+    "terms_of_use_beauty_planner": "Terms of Use Beauty Planner",
+    "billing_store_note_ios": "The subscription is processed through your Apple App Store account. Your App Store account and your app account may be different.",
+    "billing_privacy_notice_ios": "Purchase and subscription verification are processed through the Apple App Store / StoreKit and app backend services (Firebase/Cloud Functions) to confirm access status.",
+    "billing_refund_info_message_ios": "For refunds, you may need your Apple purchase history or subscription confirmation from the App Store.",
+    "premium_guest_buy_requires_account": "Sign in or create an account to purchase Premium",
+    "premium_guest_restore_requires_account": "Sign in or create an account to restore purchases",
+    "premium_guest_account_required_message": "Premium is linked to your app account. Sign in or create an account to purchase or restore your subscription."
 }

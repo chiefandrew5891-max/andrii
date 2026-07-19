@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Putem actualiza această Politică de Confidențialitate. Versiunea curentă este publicată în aplicație cu data ultimei actualizări.",
     "privacy_policy_section_13_title": "13. Contact",
     "privacy_policy_section_13_p1": "Dacă aveți întrebări despre această Politică de Confidențialitate, prelucrarea datelor sau solicitări de ștergere a datelor, ne puteți contacta la:",
-    "privacy_policy_contact_email_prefix": "E-mail de contact:"
+    "privacy_policy_contact_email_prefix": "E-mail de contact:",
+    "terms_of_use_beauty_planner": "Termeni de utilizare Beauty Planner",
+    "billing_store_note_ios": "Abonamentul este procesat prin contul tău Apple App Store. Contul tău de App Store și contul aplicației pot fi diferite.",
+    "billing_privacy_notice_ios": "Verificarea achiziției și a abonamentului este procesată prin Apple App Store / StoreKit și serviciile backend ale aplicației (Firebase/Cloud Functions) pentru a confirma statutul de acces.",
+    "billing_refund_info_message_ios": "Pentru rambursări, este posibil să aveți nevoie de istoricul achizițiilor Apple sau de confirmarea abonamentului de la App Store.",
+    "premium_guest_buy_requires_account": "Conectați-vă sau creați un cont pentru a cumpăra Premium",
+    "premium_guest_restore_requires_account": "Conectați-vă sau creați un cont pentru a restaura achizițiile",
+    "premium_guest_account_required_message": "Premium este conectat la contul aplicației tale. Conectați-vă sau creați un cont pentru a cumpăra sau restaura abonamentul."
 }

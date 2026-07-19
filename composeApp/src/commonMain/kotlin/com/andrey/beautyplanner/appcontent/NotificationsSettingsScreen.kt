@@ -32,6 +32,8 @@ import kotlinx.datetime.Clock
 import kotlin.math.roundToInt
 import com.andrey.beautyplanner.notifications.NotificationSoundPreviewPlayer
 import androidx.compose.runtime.DisposableEffect
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun NotificationsSettingsScreen() {
@@ -123,9 +125,17 @@ fun NotificationsSettingsScreen() {
                 )
                 AppSwitch(
                     checked = AppSettings.notificationsEnabled,
-                    onCheckedChange = {
-                        AppSettings.notificationsEnabled = it
-                        AppSettings.persist()
+                    onCheckedChange = { enabled ->
+                        if (enabled) {
+                            kotlinx.coroutines.MainScope().launch {
+                                val granted = Notifications.requestPermissionIfNeeded()
+                                AppSettings.notificationsEnabled = granted
+                                AppSettings.persist()
+                            }
+                        } else {
+                            AppSettings.notificationsEnabled = false
+                            AppSettings.persist()
+                        }
                     }
                 )
             }

@@ -528,5 +528,12 @@
     "privacy_policy_section_12_p1": "Ovu politiku privatnosti možemo ažurirati. Trenutna verzija je objavljena u aplikaciji sa datumom poslednjeg ažuriranja.",
     "privacy_policy_section_13_title": "13. Kontakt",
     "privacy_policy_section_13_p1": "Ako imate pitanja o ovoj politici privatnosti, obradi podataka ili zahtevima za brisanje podataka, možete nas kontaktirati na:",
-    "privacy_policy_contact_email_prefix": "Kontakt e-mail:"
+    "privacy_policy_contact_email_prefix": "Kontakt e-mail:",
+    "terms_of_use_beauty_planner": "Услови коришћења за Beauty Planner",
+    "billing_store_note_ios": "Претплата се обрађује путем вашег Apple App Store налога. Ваш App Store налог и налог апликације могу се разликовати.",
+    "billing_privacy_notice_ios": "Верификација куповине и претплате се обрађује путем Apple App Store / StoreKit-а и бекенд услуга апликације (Firebase/Cloud Functions) ради потврде статуса приступа.",
+    "billing_refund_info_message_ios": "За повраћај средстава можда ће вам бити потребна Apple историја куповине или потврда претплате из App Store-а.",
+    "premium_guest_buy_requires_account": "Пријавите се или креирајте налог да бисте купили Premium",
+    "premium_guest_restore_requires_account": "Пријавите се или креирајте налог да бисте вратили куповине",
+    "premium_guest_account_required_message": "Premium је повезан са вашим налогом апликације. Пријавите се или креирајте налог да бисте купили или вратили своју претплату."
 }

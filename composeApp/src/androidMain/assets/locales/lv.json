@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Mēs varam atjaunināt šo konfidencialitātes politiku. Pašreizējā versija tiek publicēta lietotnē ar pēdējā atjauninājuma datumu.",
     "privacy_policy_section_13_title": "13. Kontakti",
     "privacy_policy_section_13_p1": "Ja jums ir jautājumi par šo konfidencialitātes politiku, datu apstrādi vai datu dzēšanas pieprasījumiem, varat sazināties ar mums pa e-pastu:",
-    "privacy_policy_contact_email_prefix": "Kontaktpersona e-pasts:"
+    "privacy_policy_contact_email_prefix": "Kontaktpersona e-pasts:",
+    "terms_of_use_beauty_planner": "Beauty Planner lietošanas noteikumi",
+    "billing_store_note_ios": "Abonements tiek apstrādāts, izmantojot jūsu Apple App Store kontu. Jūsu App Store konts un lietotnes konts var atšķirties.",
+    "billing_privacy_notice_ios": "Pirkuma un abonementa verifikācija tiek apstrādāta, izmantojot Apple App Store / StoreKit un lietotnes aizmugursistēmas pakalpojumus (Firebase/Cloud Functions), lai apstiprinātu piekļuves statusu.",
+    "billing_refund_info_message_ios": "Lai saņemtu atmaksu, jums var būt nepieciešama Apple pirkumu vēsture vai abonementa apstiprinājums no App Store.",
+    "premium_guest_buy_requires_account": "Pierakstieties vai izveidojiet kontu, lai iegādātos Premium",
+    "premium_guest_restore_requires_account": "Pierakstieties vai izveidojiet kontu, lai atjaunotu pirkumus",
+    "premium_guest_account_required_message": "Premium ir piesaistīts jūsu lietotnes kontam. Pierakstieties vai izveidojiet kontu, lai iegādātos vai atjaunotu abonementu."
 }

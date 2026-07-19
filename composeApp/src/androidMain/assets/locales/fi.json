@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Saatamme päivittää tätä tietosuojakäytäntöä. Nykyinen versio julkaistaan sovelluksessa viimeisimmän päivityspäivämäärän kanssa.",
     "privacy_policy_section_13_title": "13. Yhteystiedot",
     "privacy_policy_section_13_p1": "Jos sinulla on kysyttävää tästä tietosuojakäytännöstä, tietojen käsittelystä tai tietojen poistopyynnöistä, voit ottaa meihin yhteyttä osoitteeseen:",
-    "privacy_policy_contact_email_prefix": "Yhteyspähköposti:"
+    "privacy_policy_contact_email_prefix": "Yhteyspähköposti:",
+    "terms_of_use_beauty_planner": "Beauty Plannerin käyttöehdot",
+    "billing_store_note_ios": "Tilaus käsitellään Apple App Store -tilisi kautta. App Store -tilisi ja sovellustilisi voivat olla erillisiä.",
+    "billing_privacy_notice_ios": "Oston ja tilauksen vahvistus käsitellään Apple App Store / StoreKit -palvelun ja sovelluksen taustapalveluiden (Firebase/Cloud Functions) kautta pääsyoikeuden varmistamiseksi.",
+    "billing_refund_info_message_ios": "Hyvityksiä varten saatat tarvita Apple-ostohistoriasi tai tilausvahvistuksen App Storesta.",
+    "premium_guest_buy_requires_account": "Kirjaudu sisään tai luo tili ostaaksesi Premium-version",
+    "premium_guest_restore_requires_account": "Kirjaudu sisään tai luo tili palauttaaksesi ostot",
+    "premium_guest_account_required_message": "Premium on linkitetty sovellustiliisi. Kirjaudu sisään tai luo tili ostaaksesi tai palauttaaksesi tilauksesi."
 }

@@ -36,6 +36,8 @@ import kotlinx.datetime.Clock
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextStyle
 import com.andrey.beautyplanner.appcontent.appFontFamily
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.ButtonDefaults
 
 @Composable
 fun ServiceTemplatesScreen() {
@@ -197,79 +199,127 @@ private fun ServiceTemplateEditorDialog(
     var triedSave by remember { mutableStateOf(false) }
     val titleValid = title.trim().isNotBlank()
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                if (initial == null) Locales.t("service_add") else Locales.t("service_edit")
-            )
-        },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(Locales.t("service_name")) },
-                    singleLine = true,
-                    isError = triedSave && !titleValid,
-                    textStyle = TextStyle(
-                        fontFamily = appFontFamily(),
-                        color = MaterialTheme.colors.onSurface
-                    ),
-                    colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
-                        textColor = MaterialTheme.colors.onSurface,
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.28f),
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = MaterialTheme.colors.onSurface.copy(alpha = 0.68f),
-                        cursorColor = MaterialTheme.colors.primary,
-                        backgroundColor = MaterialTheme.colors.surface,
-                        placeholderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.50f)
-                    )
+    AppDialogTheme {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = if (initial == null) {
+                        Locales.t("service_add")
+                    } else {
+                        Locales.t("service_edit")
+                    },
+                    color = MaterialTheme.colors.onSurface
                 )
-
-                Spacer(Modifier.height(12.dp))
-
-                OutlinedTextField(
-                    value = price,
-                    onValueChange = { price = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(Locales.t("service_default_price")) },
-                    singleLine = true,
-                    textStyle = TextStyle(
-                        fontFamily = appFontFamily(),
-                        color = MaterialTheme.colors.onSurface
-                    ),
-                    colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
-                        textColor = MaterialTheme.colors.onSurface,
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.28f),
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = MaterialTheme.colors.onSurface.copy(alpha = 0.68f),
-                        cursorColor = MaterialTheme.colors.primary,
-                        backgroundColor = MaterialTheme.colors.surface,
-                        placeholderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.50f)
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(Locales.t("service_name")) },
+                        singleLine = true,
+                        isError = triedSave && !titleValid,
+                        shape = RoundedCornerShape(14.dp),
+                        textStyle = TextStyle(
+                            fontFamily = appFontFamily(),
+                            color = MaterialTheme.colors.onSurface
+                        ),
+                        colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = MaterialTheme.colors.onSurface,
+                            focusedBorderColor = MaterialTheme.colors.primary,
+                            unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.28f),
+                            focusedLabelColor = MaterialTheme.colors.primary,
+                            unfocusedLabelColor = MaterialTheme.colors.onSurface.copy(alpha = 0.68f),
+                            cursorColor = MaterialTheme.colors.primary,
+                            backgroundColor = MaterialTheme.colors.surface,
+                            placeholderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.50f),
+                            errorBorderColor = MaterialTheme.colors.error,
+                            errorCursorColor = MaterialTheme.colors.error
+                        )
                     )
-                )
-            }
-        },
-        confirmButton = {
-            Button(onClick = {
-                triedSave = true
-                if (!titleValid) return@Button
-                onSave(title.trim(), price.trim())
-            }) {
-                Text(Locales.t("save"))
-            }
-        },
-        dismissButton = {
-            OutlinedButton(onClick = onDismiss) {
-                Text(Locales.t("cancel"))
-            }
-        },
-        shape = RoundedCornerShape(16.dp)
-    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = price,
+                        onValueChange = { price = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(Locales.t("service_default_price")) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(14.dp),
+                        textStyle = TextStyle(
+                            fontFamily = appFontFamily(),
+                            color = MaterialTheme.colors.onSurface
+                        ),
+                        colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                            textColor = MaterialTheme.colors.onSurface,
+                            focusedBorderColor = MaterialTheme.colors.primary,
+                            unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.28f),
+                            focusedLabelColor = MaterialTheme.colors.primary,
+                            unfocusedLabelColor = MaterialTheme.colors.onSurface.copy(alpha = 0.68f),
+                            cursorColor = MaterialTheme.colors.primary,
+                            backgroundColor = MaterialTheme.colors.surface,
+                            placeholderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.50f)
+                        )
+                    )
+
+                    if (triedSave && !titleValid) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = Locales.t("booking_fill_required_fields"),
+                            color = MaterialTheme.colors.error
+                        )
+                    }
+                }
+            },
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 16.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colors.onSurface.copy(alpha = 0.75f)
+                        )
+                    ) {
+                        Text(Locales.t("cancel"))
+                    }
+
+                    Spacer(Modifier.width(15.dp))
+
+                    Button(
+                        onClick = {
+                            triedSave = true
+                            if (!titleValid) return@Button
+                            onSave(title.trim(), price.trim())
+                        },
+                        modifier = Modifier.height(44.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                            horizontal = 18.dp,
+                            vertical = 10.dp
+                        ),
+                        elevation = ButtonDefaults.elevation(0.dp, 0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = MaterialTheme.colors.primary,
+                            contentColor = MaterialTheme.colors.onPrimary
+                        )
+                    ) {
+                        Text(Locales.t("save"))
+                    }
+                }
+            },
+            shape = AppDialogShape
+        )
+    }
 }
 
 private fun displayServiceTitle(item: ServiceTemplate): String {

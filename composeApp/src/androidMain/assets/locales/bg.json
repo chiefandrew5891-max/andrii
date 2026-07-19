@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Можем да актуализираме тази Политика за поверителност. Текущата версия се публикува в приложението с датата на последната актуализация.",
     "privacy_policy_section_13_title": "13. Контакт",
     "privacy_policy_section_13_p1": "Ако имате въпроси относно тази Политика за поверителност, обработката на данни или искания за изтриване на данни, можете да се свържете с нас на:",
-    "privacy_policy_contact_email_prefix": "Имейл за контакт:"
+    "privacy_policy_contact_email_prefix": "Имейл за контакт:",
+    "terms_of_use_beauty_planner": "Условия за ползване на Beauty Planner",
+    "billing_store_note_ios": "Абонаментът се обработва чрез вашия профил в Apple App Store. Вашият профил в App Store и профилът в приложението може да се различават.",
+    "billing_privacy_notice_ios": "Проверката на покупката и абонамента се обработва чрез Apple App Store / StoreKit и бекенд услугите на приложението (Firebase/Cloud Functions) за потвърждаване на статуса на достъп.",
+    "billing_refund_info_message_ios": "За възстановяване на суми може да се нуждаете от историята на покупките си в Apple или от потвърждение на абонамента от App Store.",
+    "premium_guest_buy_requires_account": "Влезте или създайте профил, за да закупите Premium",
+    "premium_guest_restore_requires_account": "Влезте или създайте профил, за да възстановите покупките",
+    "premium_guest_account_required_message": "Premium е обвързан с вашия профил в приложението. Влезте или създайте профил, за да закупите или възстановите абонамента си."
 }

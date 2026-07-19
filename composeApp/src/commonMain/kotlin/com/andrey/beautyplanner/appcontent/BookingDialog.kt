@@ -159,7 +159,7 @@ fun BookingDialog(
     var triedSave by remember { mutableStateOf(false) }
 
     val nameOk = name.trim().isNotBlank()
-    val phoneOk = phone.trim().isNotBlank()
+    val phoneOk = true
     val serviceOk = if (serviceIsOther) {
         customServiceText.trim().isNotBlank()
     } else {
@@ -287,7 +287,13 @@ fun BookingDialog(
         )
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = {},
+        properties = androidx.compose.ui.window.DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
         Card(
             shape = RoundedCornerShape(32.dp),
             elevation = 12.dp,
@@ -586,7 +592,7 @@ fun BookingDialog(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = { Icon(Icons.Default.Phone, null) },
-                    isError = triedSave && editEnabled && !phoneOk,
+                    isError = false,
                     singleLine = true,
                     textStyle = TextStyle(
                         fontFamily = appFontFamily(),

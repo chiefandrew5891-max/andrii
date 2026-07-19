@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Ta pravilnik o zasebnosti lahko posodobimo. Trenutna različica je objavljena v aplikaciji z datumom zadnje posodobitve.",
     "privacy_policy_section_13_title": "13. Stik",
     "privacy_policy_section_13_p1": "Če imate vprašanja o tem pravilniku o zasebnosti, obdelavi podatkov ali zahtevah za brisanje podatkov, nas lahko kontaktirate na:",
-    "privacy_policy_contact_email_prefix": "E-pošta za stik:"
+    "privacy_policy_contact_email_prefix": "E-pošta za stik:",
+    "terms_of_use_beauty_planner": "Pogoji uporabe za Beauty Planner",
+    "billing_store_note_ios": "Naročnina se obdeluje prek vašega računa Apple App Store. Vaš račun App Store in račun aplikacije se lahko razlikujeta.",
+    "billing_privacy_notice_ios": "Preverjanje nakupa in naročnine poteka prek Apple App Store / StoreKit in zalednih storitev aplikacije (Firebase/Cloud Functions) za potrditev stanja dostopa.",
+    "billing_refund_info_message_ios": "Za vračila boste morda potrebovali zgodovino nakupov Apple ali potrditev naročnine iz trgovine App Store.",
+    "premium_guest_buy_requires_account": "Prijavite se ali ustvarite račun za nakup Premium",
+    "premium_guest_restore_requires_account": "Prijavite se ali ustvarite račun za obnovitev nakupov",
+    "premium_guest_account_required_message": "Premium je povezan z vašim računom aplikacije. Prijavite se ali ustvarite račun za nakup ali obnovitev naročnine."
 }

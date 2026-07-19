@@ -507,12 +507,9 @@ fun AppRootContent(
                 message = state.premiumRequiredMessage,
                 billingUiState = state.billingUiState,
                 accountLabel = when {
-                    state.currentAuthUser?.email?.isNotBlank() == true -> state.currentAuthUser?.email.orEmpty()
-                    state.currentAuthUser?.displayName?.isNotBlank() == true -> state.currentAuthUser?.displayName.orEmpty()
+                    state.currentAuthUser?.email?.isNotBlank() == true -> state.currentAuthUser?.email ?: ""
+                    state.currentAuthUser?.displayName?.isNotBlank() == true -> state.currentAuthUser?.displayName ?: ""
                     else -> Locales.t("billing_account_binding_unknown")
-                },
-                onBack = {
-                    state.closePremiumScreen()
                 },
                 onContinueFree = {
                     state.closePremiumScreen()
@@ -522,6 +519,9 @@ fun AppRootContent(
                 },
                 onRestorePurchases = {
                     state.restorePremium()
+                },
+                onOpenPrivacyPolicy = {
+                    state.navigateTo(Screen.PRIVACY_POLICY)
                 }
             )
             Screen.BACKUP_SETTINGS -> BackupSettingsScreen(

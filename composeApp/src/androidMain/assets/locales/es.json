@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Podemos actualizar esta Política de privacidad. La versión actual se publica en la aplicación con la fecha de la última actualización.",
     "privacy_policy_section_13_title": "13. Contacto",
     "privacy_policy_section_13_p1": "Si tienes preguntas sobre esta Política de privacidad, el procesamiento de datos o solicitudes de eliminación de datos, puedes ponerte en contacto con nosotros en:",
-    "privacy_policy_contact_email_prefix": "Correo electrónico de contacto:"
+    "privacy_policy_contact_email_prefix": "Correo electrónico de contacto:",
+    "terms_of_use_beauty_planner": "Términos de uso de Beauty Planner",
+    "billing_store_note_ios": "La suscripción se procesa a través de su cuenta de Apple App Store. Su cuenta de App Store y su cuenta de la aplicación pueden ser diferentes.",
+    "billing_privacy_notice_ios": "La verificación de la compra y la suscripción se procesa a través de Apple App Store / StoreKit y los servicios backend de la aplicación (Firebase/Cloud Functions) para confirmar el estado del acceso.",
+    "billing_refund_info_message_ios": "Para reembolsos, es posible que necesite su historial de compras de Apple o la confirmación de la suscripción de la App Store.",
+    "premium_guest_buy_requires_account": "Inicie sesión o cree una cuenta para comprar Premium",
+    "premium_guest_restore_requires_account": "Inicie sesión o cree una cuenta para restaurar las compras",
+    "premium_guest_account_required_message": "Premium está vinculado a su cuenta de la aplicación. Inicie sesión o cree una cuenta para comprar o restaurar su suscripción."
 }

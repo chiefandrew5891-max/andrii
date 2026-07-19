@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "قد نقوم بتحديث سياسة الخصوصية هذه. يتم نشر النسخة الحالية في التطبيق مع تاريخ آخر تحديث.",
     "privacy_policy_section_13_title": "١٣. الاتصال",
     "privacy_policy_section_13_p1": "إذا كانت لديك أسئلة حول سياسة الخصوصية هذه أو معالجة البيانات أو طلبات حذف البيانات، يمكنك الاتصال بنا على:",
-    "privacy_policy_contact_email_prefix": "البريد الإلكتروني للاتصال:"
+    "privacy_policy_contact_email_prefix": "البريد الإلكتروني للاتصال:",
+    "terms_of_use_beauty_planner": "شروط استخدام Beauty Planner",
+    "billing_store_note_ios": "يتم معالجة الاشتراك من خلال حساب Apple App Store الخاص بك. قد يختلف حساب App Store عن حساب التطبيق الخاص بك.",
+    "billing_privacy_notice_ios": "يتم التحقق من الشراء والاشتراك من خلال Apple App Store / StoreKit وخدمات التطبيق الخلفية (Firebase/Cloud Functions) لتأكيد حالة الوصول.",
+    "billing_refund_info_message_ios": "لاسترداد الأموال، قد تحتاج إلى سجل مشتريات Apple أو تأكيد الاشتراك من App Store.",
+    "premium_guest_buy_requires_account": "سجل الدخول أو أنشئ حسابًا لشراء Premium",
+    "premium_guest_restore_requires_account": "سجل الدخول أو أنشئ حسابًا لاستعادة المشتريات",
+    "premium_guest_account_required_message": "تم ربط Premium بحساب التطبيق الخاص بك. سجل الدخول أو أنشئ حسابًا لشراء اشتراكك أو استعادته."
 }

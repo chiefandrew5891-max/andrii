@@ -1,18 +1,24 @@
 package com.andrey.beautyplanner.notifications
 
 import com.andrey.beautyplanner.Appointment
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.datetime.TimeZone
 import platform.UserNotifications.*
+import kotlin.coroutines.resume
 
 actual object Notifications {
 
-    actual suspend fun requestPermissionIfNeeded(): Boolean {
-        val center = UNUserNotificationCenter.currentNotificationCenter()
-        center.requestAuthorizationWithOptions(
-            options = UNAuthorizationOptionAlert or UNAuthorizationOptionSound or UNAuthorizationOptionBadge
-        ) { _, _ -> }
-        return true
-    }
+    actual suspend fun requestPermissionIfNeeded(): Boolean =
+        kotlinx.coroutines.suspendCancellableCoroutine { cont ->
+            val center = UNUserNotificationCenter.currentNotificationCenter()
+            center.requestAuthorizationWithOptions(
+                options = UNAuthorizationOptionAlert or UNAuthorizationOptionSound or UNAuthorizationOptionBadge
+            ) { granted, error ->
+                if (cont.isActive) {
+                    cont.resume(error == null && granted)
+                }
+            }
+        }
 
     actual fun cancelAll() {
         UNUserNotificationCenter.currentNotificationCenter().removeAllPendingNotificationRequests()

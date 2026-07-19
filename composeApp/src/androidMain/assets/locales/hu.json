@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "Frissíthetjük ezt az Adatvédelmi irányelvet. Az aktuális verzió az alkalmazásban jelenik meg a legutóbbi frissítés dátumával.",
     "privacy_policy_section_13_title": "13. Kapcsolat",
     "privacy_policy_section_13_p1": "Ha kérdése van ezzel az Adatvédelmi irányelvvel, az adatkezeléssel vagy az adattörlési kérelmekkel kapcsolatban, kapcsolatba léphet velünk az alábbi címen:",
-    "privacy_policy_contact_email_prefix": "Kapcsolati e-mail:"
+    "privacy_policy_contact_email_prefix": "Kapcsolati e-mail:",
+    "terms_of_use_beauty_planner": "Beauty Planner használati feltételek",
+    "billing_store_note_ios": "A feliratkozás feldolgozása az Apple App Store fiókodon keresztül történik. Az App Store fiókod és az alkalmazásfiókod eltérhet egymástól.",
+    "billing_privacy_notice_ios": "A vásárlás és az előfizetés ellenőrzése az Apple App Store / StoreKit és az alkalmazás háttérszolgáltatásai (Firebase/Cloud Functions) segítségével történik a hozzáférési állapot megerősítéséhez.",
+    "billing_refund_info_message_ios": "Visszatérítéshez szükséged lehet az Apple vásárlási előzményeidre vagy az App Store-ból származó előfizetési visszaigazolásra.",
+    "premium_guest_buy_requires_account": "Jelentkezz be vagy hozz létre egy fiókot a Premium megvásárlásához",
+    "premium_guest_restore_requires_account": "Jelentkezz be vagy hozz létre egy fiókot a vásárlások visszaállításához",
+    "premium_guest_account_required_message": "A Premium össze van kapcsolva az alkalmazásfiókoddal. Jelentkezz be vagy hozz létre egy fiókot az előfizetésed megvásárlásához vagy visszaállításához."
 }

@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "We kunnen dit privacybeleid bijwerken. De huidige versie wordt in de app gepubliceerd met de datum van de laatste update.",
     "privacy_policy_section_13_title": "13. Contact",
     "privacy_policy_section_13_p1": "Als u vragen heeft over dit privacybeleid, de gegevensverwerking of verzoeken tot gegevensverwijdering, kunt u contact met ons opnemen via:",
-    "privacy_policy_contact_email_prefix": "Contact e-mail:"
+    "privacy_policy_contact_email_prefix": "Contact e-mail:",
+    "terms_of_use_beauty_planner": "Gebruiksvoorwaarden van Beauty Planner",
+    "billing_store_note_ios": "Het abonnement wordt verwerkt via uw Apple App Store-account. Uw App Store-account en uw app-account kunnen verschillen.",
+    "billing_privacy_notice_ios": "Aankoop- en abonnementsverificatie worden verwerkt via de Apple App Store / StoreKit en app-backend-services (Firebase/Cloud Functions) om de toegangsstatus te bevestigen.",
+    "billing_refund_info_message_ios": "Voor terugbetalingen heeft u mogelijk uw Apple-aankoopgeschiedenis of de abonnementsbevestiging uit de App Store nodig.",
+    "premium_guest_buy_requires_account": "Log in of maak een account aan om Premium te kopen",
+    "premium_guest_restore_requires_account": "Log in of maak een account aan om aankopen te herstellen",
+    "premium_guest_account_required_message": "Premium is gekoppeld aan uw app-account. Log in of maak een account aan om uw abonnement te kopen of te herstellen."
 }

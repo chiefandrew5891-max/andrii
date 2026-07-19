@@ -531,5 +531,12 @@
     "privacy_policy_section_12_p1": "We may update this Privacy Policy. The current version is published in the app with the latest update date.",
     "privacy_policy_section_13_title": "13. Contact",
     "privacy_policy_section_13_p1": "If you have questions about this Privacy Policy, data processing, or data deletion requests, you can contact us at:",
-    "privacy_policy_contact_email_prefix": "Contact email:"
+    "privacy_policy_contact_email_prefix": "Contact email:",
+    "terms_of_use_beauty_planner": "Beauty Planneri kasutustingimused",
+    "billing_store_note_ios": "Tellimust töödeldakse teie Apple App Store'i konto kaudu. Teie App Store'i konto ja rakenduse konto võivad olemalt erinevad.",
+    "billing_privacy_notice_ios": "Ostu ja tellimuse kinnitamine toimub Apple App Store / StoreKiti ja rakenduse taustateenuste (Firebase/Cloud Functions) kaudu juurdepääsu oleku kinnitamiseks.",
+    "billing_refund_info_message_ios": "Tagasimmaksete saamiseks võite vajada oma Apple'i ostuajalugu või tellimuse kinnitust App Store'ist.",
+    "premium_guest_buy_requires_account": "Premiumi ostmiseks logige sisse või looge konto",
+    "premium_guest_restore_requires_account": "Ostude taastamiseks logige sisse või looge konto",
+    "premium_guest_account_required_message": "Premium on seotud teie rakenduse kontoga. Tellimuse ostmiseks või taastamiseks logige sisse või looge konto."
 }
