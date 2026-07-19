@@ -29,6 +29,8 @@ import com.andrey.beautyplanner.billing.BillingUiState
 import com.andrey.beautyplanner.billing.PREMIUM_SUBS_PRODUCT_ID
 import kotlinx.datetime.Clock
 import com.andrey.beautyplanner.getPlatform
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.fillMaxWidth
 
 private const val TERMS_OF_USE_URL = "https://sites.google.com/view/beautyplanner/terms-of-use"
 
@@ -38,6 +40,7 @@ fun PremiumAccessScreen(
     message: String,
     billingUiState: BillingUiState,
     accountLabel: String,
+    isGuestUser: Boolean,
     onContinueFree: () -> Unit,
     onUnlockPremium: () -> Unit,
     onRestorePurchases: () -> Unit,
@@ -76,7 +79,8 @@ fun PremiumAccessScreen(
     }
 
     val buyEnabled =
-        !isPremiumActive &&
+        !isGuestUser &&
+                !isPremiumActive &&
                 billingUiState.status != BillingStatus.PURCHASING &&
                 billingUiState.status != BillingStatus.RESTORING &&
                 premiumProduct != null &&
@@ -291,7 +295,31 @@ fun PremiumAccessScreen(
                     lineHeight = (18 * fontScale).sp
                 )
 
-                Spacer(modifier = Modifier.padding(top = 28.dp))
+                Spacer(modifier = Modifier.padding(top = 10.dp))
+
+                if (isGuestUser) {
+                    Spacer(modifier = Modifier.padding(top = 14.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colors.primary.copy(alpha = 0.10f),
+                                shape = RoundedCornerShape(14.dp)
+                            )
+                            .padding(horizontal = 14.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = Locales.t("premium_guest_account_required_message"),
+                            fontSize = (14 * fontScale).sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colors.primary.copy(alpha = 0.92f),
+                            lineHeight = (20 * fontScale).sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.padding(top = 24.dp))
 
                 PrimaryActionButton(
                     text = buyButtonText,
@@ -304,7 +332,7 @@ fun PremiumAccessScreen(
                 SecondaryActionButton(
                     text = Locales.t("premium_restore_btn"),
                     onClick = onRestorePurchases,
-                    enabled = billingUiState.status != BillingStatus.PURCHASING
+                    enabled = !isGuestUser && billingUiState.status != BillingStatus.PURCHASING
                 )
 
                 if (!isPremiumActive) {

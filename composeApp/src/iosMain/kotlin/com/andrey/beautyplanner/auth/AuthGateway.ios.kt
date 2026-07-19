@@ -46,14 +46,20 @@ actual object AuthGateway {
         val existing = getCurrentUser()
         if (existing != null) return SignInResult.Success(existing)
 
-        val user = AuthUser(
-            uid = "ios-local-anonymous",
-            provider = SignInProvider.ANONYMOUS,
-            email = "",
-            displayName = ""
-        )
-        localUser = user
-        return SignInResult.Success(user)
+        val bridge = AnonymousAuthBridgeConnector.signIn
+            ?: return SignInResult.Error("iOS anonymous auth bridge is not connected.")
+
+        return try {
+            val deferred = CompletableDeferred<Map<String, String>>()
+            bridge.invoke(deferred)
+            val result = deferred.await()
+
+            val user = mapUser(result)
+            localUser = user
+            SignInResult.Success(user)
+        } catch (t: Throwable) {
+            SignInResult.Error(t.message ?: "Anonymous sign-in failed on iOS.")
+        }
     }
 
     actual suspend fun signInWithGoogle(): SignInResult {

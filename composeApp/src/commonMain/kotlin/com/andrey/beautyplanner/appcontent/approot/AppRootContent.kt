@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import com.andrey.beautyplanner.auth.SignInProvider
 
 
 @OptIn(androidx.compose.material.ExperimentalMaterialApi::class)
@@ -511,6 +512,7 @@ fun AppRootContent(
                     state.currentAuthUser?.displayName?.isNotBlank() == true -> state.currentAuthUser?.displayName ?: ""
                     else -> Locales.t("billing_account_binding_unknown")
                 },
+                isGuestUser = state.currentAuthUser?.provider == SignInProvider.ANONYMOUS,
                 onContinueFree = {
                     state.closePremiumScreen()
                 },

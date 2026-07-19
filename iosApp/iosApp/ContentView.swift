@@ -227,6 +227,43 @@ struct ComposeView: UIViewControllerRepresentable {
             }
         }
 
+        AnonymousAuthBridgeConnector().signIn = { deferred in
+            GoogleAuthBridge.signInAnonymously { result, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: error as String)
+                        )
+                        return
+                    }
+
+                    guard let result = result else {
+                        deferred.completeExceptionally(
+                            exception: KotlinIllegalStateException(message: "Anonymous sign-in returned null result")
+                        )
+                        return
+                    }
+
+                    var mapped: [String: String] = [:]
+                    for (keyAny, valueAny) in result {
+                        guard let key = keyAny as? String else { continue }
+
+                        if let value = valueAny as? String {
+                            mapped[key] = value
+                        } else if let value = valueAny as? NSString {
+                            mapped[key] = value as String
+                        } else if let value = valueAny as? NSNumber {
+                            mapped[key] = value.stringValue
+                        } else {
+                            mapped[key] = "\(valueAny)"
+                        }
+                    }
+
+                    deferred.complete(value: mapped)
+                }
+            }
+        }
+
         BackendBridgeConnector().callBackend = { name, payload, deferred in
             if name == "__currentUser" {
                 if let currentUser = GoogleAuthBridge.currentUser() {

@@ -1095,6 +1095,13 @@ class AppRootState(
 
     fun buyPremium() {
         scope.launch {
+            if (currentAuthUser?.provider == SignInProvider.ANONYMOUS) {
+                billingUiState = billingUiState.copy(
+                    status = BillingStatus.READY,
+                    errorMessage = Locales.t("premium_guest_buy_requires_account")
+                )
+                return@launch
+            }
             showGlobalLoading(Locales.t("loading"))
             try {
                 val product = billingUiState.products.firstOrNull {
@@ -1171,6 +1178,15 @@ class AppRootState(
 
     fun restorePremium(silent: Boolean = false) {
         scope.launch {
+            if (currentAuthUser?.provider == SignInProvider.ANONYMOUS) {
+                if (!silent) {
+                    billingUiState = billingUiState.copy(
+                        status = BillingStatus.READY,
+                        errorMessage = Locales.t("premium_guest_restore_requires_account")
+                    )
+                }
+                return@launch
+            }
             if (!silent) {
                 showGlobalLoading(Locales.t("loading"))
             }
