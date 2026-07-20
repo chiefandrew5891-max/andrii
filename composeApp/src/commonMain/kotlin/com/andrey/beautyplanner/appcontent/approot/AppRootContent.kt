@@ -26,8 +26,12 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+import kotlinx.datetime.toInstant
+import com.andrey.beautyplanner.utils.parseHmToMinutes
 import androidx.compose.material.Button
 import com.andrey.beautyplanner.appcontent.ServiceTemplatesScreen
 import com.andrey.beautyplanner.appcontent.WorkScheduleScreen
@@ -802,6 +806,16 @@ fun AppRootContent(
         if (apptToView != null && statusToView != null) {
             val apptDate = runCatching { kotlinx.datetime.LocalDate.parse(apptToView.dateString) }.getOrNull()
             val actionsEnabled = apptDate == null || apptDate >= state.today
+            val canEditInGracePeriod = if (!actionsEnabled && apptDate != null) {
+                val apptTimeMin = parseHmToMinutes(apptToView.time) ?: 0
+                val apptLocalDt = LocalDateTime(
+                    apptDate.year, apptDate.month, apptDate.dayOfMonth,
+                    apptTimeMin / 60, apptTimeMin % 60, 0
+                )
+                val apptInstant = apptLocalDt.toInstant(TimeZone.currentSystemDefault())
+                val diffMs = Clock.System.now().toEpochMilliseconds() - apptInstant.toEpochMilliseconds()
+                diffMs in 0L..(24L * 60L * 60L * 1000L)
+            } else false
 
             AppointmentDetailsDialog(
                 appt = apptToView,
@@ -810,12 +824,13 @@ fun AppRootContent(
                 status = statusToView,
                 actionsEnabled = actionsEnabled,
                 allowDeletePast = AppSettings.developerModeUnlocked,
+                canEditInGracePeriod = canEditInGracePeriod,
                 onDismiss = {
                     viewingAppt = null
                     viewingStatus = null
                 },
                 onEditClick = {
-                    if (!actionsEnabled) return@AppointmentDetailsDialog
+                    if (!actionsEnabled && !canEditInGracePeriod) return@AppointmentDetailsDialog
                     viewingAppt = null
                     viewingStatus = null
                     state.editingAppointment = apptToView

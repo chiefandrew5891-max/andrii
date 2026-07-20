@@ -413,6 +413,7 @@ fun AppointmentDetailsDialog(
     status: LiveStatusKey,
     actionsEnabled: Boolean = true,
     allowDeletePast: Boolean = false,
+    canEditInGracePeriod: Boolean = false,
     onDismiss: () -> Unit,
     onEditClick: () -> Unit,
     onTransferClick: () -> Unit,
@@ -430,7 +431,8 @@ fun AppointmentDetailsDialog(
     val dateTextColor = MaterialTheme.colors.primary.copy(alpha = 0.95f)
     val timeTextColor = MaterialTheme.colors.onSurface.copy(alpha = 0.72f)
 
-    val editTransferEnabled = actionsEnabled && status != LiveStatusKey.DONE
+    val editEnabled = (actionsEnabled || canEditInGracePeriod) && status != LiveStatusKey.DONE
+    val transferEnabled = actionsEnabled && status != LiveStatusKey.DONE
     val deleteEnabled = actionsEnabled || allowDeletePast
 
     val disabledButtonTextColor = MaterialTheme.colors.onSurface.copy(alpha = 0.35f)
@@ -535,7 +537,7 @@ fun AppointmentDetailsDialog(
                         fontSize = (13 * fontScale).sp
                     )
 
-                    if (!actionsEnabled) {
+                    if (!actionsEnabled && !canEditInGracePeriod) {
                         Spacer(Modifier.height(10.dp))
                         Text(
                             text = Locales.t("past_date_actions_disabled"),
@@ -552,7 +554,7 @@ fun AppointmentDetailsDialog(
                     ) {
                         Button(
                             onClick = onEditClick,
-                            enabled = editTransferEnabled,
+                            enabled = editEnabled,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.buttonColors(
@@ -562,7 +564,7 @@ fun AppointmentDetailsDialog(
                         ) {
                             Text(
                                 text = Locales.t("edit"),
-                                color = if (editTransferEnabled) {
+                                color = if (editEnabled) {
                                     MaterialTheme.colors.onPrimary
                                 } else {
                                     disabledButtonTextColor
@@ -572,7 +574,7 @@ fun AppointmentDetailsDialog(
 
                         OutlinedButton(
                             onClick = onTransferClick,
-                            enabled = editTransferEnabled,
+                            enabled = transferEnabled,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.outlinedButtonColors(
@@ -581,7 +583,7 @@ fun AppointmentDetailsDialog(
                         ) {
                             Text(
                                 text = Locales.t("transfer_appt"),
-                                color = if (editTransferEnabled) {
+                                color = if (transferEnabled) {
                                     MaterialTheme.colors.primary
                                 } else {
                                     disabledButtonTextColor
