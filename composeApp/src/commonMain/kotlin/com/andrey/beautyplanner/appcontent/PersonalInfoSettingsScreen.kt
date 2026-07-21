@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.ProfileImagePicker
+import com.andrey.beautyplanner.rememberProfileAvatarBitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -86,7 +87,9 @@ fun PersonalInfoSettingsScreen() {
                 color = onBg.copy(alpha = 0.7f)
             )
 
-            Divider()
+            if (!hasPreviewData) {
+                Divider()
+            }
             if (hasPreviewData) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -203,13 +206,6 @@ fun PersonalInfoSettingsScreen() {
                     avatarBase64Draft = ""
                 },
                 enabled = avatarBase64Draft.isNotBlank()
-            )
-
-            Text(
-                text = "Пока здесь используется только ссылка на изображение. Позже можно заменить на загрузку файла.",
-                fontSize = (12 * fontScale).sp,
-                color = onSurface.copy(alpha = 0.65f),
-                lineHeight = (18 * fontScale).sp
             )
 
             Spacer(Modifier.height(6.dp))
