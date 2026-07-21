@@ -85,20 +85,14 @@ fun PremiumAccessScreen(
                 premiumProduct != null &&
                 premiumProduct.offerToken.isNotBlank()
 
-    val subscriptionStateText = subscriptionStateLabel(AppSettings.premiumSubscriptionState)
     val expiryMillis = AppSettings.premiumSubscriptionExpiryMillis
     val daysLeft = calculateSubscriptionDaysLeft(
         expiryMillis = expiryMillis,
         nowMillis = Clock.System.now().toEpochMilliseconds()
     )
     val expiryText = formatSubscriptionExpiry(expiryMillis)
-    val autoRenewEnabled = AppSettings.premiumSubscriptionAutoRenewing
-    val autoRenewText = if (autoRenewEnabled) {
-        Locales.t("premium_subscription_auto_renew_on")
-    } else {
-        Locales.t("premium_subscription_auto_renew_off")
-    }
 
+    val autoRenewEnabled = AppSettings.premiumSubscriptionAutoRenewing
     val showCancelledButActiveNotice =
         isPremiumActive &&
                 expiryMillis > Clock.System.now().toEpochMilliseconds() &&
@@ -172,7 +166,9 @@ fun PremiumAccessScreen(
                 Spacer(modifier = Modifier.padding(top = 8.dp))
 
                 Text(
-                    text = "${Locales.t("premium_status_label")}: $subscriptionStateText",
+                    text = "${Locales.t("premium_status_label")}: ${
+                        subscriptionStateLabel(AppSettings.premiumSubscriptionState)
+                    }",
                     fontSize = (14 * fontScale).sp,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.88f)
                 )
@@ -195,7 +191,13 @@ fun PremiumAccessScreen(
 
                 Spacer(modifier = Modifier.padding(top = 6.dp))
                 Text(
-                    text = "${Locales.t("premium_subscription_auto_renew")}: $autoRenewText",
+                    text = "${Locales.t("premium_subscription_auto_renew")}: ${
+                        if (autoRenewEnabled) {
+                            Locales.t("premium_subscription_auto_renew_on")
+                        } else {
+                            Locales.t("premium_subscription_auto_renew_off")
+                        }
+                    }",
                     fontSize = (14 * fontScale).sp,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.88f)
                 )
