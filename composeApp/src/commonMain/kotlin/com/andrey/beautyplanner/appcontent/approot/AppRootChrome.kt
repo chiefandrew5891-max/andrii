@@ -48,6 +48,12 @@ import com.andrey.beautyplanner.appcontent.calculateSubscriptionDaysLeft
 import com.andrey.beautyplanner.appcontent.formatSubscriptionExpiry
 import com.andrey.beautyplanner.appcontent.subscriptionStateLabel
 import kotlinx.datetime.Clock
+import com.andrey.beautyplanner.AccessManager
+import com.andrey.beautyplanner.PremiumFeature
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import com.andrey.beautyplanner.rememberProfileAvatarBitmap
+
 
 @Composable
 fun AppRootChrome(
@@ -175,6 +181,8 @@ fun AppRootChrome(
     ) {
         val (avatarBg, avatarText) = accountAvatarColors(provider)
 
+        val profileAvatarBitmap = rememberProfileAvatarBitmap(AppSettings.profileAvatarBase64)
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -188,12 +196,23 @@ fun AppRootChrome(
                     .background(avatarBg),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = initials,
-                    color = avatarText,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
+                if (profileAvatarBitmap != null) {
+                    Image(
+                        bitmap = profileAvatarBitmap,
+                        contentDescription = "Аватар профиля",
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(
+                        text = initials,
+                        color = avatarText,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
             }
 
             Spacer(Modifier.width(12.dp))
@@ -391,6 +410,25 @@ fun AppRootChrome(
                     }
 
                     DrawerItem(
+                        title = "Взаимодействие с клиентами",
+                        selected = state.currentScreen == Screen.CLIENT_INTERACTIONS
+                    ) {
+                        val nowMillis = Clock.System.now().toEpochMilliseconds()
+                        if (!AccessManager.hasFeature(PremiumFeature.STATS, nowMillis)) {
+                            state.showPremiumRequired(
+                                message = "Экран взаимодействия с клиентами доступен только по премиум-подписке.",
+                                returnTo = Screen.MONTH
+                            )
+                            state.closeDrawer()
+                            return@DrawerItem
+                        }
+
+                        state.screenHistory = emptyList()
+                        state.currentScreen = Screen.CLIENT_INTERACTIONS
+                        state.closeDrawer()
+                    }
+
+                    DrawerItem(
                         title = Locales.t("nav_settings"),
                         selected = state.currentScreen == Screen.SETTINGS
                     ) {
@@ -419,6 +457,8 @@ fun AppRootChrome(
                         state.currentScreen == Screen.SERVICE_TEMPLATES ||
                         state.currentScreen == Screen.WORK_SCHEDULE ||
                         state.currentScreen == Screen.APPEARANCE_SETTINGS ||
+                        state.currentScreen == Screen.PERSONAL_INFO_SETTINGS ||
+                        state.currentScreen == Screen.CLIENT_INTERACTIONS ||
                         state.currentScreen == Screen.DEVELOPER_ACCESS ||
                         state.currentScreen == Screen.BACKUP_SETTINGS ||
                         state.currentScreen == Screen.PRIVACY_POLICY ||

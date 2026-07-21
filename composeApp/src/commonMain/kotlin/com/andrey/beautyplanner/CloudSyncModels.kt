@@ -5,6 +5,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CloudSettingsSnapshot(
     val ownerName: String = "",
+    val profilePhone: String = "",
+    val profilePhoneVisible: Boolean = true,
+    val profileAvatarUrl: String = "",
+    val profileAvatarBase64: String = "",
+    val clientInteractionsEnabled: Boolean = false,
     val selectedCurrency: String = "EUR",
     val useShortTextCurrency: Boolean = false,
 

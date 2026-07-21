@@ -85,7 +85,6 @@ fun AppearanceSettingsScreen(state: AppRootState) {
         mutableStateOf(AppSettings.selectedCurrency)
     }
 
-    var userNameDraft by remember { mutableStateOf(AppSettings.ownerName) }
     var useShortTextCurrencyDraft by remember { mutableStateOf(AppSettings.useShortTextCurrency) }
 
     LaunchedEffect(selectedFontDraftKey) {
@@ -122,8 +121,7 @@ fun AppearanceSettingsScreen(state: AppRootState) {
                 selectedThemeDraftKey != currentThemeKey ||
                 selectedFontDraftKey != currentFontKey ||
                 selectedCurrencyCodeDraft != AppSettings.selectedCurrency ||
-                useShortTextCurrencyDraft != AppSettings.useShortTextCurrency ||
-                userNameDraft.trim() != AppSettings.ownerName.trim()
+                useShortTextCurrencyDraft != AppSettings.useShortTextCurrency
 
     CenteredNarrowContentContainer {
         Column(
@@ -218,46 +216,6 @@ fun AppearanceSettingsScreen(state: AppRootState) {
 
             androidx.compose.material.Divider()
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Text(
-                    text = Locales.t("user_name_label"),
-                    fontSize = (16 * fontScale).sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = onSurface.copy(alpha = 0.85f)
-                )
-
-                OutlinedTextField(
-                    value = userNameDraft,
-                    onValueChange = { userNameDraft = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                    placeholder = {
-                        Text(
-                            text = Locales.t("user_name_placeholder"),
-                            color = onSurface.copy(alpha = 0.50f)
-                        )
-                    },
-                    textStyle = TextStyle(
-                        fontFamily = appFontFamily(),
-                        fontSize = (16 * fontScale).sp,
-                        color = onSurface
-                    ),
-                    colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
-                        textColor = onSurface,
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = onSurface.copy(alpha = 0.28f),
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = onSurface.copy(alpha = 0.68f),
-                        cursorColor = MaterialTheme.colors.primary,
-                        backgroundColor = MaterialTheme.colors.surface,
-                        placeholderColor = onSurface.copy(alpha = 0.50f)
-                    )
-                )
-            }
-
             Spacer(Modifier.height(8.dp))
 
             PrimaryActionButton(
@@ -268,7 +226,6 @@ fun AppearanceSettingsScreen(state: AppRootState) {
                         try {
                             AppSettings.isDarkMode = (selectedThemeDraftKey == "dark")
                             AppSettings.fontSizeMode = selectedFontDraftKey
-                            AppSettings.ownerName = userNameDraft.trim()
                             AppSettings.saveCurrencySynchronously(
                                 selectedCurrencyCodeDraft,
                                 useShortTextCurrencyDraft

@@ -133,6 +133,9 @@ fun AppRootContent(
                 onOpenAppearanceSettings = {
                     state.navigateTo(Screen.APPEARANCE_SETTINGS)
                 },
+                onOpenPersonalInfoSettings = {
+                    state.navigateTo(Screen.PERSONAL_INFO_SETTINGS)
+                },
                 onOpenBackupSettings = {
                     if (state.currentAuthUser?.provider == SignInProvider.ANONYMOUS) {
                         state.showPremiumRequired(
@@ -244,6 +247,8 @@ fun AppRootContent(
                     }
                 )
             }
+
+            Screen.CLIENT_INTERACTIONS -> ClientInteractionsScreen()
 
             Screen.MONTH -> {
                 var nowTimeHm by remember { mutableStateOf(getCurrentTimeHm()) }
@@ -709,6 +714,7 @@ fun AppRootContent(
             Screen.SERVICE_TEMPLATES -> ServiceTemplatesScreen()
             Screen.WORK_SCHEDULE -> WorkScheduleScreen()
             Screen.APPEARANCE_SETTINGS -> AppearanceSettingsScreen(state = state)
+            Screen.PERSONAL_INFO_SETTINGS -> PersonalInfoSettingsScreen()
         }
 
         if (state.showBookingDialog) {

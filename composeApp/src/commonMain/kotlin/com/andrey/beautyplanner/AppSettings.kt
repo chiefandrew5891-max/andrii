@@ -65,6 +65,11 @@ private data class SettingsSnapshot(
     val selectedLanguage: String = "Русский",
     val fontSizeMode: String = "medium",
     val ownerName: String = "",
+    val profilePhone: String = "",
+    val profilePhoneVisible: Boolean = true,
+    val profileAvatarUrl: String = "",
+    val profileAvatarBase64: String = "",
+    val clientInteractionsEnabled: Boolean = false,
 
     val notificationsEnabled: Boolean = false,
     val notificationSoundType: String = NotificationSoundType.DEFAULT.name,
@@ -176,6 +181,11 @@ object AppSettings {
 
     var fontSizeMode by mutableStateOf("medium")
     var ownerName by mutableStateOf("")
+    var profilePhone by mutableStateOf("")
+    var profilePhoneVisible by mutableStateOf(true)
+    var profileAvatarUrl by mutableStateOf("")
+    var profileAvatarBase64 by mutableStateOf("")
+    var clientInteractionsEnabled by mutableStateOf(false)
 
     var notificationsEnabled by mutableStateOf(false)
     var notificationSoundType by mutableStateOf("DEFAULT")
@@ -412,6 +422,11 @@ object AppSettings {
 
         return CloudSettingsSnapshot(
             ownerName = ownerName,
+            profilePhone = profilePhone,
+            profilePhoneVisible = profilePhoneVisible,
+            profileAvatarUrl = profileAvatarUrl,
+            profileAvatarBase64 = profileAvatarBase64,
+            clientInteractionsEnabled = clientInteractionsEnabled,
             selectedCurrency = selectedCurrency,
             useShortTextCurrency = useShortTextCurrency,
 
@@ -434,6 +449,11 @@ object AppSettings {
 
     fun applyCloudSettingsSnapshot(snapshot: CloudSettingsSnapshot) {
         ownerName = snapshot.ownerName
+        profilePhone = snapshot.profilePhone
+        profilePhoneVisible = snapshot.profilePhoneVisible
+        profileAvatarUrl = snapshot.profileAvatarUrl
+        profileAvatarBase64 = snapshot.profileAvatarBase64
+        clientInteractionsEnabled = snapshot.clientInteractionsEnabled
         selectedCurrency = snapshot.selectedCurrency
         useShortTextCurrency = snapshot.useShortTextCurrency
 
@@ -560,6 +580,11 @@ object AppSettings {
 
         servicePhone = snapshot.servicePhone
         ownerName = snapshot.ownerName
+        profilePhone = snapshot.profilePhone
+        profilePhoneVisible = snapshot.profilePhoneVisible
+        profileAvatarUrl = snapshot.profileAvatarUrl
+        clientInteractionsEnabled = snapshot.clientInteractionsEnabled
+        profileAvatarBase64 = snapshot.profileAvatarBase64
 
         trialStartedAtMillis = snapshot.trialStartedAtMillis
         premiumUnlocked = snapshot.premiumUnlocked
@@ -618,6 +643,11 @@ object AppSettings {
             selectedLanguage = selectedLanguage,
             fontSizeMode = fontSizeMode,
             ownerName = ownerName,
+            profilePhone = profilePhone,
+            profilePhoneVisible = profilePhoneVisible,
+            profileAvatarUrl = profileAvatarUrl,
+            profileAvatarBase64 = profileAvatarBase64,
+            clientInteractionsEnabled = clientInteractionsEnabled,
 
             notificationsEnabled = notificationsEnabled,
             notificationSoundType = notificationSoundType,

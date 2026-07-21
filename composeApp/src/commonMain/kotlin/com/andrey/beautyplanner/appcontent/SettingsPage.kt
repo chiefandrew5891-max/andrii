@@ -58,6 +58,7 @@ fun SettingsPage(
     onOpenServiceTemplates: () -> Unit,
     onOpenWorkSchedule: () -> Unit,
     onOpenAppearanceSettings: () -> Unit,
+    onOpenPersonalInfoSettings: () -> Unit,
     onOpenBackupSettings: () -> Unit,
     onOpenNotificationSettings: () -> Unit,
     onOpenDeveloperAccess: () -> Unit
@@ -232,6 +233,27 @@ fun SettingsPage(
                 fontSize = (22 * fontScale).sp,
                 fontWeight = FontWeight.Bold,
                 color = onBg
+            )
+
+            SettingsSectionBlock(
+                title = "Личная информация",
+                description = "Имя пользователя, телефон, отображение телефона и ссылка на аватар.",
+                actionButton = {
+                    PrimaryActionButton(
+                        text = "Открыть личную информацию",
+                        onClick = onOpenPersonalInfoSettings
+                    )
+                }
+            )
+
+            Divider(
+                modifier = Modifier.padding(vertical = 2.dp),
+                color = onSurface.copy(alpha = 0.10f)
+            )
+
+            Divider(
+                modifier = Modifier.padding(vertical = 2.dp),
+                color = onSurface.copy(alpha = 0.10f)
             )
 
             SettingsSectionBlock(

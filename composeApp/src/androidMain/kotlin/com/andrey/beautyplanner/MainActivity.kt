@@ -16,6 +16,10 @@ import com.andrey.beautyplanner.auth.GoogleSignInFallbackResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.CompletableDeferred
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import java.io.ByteArrayOutputStream
 
 class MainActivity : ComponentActivity() {
 
@@ -43,6 +47,47 @@ class MainActivity : ComponentActivity() {
             contentResolver.openOutputStream(uri)?.use { os ->
                 os.write(json.toByteArray(Charsets.UTF_8))
             }
+        }
+    }
+
+    private var pendingProfileImagePicked: ((String?) -> Unit)? = null
+
+    private val profileImageLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        val callback = pendingProfileImagePicked
+        pendingProfileImagePicked = null
+
+        if (uri == null) {
+            callback?.invoke(null)
+            return@registerForActivityResult
+        }
+
+        runCatching {
+            contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        }
+
+        runCatching {
+            val mime = contentResolver.getType(uri).orEmpty().lowercase()
+            val allowed = mime == "image/jpeg" || mime == "image/jpg" || mime == "image/png"
+            if (!allowed) {
+                callback?.invoke(null)
+                return@registerForActivityResult
+            }
+
+            val base64 = contentResolver.openInputStream(uri)?.use { input ->
+                val original = BitmapFactory.decodeStream(input) ?: return@use null
+                val cropped = cropCenterSquare(original)
+                val resized = resizeBitmap(cropped, 512)
+                bitmapToBase64Jpeg(resized, 82)
+            }
+
+            callback?.invoke(base64)
+        }.onFailure {
+            callback?.invoke(null)
         }
     }
 
@@ -107,6 +152,23 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun cropCenterSquare(source: Bitmap): Bitmap {
+        val size = minOf(source.width, source.height)
+        val x = (source.width - size) / 2
+        val y = (source.height - size) / 2
+        return Bitmap.createBitmap(source, x, y, size, size)
+    }
+
+    private fun resizeBitmap(source: Bitmap, targetSize: Int = 512): Bitmap {
+        return Bitmap.createScaledBitmap(source, targetSize, targetSize, true)
+    }
+
+    private fun bitmapToBase64Jpeg(source: Bitmap, quality: Int = 82): String {
+        val output = ByteArrayOutputStream()
+        source.compress(Bitmap.CompressFormat.JPEG, quality, output)
+        return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -142,6 +204,11 @@ class MainActivity : ComponentActivity() {
             pendingImportOnPicked = onPicked
             pendingImportOnError = onError
             importLauncher.launch(arrayOf("application/json", "text/plain"))
+        }
+
+        ProfileImagePicker.pickImageImpl = { onImagePicked ->
+            pendingProfileImagePicked = onImagePicked
+            profileImageLauncher.launch(arrayOf("image/jpeg", "image/png"))
         }
 
         AppSettings.load()

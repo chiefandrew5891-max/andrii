@@ -531,6 +531,12 @@ struct ComposeView: UIViewControllerRepresentable {
             }
         }
 
+        ProfileImagePicker.shared.pickImageImpl = { callback in
+            ProfileImagePickerBridge.pickImage { base64 in
+                callback(base64)
+            }
+        }
+
         return MainViewControllerKt.MainViewController()
     }
 
