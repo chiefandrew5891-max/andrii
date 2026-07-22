@@ -1,6 +1,7 @@
 package com.andrey.beautyplanner.appcontent.approot
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -177,7 +178,8 @@ fun AppRootChrome(
         initials: String,
         title: String,
         subtitle: String? = null,
-        provider: SignInProvider? = null
+        provider: SignInProvider? = null,
+        onProfileClick: (() -> Unit)? = null
     ) {
         val (avatarBg, avatarText) = accountAvatarColors(provider)
 
@@ -186,6 +188,10 @@ fun AppRootChrome(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(
+                    if (onProfileClick != null) Modifier.clickable(onClick = onProfileClick)
+                    else Modifier
+                )
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -199,7 +205,7 @@ fun AppRootChrome(
                 if (profileAvatarBitmap != null) {
                     Image(
                         bitmap = profileAvatarBitmap,
-                        contentDescription = "Аватар профиля",
+                        contentDescription = Locales.t("profile_avatar_cd"),
                         modifier = Modifier
                             .matchParentSize()
                             .clip(CircleShape),
@@ -314,11 +320,21 @@ fun AppRootChrome(
                         authUser != null && authUser.provider != SignInProvider.ANONYMOUS
 
                     if (!isSignedInUser) {
+                        val guestInitials = AppSettings.ownerName.trim().take(1).ifBlank { "G" }.uppercase()
+                        val guestTitle = if (AppSettings.profileDisplayCustomName && AppSettings.ownerName.trim().isNotBlank()) {
+                            AppSettings.ownerName.trim()
+                        } else {
+                            Locales.t("account_anonymous")
+                        }
                         DrawerAccountHeader(
-                            initials = "G",
-                            title = Locales.t("account_anonymous"),
+                            initials = guestInitials,
+                            title = guestTitle,
                             subtitle = null,
-                            provider = SignInProvider.ANONYMOUS
+                            provider = SignInProvider.ANONYMOUS,
+                            onProfileClick = {
+                                state.navigateTo(Screen.PERSONAL_INFO_SETTINGS)
+                                state.closeDrawer()
+                            }
                         )
 
                         DrawerSubscriptionInfo()
@@ -330,8 +346,11 @@ fun AppRootChrome(
                             state.openSignInScreen()
                         }
                     } else {
+                        val authDisplayName = authUser?.displayName?.takeIf { it.isNotBlank() }
+                        val customName = AppSettings.ownerName.trim().takeIf { it.isNotBlank() }
                         val title = when {
-                            authUser?.displayName?.isNotBlank() == true -> authUser.displayName
+                            AppSettings.profileDisplayCustomName && customName != null -> customName
+                            authDisplayName != null -> authDisplayName
                             authUser?.email?.isNotBlank() == true -> authUser.email
                             else -> Locales.t("account_current")
                         }
@@ -342,17 +361,29 @@ fun AppRootChrome(
                             else -> null
                         }
 
-                        val initials = buildAccountInitials(
-                            displayName = authUser?.displayName,
-                            email = authUser?.email,
-                            provider = authUser?.provider
-                        )
+                        val initials = if (AppSettings.profileDisplayCustomName && customName != null) {
+                            val parts = customName.split(" ").filter { it.isNotBlank() }
+                            when {
+                                parts.size >= 2 -> (parts[0].take(1) + parts[1].take(1)).uppercase()
+                                else -> customName.take(2).uppercase()
+                            }
+                        } else {
+                            buildAccountInitials(
+                                displayName = authUser?.displayName,
+                                email = authUser?.email,
+                                provider = authUser?.provider
+                            )
+                        }
 
                         DrawerAccountHeader(
                             initials = initials,
                             title = title,
                             subtitle = subtitle,
-                            provider = authUser?.provider
+                            provider = authUser?.provider,
+                            onProfileClick = {
+                                state.navigateTo(Screen.PERSONAL_INFO_SETTINGS)
+                                state.closeDrawer()
+                            }
                         )
 
                         DrawerSubscriptionInfo()
@@ -410,13 +441,13 @@ fun AppRootChrome(
                     }
 
                     DrawerItem(
-                        title = "Взаимодействие с клиентами",
+                        title = Locales.t("nav_client_interactions"),
                         selected = state.currentScreen == Screen.CLIENT_INTERACTIONS
                     ) {
                         val nowMillis = Clock.System.now().toEpochMilliseconds()
                         if (!AccessManager.hasFeature(PremiumFeature.STATS, nowMillis)) {
                             state.showPremiumRequired(
-                                message = "Экран взаимодействия с клиентами доступен только по премиум-подписке.",
+                                message = Locales.t("premium_required_client_interactions"),
                                 returnTo = Screen.MONTH
                             )
                             state.closeDrawer()

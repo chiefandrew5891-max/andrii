@@ -48,10 +48,12 @@ final class ProfileImagePickerBridge: NSObject, PHPickerViewControllerDelegate {
                         return
                     }
 
-                    let cropped = Self.cropCenterSquare(image)
-                    let resized = Self.resizeImage(cropped, targetSize: CGSize(width: 512, height: 512))
+                    // UIImage respects EXIF orientation automatically when rendered.
+                    // Resize to at most 1024 on the longer side; no center-crop here —
+                    // the Compose crop editor handles final positioning and cropping.
+                    let resized = Self.resizeImageMax(image, maxDim: 1024)
 
-                    guard let data = resized.jpegData(compressionQuality: 0.82) else {
+                    guard let data = resized.jpegData(compressionQuality: 0.85) else {
                         Self.completion?(nil)
                         Self.cleanup()
                         return
@@ -68,26 +70,16 @@ final class ProfileImagePickerBridge: NSObject, PHPickerViewControllerDelegate {
         }
     }
 
-    private static func cropCenterSquare(_ image: UIImage) -> UIImage {
-        guard let cgImage = image.cgImage else { return image }
-
-        let width = CGFloat(cgImage.width)
-        let height = CGFloat(cgImage.height)
-        let side = min(width, height)
-        let x = (width - side) / 2.0
-        let y = (height - side) / 2.0
-
-        guard let croppedCg = cgImage.cropping(to: CGRect(x: x, y: y, width: side, height: side)) else {
-            return image
-        }
-
-        return UIImage(cgImage: croppedCg, scale: image.scale, orientation: image.imageOrientation)
-    }
-
-    private static func resizeImage(_ image: UIImage, targetSize: CGSize) -> UIImage {
-        let renderer = UIGraphicsImageRenderer(size: targetSize)
+    /// Resize image so that the longer side is at most maxDim points, preserving aspect ratio.
+    private static func resizeImageMax(_ image: UIImage, maxDim: CGFloat) -> UIImage {
+        let size = image.size
+        let longerSide = max(size.width, size.height)
+        if longerSide <= maxDim { return image }
+        let scale = maxDim / longerSide
+        let newSize = CGSize(width: (size.width * scale).rounded(), height: (size.height * scale).rounded())
+        let renderer = UIGraphicsImageRenderer(size: newSize)
         return renderer.image { _ in
-            image.draw(in: CGRect(origin: .zero, size: targetSize))
+            image.draw(in: CGRect(origin: .zero, size: newSize))
         }
     }
 

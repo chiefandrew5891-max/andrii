@@ -236,19 +236,14 @@ fun SettingsPage(
             )
 
             SettingsSectionBlock(
-                title = "Личная информация",
-                description = "Имя пользователя, телефон, отображение телефона и ссылка на аватар.",
+                title = Locales.t("profile_settings_title"),
+                description = Locales.t("profile_settings_description"),
                 actionButton = {
                     PrimaryActionButton(
-                        text = "Открыть личную информацию",
+                        text = Locales.t("profile_settings_open"),
                         onClick = onOpenPersonalInfoSettings
                     )
                 }
-            )
-
-            Divider(
-                modifier = Modifier.padding(vertical = 2.dp),
-                color = onSurface.copy(alpha = 0.10f)
             )
 
             Divider(

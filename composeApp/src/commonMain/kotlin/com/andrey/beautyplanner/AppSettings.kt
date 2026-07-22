@@ -69,6 +69,8 @@ private data class SettingsSnapshot(
     val profilePhoneVisible: Boolean = true,
     val profileAvatarUrl: String = "",
     val profileAvatarBase64: String = "",
+    val profileDisplayCustomName: Boolean = false,
+    val profileSpecialization: String = "",
     val clientInteractionsEnabled: Boolean = false,
 
     val notificationsEnabled: Boolean = false,
@@ -185,6 +187,8 @@ object AppSettings {
     var profilePhoneVisible by mutableStateOf(true)
     var profileAvatarUrl by mutableStateOf("")
     var profileAvatarBase64 by mutableStateOf("")
+    var profileDisplayCustomName by mutableStateOf(false)
+    var profileSpecialization by mutableStateOf("")
     var clientInteractionsEnabled by mutableStateOf(false)
 
     var notificationsEnabled by mutableStateOf(false)
@@ -426,6 +430,8 @@ object AppSettings {
             profilePhoneVisible = profilePhoneVisible,
             profileAvatarUrl = profileAvatarUrl,
             profileAvatarBase64 = profileAvatarBase64,
+            profileDisplayCustomName = profileDisplayCustomName,
+            profileSpecialization = profileSpecialization,
             clientInteractionsEnabled = clientInteractionsEnabled,
             selectedCurrency = selectedCurrency,
             useShortTextCurrency = useShortTextCurrency,
@@ -453,6 +459,8 @@ object AppSettings {
         profilePhoneVisible = snapshot.profilePhoneVisible
         profileAvatarUrl = snapshot.profileAvatarUrl
         profileAvatarBase64 = snapshot.profileAvatarBase64
+        profileDisplayCustomName = snapshot.profileDisplayCustomName
+        profileSpecialization = snapshot.profileSpecialization
         clientInteractionsEnabled = snapshot.clientInteractionsEnabled
         selectedCurrency = snapshot.selectedCurrency
         useShortTextCurrency = snapshot.useShortTextCurrency
@@ -585,6 +593,8 @@ object AppSettings {
         profileAvatarUrl = snapshot.profileAvatarUrl
         clientInteractionsEnabled = snapshot.clientInteractionsEnabled
         profileAvatarBase64 = snapshot.profileAvatarBase64
+        profileDisplayCustomName = snapshot.profileDisplayCustomName
+        profileSpecialization = snapshot.profileSpecialization
 
         trialStartedAtMillis = snapshot.trialStartedAtMillis
         premiumUnlocked = snapshot.premiumUnlocked
@@ -647,6 +657,8 @@ object AppSettings {
             profilePhoneVisible = profilePhoneVisible,
             profileAvatarUrl = profileAvatarUrl,
             profileAvatarBase64 = profileAvatarBase64,
+            profileDisplayCustomName = profileDisplayCustomName,
+            profileSpecialization = profileSpecialization,
             clientInteractionsEnabled = clientInteractionsEnabled,
 
             notificationsEnabled = notificationsEnabled,

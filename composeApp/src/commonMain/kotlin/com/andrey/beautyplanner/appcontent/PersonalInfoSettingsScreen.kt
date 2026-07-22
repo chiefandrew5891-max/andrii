@@ -27,13 +27,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
+import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.ProfileImagePicker
 import com.andrey.beautyplanner.rememberProfileAvatarBitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
@@ -51,13 +51,20 @@ fun PersonalInfoSettingsScreen() {
     var avatarUrlDraft by remember { mutableStateOf(AppSettings.profileAvatarUrl) }
     var avatarBase64Draft by remember { mutableStateOf(AppSettings.profileAvatarBase64) }
     var phoneVisibleDraft by remember { mutableStateOf(AppSettings.profilePhoneVisible) }
+    var displayCustomNameDraft by remember { mutableStateOf(AppSettings.profileDisplayCustomName) }
+    var specializationDraft by remember { mutableStateOf(AppSettings.profileSpecialization) }
+
+    // Raw (uncropped) base64 returned by the picker; triggers the crop editor dialog
+    var pendingRawBase64 by remember { mutableStateOf<String?>(null) }
 
     val hasChanges =
         userNameDraft.trim() != AppSettings.ownerName.trim() ||
                 phoneDraft.trim() != AppSettings.profilePhone.trim() ||
                 avatarUrlDraft.trim() != AppSettings.profileAvatarUrl.trim() ||
                 avatarBase64Draft != AppSettings.profileAvatarBase64 ||
-                phoneVisibleDraft != AppSettings.profilePhoneVisible
+                phoneVisibleDraft != AppSettings.profilePhoneVisible ||
+                displayCustomNameDraft != AppSettings.profileDisplayCustomName ||
+                specializationDraft.trim() != AppSettings.profileSpecialization.trim()
 
     val hasPreviewData = userNameDraft.trim().isNotBlank() ||
             phoneDraft.trim().isNotBlank() ||
@@ -65,6 +72,20 @@ fun PersonalInfoSettingsScreen() {
             avatarBase64Draft.isNotBlank()
 
     val avatarBitmap = rememberProfileAvatarBitmap(avatarBase64Draft)
+
+    // Show avatar crop editor when a raw (uncropped) image has been picked
+    pendingRawBase64?.let { rawBase64 ->
+        AvatarCropEditorDialog(
+            rawBase64 = rawBase64,
+            onConfirm = { cropped ->
+                avatarBase64Draft = cropped
+                pendingRawBase64 = null
+            },
+            onDismiss = {
+                pendingRawBase64 = null
+            }
+        )
+    }
 
     CenteredNarrowContentContainer {
         Column(
@@ -75,21 +96,20 @@ fun PersonalInfoSettingsScreen() {
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             Text(
-                text = "Личная информация",
+                text = Locales.t("profile_master_title"),
                 fontSize = (22 * fontScale).sp,
                 fontWeight = FontWeight.Bold,
                 color = onBg
             )
 
             Text(
-                text = "Здесь можно настроить информацию о себе для профиля мастера.",
+                text = Locales.t("profile_master_description"),
                 fontSize = (14 * fontScale).sp,
                 color = onBg.copy(alpha = 0.7f)
             )
 
-            if (!hasPreviewData) {
-                Divider()
-            }
+            Divider()
+
             if (hasPreviewData) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -105,7 +125,7 @@ fun PersonalInfoSettingsScreen() {
                         if (avatarBitmap != null) {
                             Image(
                                 bitmap = avatarBitmap,
-                                contentDescription = "Аватар профиля",
+                                contentDescription = Locales.t("profile_avatar_cd"),
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(CircleShape),
@@ -139,6 +159,15 @@ fun PersonalInfoSettingsScreen() {
                         )
                     }
 
+                    if (specializationDraft.trim().isNotBlank()) {
+                        Text(
+                            text = specializationDraft.trim(),
+                            fontSize = (14 * fontScale).sp,
+                            color = onSurface.copy(alpha = 0.72f),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
                     if (phoneDraft.trim().isNotBlank() && phoneVisibleDraft) {
                         Text(
                             text = phoneDraft.trim(),
@@ -153,17 +182,44 @@ fun PersonalInfoSettingsScreen() {
             }
 
             ProfileTextField(
-                title = "Имя пользователя",
+                title = Locales.t("user_name_label"),
                 value = userNameDraft,
                 onValueChange = { userNameDraft = it },
-                placeholder = "Введите имя пользователя"
+                placeholder = Locales.t("user_name_hint")
+            )
+
+            // Display name preference switch (show only when a name is set)
+            if (userNameDraft.trim().isNotBlank()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = Locales.t("profile_display_name_switch"),
+                        fontSize = (14 * fontScale).sp,
+                        color = onSurface.copy(alpha = 0.85f),
+                        modifier = Modifier.weight(1f)
+                    )
+                    AppSwitch(
+                        checked = displayCustomNameDraft,
+                        onCheckedChange = { displayCustomNameDraft = it }
+                    )
+                }
+            }
+
+            ProfileTextField(
+                title = Locales.t("profile_specialization_label"),
+                value = specializationDraft,
+                onValueChange = { specializationDraft = it },
+                placeholder = Locales.t("profile_specialization_hint")
             )
 
             ProfileTextField(
-                title = "Номер телефона",
+                title = Locales.t("profile_phone_label"),
                 value = phoneDraft,
                 onValueChange = { phoneDraft = it },
-                placeholder = "Введите номер телефона"
+                placeholder = Locales.t("profile_phone_hint")
             )
 
             Row(
@@ -172,7 +228,7 @@ fun PersonalInfoSettingsScreen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Показывать номер телефона",
+                    text = Locales.t("profile_show_phone"),
                     fontSize = (16 * fontScale).sp,
                     color = onSurface
                 )
@@ -183,25 +239,25 @@ fun PersonalInfoSettingsScreen() {
             }
 
             ProfileTextField(
-                title = "Аватар (ссылка)",
+                title = Locales.t("profile_avatar_url_label"),
                 value = avatarUrlDraft,
                 onValueChange = { avatarUrlDraft = it },
-                placeholder = "Вставьте ссылку на изображение"
+                placeholder = Locales.t("profile_avatar_url_hint")
             )
 
             SecondaryActionButton(
-                text = "Выбрать фото с устройства",
+                text = Locales.t("profile_pick_photo"),
                 onClick = {
-                    ProfileImagePicker.pickImage { base64 ->
-                        if (!base64.isNullOrBlank()) {
-                            avatarBase64Draft = base64
+                    ProfileImagePicker.pickImage { rawBase64 ->
+                        if (!rawBase64.isNullOrBlank()) {
+                            pendingRawBase64 = rawBase64
                         }
                     }
                 }
             )
 
             SecondaryActionButton(
-                text = "Удалить выбранное фото",
+                text = Locales.t("profile_remove_photo"),
                 onClick = {
                     avatarBase64Draft = ""
                 },
@@ -211,13 +267,15 @@ fun PersonalInfoSettingsScreen() {
             Spacer(Modifier.height(6.dp))
 
             PrimaryActionButton(
-                text = "Сохранить",
+                text = Locales.t("save"),
                 onClick = {
                     AppSettings.ownerName = userNameDraft.trim()
                     AppSettings.profilePhone = phoneDraft.trim()
                     AppSettings.profilePhoneVisible = phoneVisibleDraft
                     AppSettings.profileAvatarUrl = avatarUrlDraft.trim()
                     AppSettings.profileAvatarBase64 = avatarBase64Draft
+                    AppSettings.profileDisplayCustomName = displayCustomNameDraft
+                    AppSettings.profileSpecialization = specializationDraft.trim()
                     AppSettings.persist()
                 },
                 enabled = hasChanges
