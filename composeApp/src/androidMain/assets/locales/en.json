@@ -558,6 +558,8 @@
     "profile_specialization_label": "Specialty",
     "profile_specialization_hint": "E.g., nails, hairstylist, esthetician",
     "profile_avatar_cd": "Profile avatar",
+    "profile_rating_label": "Your rating",
+    "profile_avatar_url_error": "Failed to load avatar from the link. Check the URL and try again.",
     "avatar_crop_title": "Select Profile Picture",
     "avatar_crop_hint": "Drag photo to frame it perfectly",
     "avatar_crop_confirm": "Apply",

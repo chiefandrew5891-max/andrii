@@ -10,18 +10,29 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
 import android.content.Intent
 import com.andrey.beautyplanner.auth.GoogleSignInFallbackBridge
 import com.andrey.beautyplanner.auth.GoogleSignInFallbackResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
 import android.util.Base64
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
+
+private const val AVATAR_DOWNLOAD_CONNECT_TIMEOUT_MS = 10_000
+private const val AVATAR_DOWNLOAD_READ_TIMEOUT_MS = 15_000
+private const val AVATAR_DOWNLOAD_USER_AGENT = "BeautyPlanner"
 
 class MainActivity : ComponentActivity() {
 
@@ -246,6 +257,61 @@ class MainActivity : ComponentActivity() {
         return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
     }
 
+    private fun processAvatarUrl(url: String, onResult: (String?) -> Unit) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val result = runCatching { downloadAndProcessAvatar(url) }.getOrNull()
+            withContext(Dispatchers.Main) {
+                onResult(result)
+            }
+        }
+    }
+
+    private fun downloadAndProcessAvatar(url: String): String? {
+        val parsedUrl = URL(url)
+        val scheme = parsedUrl.protocol.lowercase()
+        if (scheme != "http" && scheme != "https") return null
+
+        val connection = (parsedUrl.openConnection() as? HttpURLConnection) ?: return null
+        return try {
+            connection.instanceFollowRedirects = true
+            connection.connectTimeout = AVATAR_DOWNLOAD_CONNECT_TIMEOUT_MS
+            connection.readTimeout = AVATAR_DOWNLOAD_READ_TIMEOUT_MS
+            connection.setRequestProperty("Accept", "image/*")
+            connection.setRequestProperty("User-Agent", AVATAR_DOWNLOAD_USER_AGENT)
+            connection.connect()
+
+            if (connection.responseCode !in 200..299) return null
+
+            val bytes = connection.inputStream.use { it.readBytes() }
+            if (bytes.isEmpty()) return null
+
+            val exifOrientation = runCatching {
+                ExifInterface(ByteArrayInputStream(bytes)).getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL
+                )
+            }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
+
+            val original = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return null
+            val oriented = applyExifRotation(original, exifOrientation)
+            val cropSize = minOf(oriented.width, oriented.height)
+            val left = ((oriented.width - cropSize) / 2).coerceAtLeast(0)
+            val top = ((oriented.height - cropSize) / 2).coerceAtLeast(0)
+            val square = Bitmap.createBitmap(oriented, left, top, cropSize, cropSize)
+            val resized = Bitmap.createScaledBitmap(square, 512, 512, true)
+            val base64 = bitmapToBase64Jpeg(resized, 85)
+
+            if (resized !== square) resized.recycle()
+            if (square !== oriented) square.recycle()
+            if (oriented !== original) oriented.recycle()
+            original.recycle()
+
+            base64
+        } finally {
+            connection.disconnect()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -286,6 +352,10 @@ class MainActivity : ComponentActivity() {
         ProfileImagePicker.pickImageImpl = { onImagePicked ->
             pendingProfileImagePicked = onImagePicked
             profileImageLauncher.launch(arrayOf("image/jpeg", "image/png"))
+        }
+
+        ProfileAvatarUrlProcessor.processImpl = { url, onResult ->
+            processAvatarUrl(url, onResult)
         }
 
         ProfileImageCropper.cropImpl = { base64, offsetXPx, offsetYPx, displaySizePx, targetSize, onResult ->
