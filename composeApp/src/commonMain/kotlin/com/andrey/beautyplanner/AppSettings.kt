@@ -67,6 +67,7 @@ private data class SettingsSnapshot(
     val ownerName: String = "",
     val profilePhone: String = "",
     val profilePhoneVisible: Boolean = true,
+    val profileRating: Float = 4.7f,
     val profileAvatarUrl: String = "",
     val profileAvatarBase64: String = "",
     val profileDisplayCustomName: Boolean = false,
@@ -185,6 +186,7 @@ object AppSettings {
     var ownerName by mutableStateOf("")
     var profilePhone by mutableStateOf("")
     var profilePhoneVisible by mutableStateOf(true)
+    var profileRating by mutableStateOf(4.7f)
     var profileAvatarUrl by mutableStateOf("")
     var profileAvatarBase64 by mutableStateOf("")
     var profileDisplayCustomName by mutableStateOf(false)
@@ -428,6 +430,7 @@ object AppSettings {
             ownerName = ownerName,
             profilePhone = profilePhone,
             profilePhoneVisible = profilePhoneVisible,
+            profileRating = profileRating,
             profileAvatarUrl = profileAvatarUrl,
             profileAvatarBase64 = profileAvatarBase64,
             profileDisplayCustomName = profileDisplayCustomName,
@@ -457,6 +460,7 @@ object AppSettings {
         ownerName = snapshot.ownerName
         profilePhone = snapshot.profilePhone
         profilePhoneVisible = snapshot.profilePhoneVisible
+        profileRating = snapshot.profileRating
         profileAvatarUrl = snapshot.profileAvatarUrl
         profileAvatarBase64 = snapshot.profileAvatarBase64
         profileDisplayCustomName = snapshot.profileDisplayCustomName
@@ -590,6 +594,7 @@ object AppSettings {
         ownerName = snapshot.ownerName
         profilePhone = snapshot.profilePhone
         profilePhoneVisible = snapshot.profilePhoneVisible
+        profileRating = snapshot.profileRating
         profileAvatarUrl = snapshot.profileAvatarUrl
         clientInteractionsEnabled = snapshot.clientInteractionsEnabled
         profileAvatarBase64 = snapshot.profileAvatarBase64
@@ -655,6 +660,7 @@ object AppSettings {
             ownerName = ownerName,
             profilePhone = profilePhone,
             profilePhoneVisible = profilePhoneVisible,
+            profileRating = profileRating,
             profileAvatarUrl = profileAvatarUrl,
             profileAvatarBase64 = profileAvatarBase64,
             profileDisplayCustomName = profileDisplayCustomName,

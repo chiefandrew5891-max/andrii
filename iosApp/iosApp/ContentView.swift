@@ -538,6 +538,7 @@ struct ComposeView: UIViewControllerRepresentable {
         }
 
         ProfileImageCropperBridge.register()
+        ProfileAvatarUrlProcessorBridge.register()
 
         return MainViewControllerKt.MainViewController()
     }

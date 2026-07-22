@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
+import com.andrey.beautyplanner.ProfileAvatarUrlProcessor
 import com.andrey.beautyplanner.ProfileImagePicker
 import com.andrey.beautyplanner.rememberProfileAvatarBitmap
 import androidx.compose.foundation.Image
@@ -53,6 +54,8 @@ fun PersonalInfoSettingsScreen() {
     var phoneVisibleDraft by remember { mutableStateOf(AppSettings.profilePhoneVisible) }
     var displayCustomNameDraft by remember { mutableStateOf(AppSettings.profileDisplayCustomName) }
     var specializationDraft by remember { mutableStateOf(AppSettings.profileSpecialization) }
+    var avatarUrlErrorMessage by remember { mutableStateOf<String?>(null) }
+    var isSaving by remember { mutableStateOf(false) }
 
     // Raw (uncropped) base64 returned by the picker; triggers the crop editor dialog
     var pendingRawBase64 by remember { mutableStateOf<String?>(null) }
@@ -69,7 +72,8 @@ fun PersonalInfoSettingsScreen() {
     val hasPreviewData = userNameDraft.trim().isNotBlank() ||
             phoneDraft.trim().isNotBlank() ||
             avatarUrlDraft.trim().isNotBlank() ||
-            avatarBase64Draft.isNotBlank()
+            avatarBase64Draft.isNotBlank() ||
+            AppSettings.profileRating > 0f
 
     val avatarBitmap = rememberProfileAvatarBitmap(avatarBase64Draft)
 
@@ -176,6 +180,8 @@ fun PersonalInfoSettingsScreen() {
                             textAlign = TextAlign.Center
                         )
                     }
+
+                    ProfileRatingBlock(rating = AppSettings.profileRating)
                 }
 
                 Divider()
@@ -241,13 +247,25 @@ fun PersonalInfoSettingsScreen() {
             ProfileTextField(
                 title = Locales.t("profile_avatar_url_label"),
                 value = avatarUrlDraft,
-                onValueChange = { avatarUrlDraft = it },
+                onValueChange = {
+                    avatarUrlDraft = it
+                    avatarUrlErrorMessage = null
+                },
                 placeholder = Locales.t("profile_avatar_url_hint")
             )
+
+            if (!avatarUrlErrorMessage.isNullOrBlank()) {
+                Text(
+                    text = avatarUrlErrorMessage.orEmpty(),
+                    fontSize = (13 * fontScale).sp,
+                    color = MaterialTheme.colors.error
+                )
+            }
 
             SecondaryActionButton(
                 text = Locales.t("profile_pick_photo"),
                 onClick = {
+                    avatarUrlErrorMessage = null
                     ProfileImagePicker.pickImage { rawBase64 ->
                         if (!rawBase64.isNullOrBlank()) {
                             pendingRawBase64 = rawBase64
@@ -259,6 +277,7 @@ fun PersonalInfoSettingsScreen() {
             SecondaryActionButton(
                 text = Locales.t("profile_remove_photo"),
                 onClick = {
+                    avatarUrlErrorMessage = null
                     avatarBase64Draft = ""
                 },
                 enabled = avatarBase64Draft.isNotBlank()
@@ -267,18 +286,49 @@ fun PersonalInfoSettingsScreen() {
             Spacer(Modifier.height(6.dp))
 
             PrimaryActionButton(
-                text = Locales.t("save"),
+                text = if (isSaving) Locales.t("loading") else Locales.t("save"),
                 onClick = {
-                    AppSettings.ownerName = userNameDraft.trim()
-                    AppSettings.profilePhone = phoneDraft.trim()
-                    AppSettings.profilePhoneVisible = phoneVisibleDraft
-                    AppSettings.profileAvatarUrl = avatarUrlDraft.trim()
-                    AppSettings.profileAvatarBase64 = avatarBase64Draft
-                    AppSettings.profileDisplayCustomName = displayCustomNameDraft
-                    AppSettings.profileSpecialization = specializationDraft.trim()
-                    AppSettings.persist()
+                    if (isSaving) return@PrimaryActionButton
+
+                    val nextOwnerName = userNameDraft.trim()
+                    val nextPhone = phoneDraft.trim()
+                    val nextAvatarUrl = avatarUrlDraft.trim()
+                    val nextSpecialization = specializationDraft.trim()
+                    val shouldProcessAvatarUrl =
+                        nextAvatarUrl.isNotBlank() &&
+                                nextAvatarUrl != AppSettings.profileAvatarUrl.trim()
+
+                    val persistProfile: (String) -> Unit = { finalAvatarBase64 ->
+                        AppSettings.ownerName = nextOwnerName
+                        AppSettings.profilePhone = nextPhone
+                        AppSettings.profilePhoneVisible = phoneVisibleDraft
+                        AppSettings.profileAvatarUrl = nextAvatarUrl
+                        AppSettings.profileAvatarBase64 = finalAvatarBase64
+                        AppSettings.profileDisplayCustomName = displayCustomNameDraft
+                        AppSettings.profileSpecialization = nextSpecialization
+                        AppSettings.persist()
+                    }
+
+                    avatarUrlErrorMessage = null
+
+                    if (!shouldProcessAvatarUrl) {
+                        persistProfile(avatarBase64Draft)
+                        return@PrimaryActionButton
+                    }
+
+                    isSaving = true
+                    ProfileAvatarUrlProcessor.processAvatar(nextAvatarUrl) { processedBase64 ->
+                        isSaving = false
+                        if (processedBase64.isNullOrBlank()) {
+                            avatarUrlErrorMessage = Locales.t("profile_avatar_url_error")
+                            return@processAvatar
+                        }
+
+                        avatarBase64Draft = processedBase64
+                        persistProfile(processedBase64)
+                    }
                 },
-                enabled = hasChanges
+                enabled = hasChanges && !isSaving
             )
         }
     }

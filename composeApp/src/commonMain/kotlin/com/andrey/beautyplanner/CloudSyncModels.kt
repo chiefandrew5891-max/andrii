@@ -7,6 +7,7 @@ data class CloudSettingsSnapshot(
     val ownerName: String = "",
     val profilePhone: String = "",
     val profilePhoneVisible: Boolean = true,
+    val profileRating: Float = 4.7f,
     val profileAvatarUrl: String = "",
     val profileAvatarBase64: String = "",
     val profileDisplayCustomName: Boolean = false,

@@ -21,7 +21,10 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
 import android.util.Base64
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : ComponentActivity() {
 
@@ -246,6 +249,49 @@ class MainActivity : ComponentActivity() {
         return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
     }
 
+    private fun processAvatarUrl(url: String, onResult: (String?) -> Unit) {
+        Thread {
+            val result = runCatching { downloadAndProcessAvatar(url) }.getOrNull()
+            runOnUiThread {
+                onResult(result)
+            }
+        }.start()
+    }
+
+    private fun downloadAndProcessAvatar(url: String): String? {
+        val connection = (URL(url).openConnection() as? HttpURLConnection) ?: return null
+        return try {
+            connection.instanceFollowRedirects = true
+            connection.connectTimeout = 10_000
+            connection.readTimeout = 15_000
+            connection.setRequestProperty("Accept", "image/*")
+            connection.connect()
+
+            if (connection.responseCode !in 200..299) return null
+
+            val bytes = connection.inputStream.use { it.readBytes() }
+            if (bytes.isEmpty()) return null
+
+            val exifOrientation = runCatching {
+                ExifInterface(ByteArrayInputStream(bytes)).getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL
+                )
+            }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
+
+            val original = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return null
+            val oriented = applyExifRotation(original, exifOrientation)
+            val cropSize = minOf(oriented.width, oriented.height)
+            val left = ((oriented.width - cropSize) / 2).coerceAtLeast(0)
+            val top = ((oriented.height - cropSize) / 2).coerceAtLeast(0)
+            val square = Bitmap.createBitmap(oriented, left, top, cropSize, cropSize)
+            val resized = Bitmap.createScaledBitmap(square, 512, 512, true)
+            bitmapToBase64Jpeg(resized, 85)
+        } finally {
+            connection.disconnect()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -286,6 +332,10 @@ class MainActivity : ComponentActivity() {
         ProfileImagePicker.pickImageImpl = { onImagePicked ->
             pendingProfileImagePicked = onImagePicked
             profileImageLauncher.launch(arrayOf("image/jpeg", "image/png"))
+        }
+
+        ProfileAvatarUrlProcessor.processImpl = { url, onResult ->
+            processAvatarUrl(url, onResult)
         }
 
         ProfileImageCropper.cropImpl = { base64, offsetXPx, offsetYPx, displaySizePx, targetSize, onResult ->

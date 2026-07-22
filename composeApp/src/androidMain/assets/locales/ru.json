@@ -558,6 +558,8 @@
     "profile_specialization_label": "Специализация",
     "profile_specialization_hint": "Например: маникюр, парикмахер, косметолог",
     "profile_avatar_cd": "Аватар профиля",
+    "profile_rating_label": "Ваш рейтинг",
+    "profile_avatar_url_error": "Не удалось загрузить аватар по ссылке. Проверьте адрес изображения и попробуйте снова.",
     "avatar_crop_title": "Выбор фото профиля",
     "avatar_crop_hint": "Перетащите фото, чтобы выбрать нужный кадр",
     "avatar_crop_confirm": "Применить",
