@@ -29,12 +29,12 @@ final class ProfileAvatarUrlProcessorBridge {
 
         let width = CGFloat(cgImage.width)
         let height = CGFloat(cgImage.height)
-        let side = min(width, height)
+        let cropDimension = min(width, height)
         let cropRect = CGRect(
-            x: max(0, (width - side) / 2.0),
-            y: max(0, (height - side) / 2.0),
-            width: side,
-            height: side
+            x: max(0, (width - cropDimension) / 2.0),
+            y: max(0, (height - cropDimension) / 2.0),
+            width: cropDimension,
+            height: cropDimension
         )
 
         guard let croppedCg = cgImage.cropping(to: cropRect) else { return nil }
