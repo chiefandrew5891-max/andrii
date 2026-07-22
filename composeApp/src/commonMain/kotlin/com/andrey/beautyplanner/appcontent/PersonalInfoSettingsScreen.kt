@@ -288,7 +288,7 @@ fun PersonalInfoSettingsScreen() {
                     val nextSpecialization = specializationDraft.trim()
                     val shouldProcessAvatarUrl =
                         nextAvatarUrl.isNotBlank() &&
-                                nextAvatarUrl != AppSettings.profileAvatarUrl
+                            nextAvatarUrl != AppSettings.profileAvatarUrl
 
                     val persistProfile: (String) -> Unit = { finalAvatarBase64 ->
                         AppSettings.ownerName = nextOwnerName
@@ -309,15 +309,20 @@ fun PersonalInfoSettingsScreen() {
                     }
 
                     isSaving = true
-                    ProfileAvatarUrlProcessor.processAvatar(nextAvatarUrl) { processedBase64 ->
-                        isSaving = false
-                        if (processedBase64.isNullOrBlank()) {
-                            avatarUrlErrorMessage = Locales.t("profile_avatar_url_error")
-                            return@processAvatar
-                        }
+                    runCatching {
+                        ProfileAvatarUrlProcessor.processAvatar(nextAvatarUrl) { processedBase64 ->
+                            isSaving = false
+                            if (processedBase64.isNullOrBlank()) {
+                                avatarUrlErrorMessage = Locales.t("profile_avatar_url_error")
+                                return@processAvatar
+                            }
 
-                        avatarBase64Draft = processedBase64
-                        persistProfile(processedBase64)
+                            avatarBase64Draft = processedBase64
+                            persistProfile(processedBase64)
+                        }
+                    }.onFailure {
+                        isSaving = false
+                        avatarUrlErrorMessage = Locales.t("profile_avatar_url_error")
                     }
                 },
                 enabled = hasChanges && !isSaving

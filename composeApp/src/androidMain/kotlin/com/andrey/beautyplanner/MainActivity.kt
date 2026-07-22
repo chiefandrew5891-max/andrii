@@ -299,7 +299,14 @@ class MainActivity : ComponentActivity() {
             val top = ((oriented.height - cropSize) / 2).coerceAtLeast(0)
             val square = Bitmap.createBitmap(oriented, left, top, cropSize, cropSize)
             val resized = Bitmap.createScaledBitmap(square, 512, 512, true)
-            bitmapToBase64Jpeg(resized, 85)
+            val base64 = bitmapToBase64Jpeg(resized, 85)
+
+            if (resized !== square) resized.recycle()
+            if (square !== oriented) square.recycle()
+            if (oriented !== original) oriented.recycle()
+            original.recycle()
+
+            base64
         } finally {
             connection.disconnect()
         }
