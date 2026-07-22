@@ -296,7 +296,7 @@ fun PersonalInfoSettingsScreen() {
                     val nextSpecialization = specializationDraft.trim()
                     val shouldProcessAvatarUrl =
                         nextAvatarUrl.isNotBlank() &&
-                                nextAvatarUrl != AppSettings.profileAvatarUrl.trim()
+                                nextAvatarUrl != AppSettings.profileAvatarUrl
 
                     val persistProfile: (String) -> Unit = { finalAvatarBase64 ->
                         AppSettings.ownerName = nextOwnerName

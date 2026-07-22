@@ -262,6 +262,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun downloadAndProcessAvatar(url: String): String? {
+        val lowerUrl = url.lowercase()
+        if (!lowerUrl.startsWith("http://") && !lowerUrl.startsWith("https://")) return null
+
         val connection = (URL(url).openConnection() as? HttpURLConnection) ?: return null
         return try {
             connection.instanceFollowRedirects = true

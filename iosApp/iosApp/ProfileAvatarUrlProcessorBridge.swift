@@ -17,6 +17,8 @@ final class ProfileAvatarUrlProcessorBridge {
 
     private static func process(urlString: String) -> String? {
         guard let url = URL(string: urlString),
+              let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
               let data = try? Data(contentsOf: url),
               let image = UIImage(data: data) else {
             return nil
@@ -35,7 +37,7 @@ final class ProfileAvatarUrlProcessorBridge {
             height: side
         )
 
-        guard let croppedCg = cgImage.cropping(to: cropRect.integral) else { return nil }
+        guard let croppedCg = cgImage.cropping(to: cropRect) else { return nil }
 
         let targetSize = CGSize(width: 512, height: 512)
         let renderer = UIGraphicsImageRenderer(size: targetSize)
