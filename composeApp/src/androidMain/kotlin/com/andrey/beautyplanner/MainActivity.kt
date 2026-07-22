@@ -228,10 +228,10 @@ class MainActivity : ComponentActivity() {
         // Crop size in bitmap coordinates equals the smaller side of the bitmap
         val cropHalf = minDim / 2f
 
-        val left = (cropCenterX - cropHalf).toInt().coerceIn(0, source.width - 1)
-        val top = (cropCenterY - cropHalf).toInt().coerceIn(0, source.height - 1)
-        val right = (cropCenterX + cropHalf).toInt().coerceIn(1, source.width)
-        val bottom = (cropCenterY + cropHalf).toInt().coerceIn(1, source.height)
+        val left = (cropCenterX - cropHalf).toInt().coerceIn(0, source.width)
+        val top = (cropCenterY - cropHalf).toInt().coerceIn(0, source.height)
+        val right = (cropCenterX + cropHalf).toInt().coerceIn(0, source.width)
+        val bottom = (cropCenterY + cropHalf).toInt().coerceIn(0, source.height)
 
         val cropW = (right - left).coerceAtLeast(1)
         val cropH = (bottom - top).coerceAtLeast(1)
