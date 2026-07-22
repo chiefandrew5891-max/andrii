@@ -18,6 +18,8 @@ import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.CompletableDeferred
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.util.Base64
 import java.io.ByteArrayOutputStream
 
@@ -79,10 +81,19 @@ class MainActivity : ComponentActivity() {
             }
 
             val base64 = contentResolver.openInputStream(uri)?.use { input ->
+                // Read EXIF orientation before decoding
+                val exifOrientation = contentResolver.openInputStream(uri)?.use { exifStream ->
+                    ExifInterface(exifStream).getAttributeInt(
+                        ExifInterface.TAG_ORIENTATION,
+                        ExifInterface.ORIENTATION_NORMAL
+                    )
+                } ?: ExifInterface.ORIENTATION_NORMAL
+
                 val original = BitmapFactory.decodeStream(input) ?: return@use null
-                val cropped = cropCenterSquare(original)
-                val resized = resizeBitmap(cropped, 512)
-                bitmapToBase64Jpeg(resized, 82)
+                val oriented = applyExifRotation(original, exifOrientation)
+                // Resize to max 1024 on the longer side, preserving aspect ratio
+                val resized = resizeBitmapMax(oriented, 1024)
+                bitmapToBase64Jpeg(resized, 85)
             }
 
             callback?.invoke(base64)
@@ -152,15 +163,81 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun cropCenterSquare(source: Bitmap): Bitmap {
-        val size = minOf(source.width, source.height)
-        val x = (source.width - size) / 2
-        val y = (source.height - size) / 2
-        return Bitmap.createBitmap(source, x, y, size, size)
+    /**
+     * Resize bitmap so that the longer side is at most [maxDim] pixels,
+     * preserving aspect ratio.
+     */
+    private fun resizeBitmapMax(source: Bitmap, maxDim: Int): Bitmap {
+        val w = source.width
+        val h = source.height
+        if (w <= maxDim && h <= maxDim) return source
+        val scale = maxDim.toFloat() / maxOf(w, h)
+        val newW = (w * scale).toInt().coerceAtLeast(1)
+        val newH = (h * scale).toInt().coerceAtLeast(1)
+        return Bitmap.createScaledBitmap(source, newW, newH, true)
     }
 
-    private fun resizeBitmap(source: Bitmap, targetSize: Int = 512): Bitmap {
-        return Bitmap.createScaledBitmap(source, targetSize, targetSize, true)
+    /**
+     * Apply EXIF orientation to produce an upright bitmap.
+     */
+    private fun applyExifRotation(source: Bitmap, orientation: Int): Bitmap {
+        val matrix = Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.preScale(-1f, 1f)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.preScale(1f, -1f)
+            ExifInterface.ORIENTATION_TRANSPOSE -> {
+                matrix.postRotate(90f)
+                matrix.preScale(-1f, 1f)
+            }
+            ExifInterface.ORIENTATION_TRANSVERSE -> {
+                matrix.postRotate(270f)
+                matrix.preScale(-1f, 1f)
+            }
+            else -> return source
+        }
+        return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
+    }
+
+    /**
+     * Crop the bitmap based on the drag offset from the Compose crop editor.
+     *
+     * The crop editor uses ContentScale.Crop inside a square container of [displaySizePx].
+     * With ContentScale.Crop, the bitmap is scaled so that min(bitmapW, bitmapH) = displaySizePx.
+     * The [offsetXPx] / [offsetYPx] is the drag translation applied to the image in display pixels.
+     * We reverse this to find the crop center in the original bitmap, then extract [targetSize] × [targetSize].
+     */
+    private fun cropBitmapFromOffset(
+        source: Bitmap,
+        offsetXPx: Float,
+        offsetYPx: Float,
+        displaySizePx: Float,
+        targetSize: Int
+    ): Bitmap {
+        val bitmapW = source.width.toFloat()
+        val bitmapH = source.height.toFloat()
+        val minDim = minOf(bitmapW, bitmapH)
+        val scale = displaySizePx / minDim
+
+        // Center of the crop circle in bitmap coordinates
+        val cropCenterX = bitmapW / 2f - offsetXPx / scale
+        val cropCenterY = bitmapH / 2f - offsetYPx / scale
+
+        // Crop size in bitmap coordinates equals the smaller side of the bitmap
+        val cropHalf = minDim / 2f
+
+        val left = (cropCenterX - cropHalf).toInt().coerceIn(0, source.width - 1)
+        val top = (cropCenterY - cropHalf).toInt().coerceIn(0, source.height - 1)
+        val right = (cropCenterX + cropHalf).toInt().coerceIn(1, source.width)
+        val bottom = (cropCenterY + cropHalf).toInt().coerceIn(1, source.height)
+
+        val cropW = (right - left).coerceAtLeast(1)
+        val cropH = (bottom - top).coerceAtLeast(1)
+
+        val cropped = Bitmap.createBitmap(source, left, top, cropW, cropH)
+        return Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
     }
 
     private fun bitmapToBase64Jpeg(source: Bitmap, quality: Int = 82): String {
@@ -209,6 +286,21 @@ class MainActivity : ComponentActivity() {
         ProfileImagePicker.pickImageImpl = { onImagePicked ->
             pendingProfileImagePicked = onImagePicked
             profileImageLauncher.launch(arrayOf("image/jpeg", "image/png"))
+        }
+
+        ProfileImageCropper.cropImpl = { base64, offsetXPx, offsetYPx, displaySizePx, targetSize, onResult ->
+            runCatching {
+                val bytes = Base64.decode(base64, Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                if (bitmap == null) {
+                    onResult(null)
+                    return@runCatching
+                }
+                val cropped = cropBitmapFromOffset(bitmap, offsetXPx, offsetYPx, displaySizePx, targetSize)
+                onResult(bitmapToBase64Jpeg(cropped, 85))
+            }.onFailure {
+                onResult(null)
+            }
         }
 
         AppSettings.load()

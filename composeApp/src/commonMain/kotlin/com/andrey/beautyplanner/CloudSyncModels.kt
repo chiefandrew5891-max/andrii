@@ -9,6 +9,8 @@ data class CloudSettingsSnapshot(
     val profilePhoneVisible: Boolean = true,
     val profileAvatarUrl: String = "",
     val profileAvatarBase64: String = "",
+    val profileDisplayCustomName: Boolean = false,
+    val profileSpecialization: String = "",
     val clientInteractionsEnabled: Boolean = false,
     val selectedCurrency: String = "EUR",
     val useShortTextCurrency: Boolean = false,
