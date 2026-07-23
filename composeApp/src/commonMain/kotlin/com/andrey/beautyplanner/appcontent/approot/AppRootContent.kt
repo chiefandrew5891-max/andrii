@@ -3,6 +3,7 @@ package com.andrey.beautyplanner.appcontent.approot
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -286,6 +287,24 @@ fun AppRootContent(
                 val nowMin = remember(nowTimeHm) {
                     com.andrey.beautyplanner.utils.parseHmToMinutes(nowTimeHm) ?: 0
                 }
+                val visibleAppointmentsCount =
+                    AppointmentSyncUtils.visibleAppointmentsCount(state.appointments)
+                val appointmentLimitNotice = when (state.accessState.tier) {
+                    AccessTier.FREE_LIMITED -> {
+                        val remainingSlots = AccessManager.getRemainingFreeSlots(
+                            currentAppointmentsCount = visibleAppointmentsCount,
+                            nowMillis = Clock.System.now().toEpochMilliseconds()
+                        )
+                        if (AccessManager.shouldShowFreeLimitWarning(remainingSlots)) {
+                            Locales.t("premium_free_limit_slots_warning")
+                                .replace("{count}", remainingSlots.toString())
+                        } else {
+                            null
+                        }
+                    }
+
+                    else -> null
+                }
 
                 val listState = rememberLazyListState()
 
@@ -405,6 +424,25 @@ fun AppRootContent(
                                     contentPadding = PaddingValues(bottom = 24.dp)
                                 ) {
                                     item {
+                                        if (!appointmentLimitNotice.isNullOrBlank()) {
+                                            Card(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                                                backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.10f),
+                                                elevation = 0.dp
+                                            ) {
+                                                Text(
+                                                    text = appointmentLimitNotice,
+                                                    modifier = Modifier.padding(14.dp),
+                                                    fontSize = (14 * state.fontScale).sp,
+                                                    color = MaterialTheme.colors.onSurface
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    item {
                                         MonthCalendarGrid(
                                             monthDate = state.calendarViewDate,
                                             today = state.today,
@@ -503,7 +541,9 @@ fun AppRootContent(
                 onTimeClick = { time ->
                     val nowMillis = Clock.System.now().toEpochMilliseconds()
                     val canCreate = AccessManager.canCreateAppointment(
-                        currentAppointmentsCount = state.appointments.size,
+                        currentAppointmentsCount = AppointmentSyncUtils.visibleAppointmentsCount(
+                            state.appointments
+                        ),
                         nowMillis = nowMillis
                     )
 
@@ -760,6 +800,28 @@ fun AppRootContent(
                     val id = existing?.id ?: Clock.System.now().toEpochMilliseconds().toString()
                     val targetDate = state.selectedDate.toString()
                     val nowMillis = Clock.System.now().toEpochMilliseconds()
+                    val isNewAppointment = existing == null
+
+                    if (isNewAppointment) {
+                        val canCreate = AccessManager.canCreateAppointment(
+                            currentAppointmentsCount = AppointmentSyncUtils.visibleAppointmentsCount(
+                                state.appointments
+                            ),
+                            nowMillis = nowMillis
+                        )
+
+                        if (!canCreate) {
+                            state.showBookingDialog = false
+                            state.editingAppointment = null
+                            state.transferA = null
+                            state.bookingReadOnly = false
+                            state.showPremiumRequired(
+                                message = Locales.t("premium_required_limit"),
+                                returnTo = Screen.DAY_DETAILS
+                            )
+                            return@BookingDialog
+                        }
+                    }
 
                     val newAppt = Appointment(
                         id = id,

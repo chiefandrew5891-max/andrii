@@ -27,6 +27,12 @@ object AppointmentSyncUtils {
         return source.filterNot { it.isDeleted }
     }
 
+    fun visibleAppointmentsCount(
+        source: List<Appointment>
+    ): Int {
+        return source.count { !it.isDeleted }
+    }
+
     fun mergeAppointments(
         local: List<Appointment>,
         remote: List<Appointment>
