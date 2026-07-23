@@ -144,7 +144,7 @@
     "premium_section_title": "Pretplata i pristup",
     "premium_status_label": "Trenutni status",
     "premium_trial_days_left": "Preostalo dana probnog perioda",
-    "premium_trial_limit_notice": "Tokom probnog perioda od 14 dana dostupne su sve funkcije. Nakon toga besplatna verzija omogućava do 20 termina.",
+    "premium_trial_limit_notice": "Током пробног периода од 14 дана доступне су вам све функције. Након његовог истека у бесплатној верзији можете чувати до 20 видљивих уноса. Избрисани уноси се не рачунају.",
     "premium_free_limit_slots_warning": "Besplatna verzija: preostala mesta do limita od 20 termina: {count}.",
     "premium_trial_active_hint": "Trenutno imate pristup svim funkcijama aplikacije.",
     "premium_free_limited_hint": "Neke funkcije su ograničene. Nadogradite na Premium za pun pristup.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Примени",
     "avatar_crop_cancel": "Откажи",
     "nav_client_interactions": "Интеракција са клијентима",
-    "premium_required_client_interactions": "Интеракција са клијентима је доступна само током пробног периода или уз Premium претплату."
+    "premium_required_client_interactions": "Интеракција са клијентима је доступна само током пробног периода или уз Premium претплату.",
+    "premium_trial_expired_subtitle": "Пробни период је истекао. Тренутно користите ограничену бесплатну верзију – до 20 видљивих уноса. Избрисани уноси се не рачунају.",
+    "free_limit_popup_title": "Уноси",
+    "free_limit_popup_after_first_trial": "Унос је сачуван! Након истека пробног периода, бесплатна верзија вам омогућава да чувате до 20 активних уноса. Избрисани уноси се не рачунају у ово ограничење.",
+    "free_limit_popup_after_first_free": "Унос је сачуван! У бесплатној верзији можете чувати до 20 активних уноса. Избрисани уноси се не рачунају. Преостало вам је још {count} места.",
+    "free_limit_popup_slots_remaining_trial": "Напомена: након истека пробног периода бесплатна верзија омогућава 20 уноса. На основу вашег тренутног броја, након пробног периода остаће {count} места.",
+    "free_limit_popup_slots_remaining_free": "Преостало је још {count} места у бесплатној верзији (ограничење: 20 активних уноса).",
+    "free_limit_popup_limit_reached_trial": "Додали сте 20 уноса. У бесплатној верзији након истека пробног периода неће бити могуће додавање нових без Premium пакета.",
+    "free_limit_popup_limit_reached_free": "Ограничење је достигнуто: 20 активних уноса у бесплатној верзији. Да бисте додали нове, пређите на Premium."
 }

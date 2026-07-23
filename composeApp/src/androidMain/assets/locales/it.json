@@ -144,7 +144,7 @@
     "premium_section_title": "Abbonamento e Accesso",
     "premium_status_label": "Stato attuale",
     "premium_trial_days_left": "Giorni di prova rimanenti",
-    "premium_trial_limit_notice": "Durante la prova di 14 giorni, tutte le funzioni sono disponibili. Al termine, la versione gratuita consente fino a 20 appuntamenti.",
+    "premium_trial_limit_notice": "Durante il periodo di prova di 14 giorni tutte le funzionalità sono a tua disposizione. Al termine, potrai conservare fino a 20 voci visibili nella versione gratuita. Le voci eliminate non vengono conteggiate.",
     "premium_free_limit_slots_warning": "Versione gratuita: posti rimanenti prima del limite di 20 appuntamenti: {count}.",
     "premium_trial_active_hint": "Attualmente hai accesso a tutte le funzioni dell'app.",
     "premium_free_limited_hint": "Alcune funzioni sono limitate. Passa a Premium per l'accesso completo.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Applica",
     "avatar_crop_cancel": "Annulla",
     "nav_client_interactions": "Interazione con i clienti",
-    "premium_required_client_interactions": "L'interazione con i clienti è disponibile solo durante il periodo di prova o con un abbonamento Premium."
+    "premium_required_client_interactions": "L'interazione con i clienti è disponibile solo durante il periodo di prova o con un abbonamento Premium.",
+    "premium_trial_expired_subtitle": "Il periodo di prova è terminato. Stai attualmente utilizzando la versione gratuita limitata: fino a 20 voci visibili. Le voci eliminate non vengono conteggiate.",
+    "free_limit_popup_title": "Voci",
+    "free_limit_popup_after_first_trial": "Voce salvata! Dopo il periodo di prova, la versione gratuita consente di conservare fino a 20 voci attive. Le voci eliminate non contano ai fini di questo limite.",
+    "free_limit_popup_after_first_free": "Voce salvata! Nella versione gratuita puoi conservare fino a 20 voci attive. Le voci eliminate non vengono conteggiate. Ti rimangono {count} posti.",
+    "free_limit_popup_slots_remaining_trial": "Nota: dopo il periodo di prova, la versione gratuita consente 20 voci. In base al tuo numero attuale, ti rimarranno {count} posti dopo la prova.",
+    "free_limit_popup_slots_remaining_free": "Rimangono {count} posti nella versione gratuita (limite: 20 voci attive).",
+    "free_limit_popup_limit_reached_trial": "Hai aggiunto 20 voci. Nella versione gratuita, dopo la prova, non potrai aggiungerne di nuove senza Premium.",
+    "free_limit_popup_limit_reached_free": "Limite raggiunto: 20 voci attive nella versione gratuita. Per aggiungerne di nuove, passa a Premium."
 }

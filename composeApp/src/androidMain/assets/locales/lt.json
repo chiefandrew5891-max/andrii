@@ -144,7 +144,7 @@
     "premium_section_title": "Prenumerata ir prieiga",
     "premium_status_label": "Dabartinė būsena",
     "premium_trial_days_left": "Liko bandomojo laikotarpio dienų",
-    "premium_trial_limit_notice": "Per 14 dienų bandomąjį laikotarpį visos funkcijos yra pasiekiamos. Vėliau nemokama versija leidžia iki 20 įrašų.",
+    "premium_trial_limit_notice": "Per 14 dienų bandomąjį laikotarpį jums prieinamos visos funkcijos. Jam pasibaigus, nemokamoje versijoje galite saugoti iki 20 matomų įrašų. Ištrinti įrašai neįskaičiuojami.",
     "premium_free_limit_slots_warning": "Nemokama versija: likusios vietos iki 20 įrašų limito: {count}.",
     "premium_trial_active_hint": "Šiuo metu turite prieigą prie visų programėlės funkcijų.",
     "premium_free_limited_hint": "Kai kurios funkcijos yra apribotos. Atnaujinkite į Premium, kad gautumėte pilną prieigą.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Taikyti",
     "avatar_crop_cancel": "Atšaukti",
     "nav_client_interactions": "Bendravimas su klientais",
-    "premium_required_client_interactions": "Bendravimas su klientais galimas tik bandomuoju laikotarpiu arba turint „Premium“ prenumeratą."
+    "premium_required_client_interactions": "Bendravimas su klientais galimas tik bandomuoju laikotarpiu arba turint „Premium“ prenumeratą.",
+    "premium_trial_expired_subtitle": "Bandomasis laikotarpis baigėsi. Šiuo metu naudojatės ribota nemokama versija – iki 20 matomų įrašų. Ištrinti įrašai neįskaičiuojami.",
+    "free_limit_popup_title": "Įrašai",
+    "free_limit_popup_after_first_trial": "Įrašas išsaugotas! Pasibaigus bandomajam laikotarpiui, nemokama versija leidžia išsaugoti iki 20 aktyvių įrašų. Ištrinti įrašai į šį limitą neįskaičiuojami.",
+    "free_limit_popup_after_first_free": "Įrašas išsaugotas! Nemokamoje versijoje galite saugoti iki 20 aktyvių įrašų. Ištrinti įrašai neįskaičiuojami. Jums liko {count} vietų.",
+    "free_limit_popup_slots_remaining_trial": "Pastaba: pasibaigus bandomajam laikotarpiui, nemokama versija leidžia 20 įrašų. Pagal dabartinį skaičių po bandomojo laikotarpio liks {count} vietų.",
+    "free_limit_popup_slots_remaining_free": "Liko {count} vietų nemokamoje versijoje (limitas: 20 aktyvių įrašų).",
+    "free_limit_popup_limit_reached_trial": "Pridėjote 20 įrašų. Nemokamoje versijoje pasibaigus bandomajam laikotarpiui negalėsite pridėti naujų be „Premium“.",
+    "free_limit_popup_limit_reached_free": "Limitas pasiektas: 20 aktyvių įrašų nemokamoje versijoje. Norėdami pridėti naujų, perikite prie „Premium“."
 }

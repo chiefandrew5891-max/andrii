@@ -144,7 +144,7 @@
     "premium_section_title": "Predplatné a prístup",
     "premium_status_label": "Aktuálny stav",
     "premium_trial_days_left": "Zostáva dní skúšobnej doby",
-    "premium_trial_limit_notice": "Počas 14-dňovej skúšobnej doby sú k dispozícii všetky funkcie. Po jej skončení bezplatná verzia umožní až 20 termínov.",
+    "premium_trial_limit_notice": "Počas 14-dňového skúšobného obdobia máte k dispozícii všetky funkcie. Po jeho skončení môžete v bezplatnej verzii uchovávať až 20 viditeľných záznamov. Vymazané záznamy sa nezapočítavajú.",
     "premium_free_limit_slots_warning": "Bezplatná verzia: zostávajúce miesta do limitu 20 termínov: {count}.",
     "premium_trial_active_hint": "Aktuálne máte prístup ku všetkým funkciám aplikácie.",
     "premium_free_limited_hint": "Niektoré funkcie sú obmedzené. Aktivujte Premium pre plný prístup.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Použiť",
     "avatar_crop_cancel": "Zrušiť",
     "nav_client_interactions": "Komunikácia s klientmi",
-    "premium_required_client_interactions": "Komunikácia s klientmi je k dispozícii iba počas skúšobného obdobia alebo s predplatným Premium."
+    "premium_required_client_interactions": "Komunikácia s klientmi je k dispozícii iba počas skúšobného obdobia alebo s predplatným Premium.",
+    "premium_trial_expired_subtitle": "Skúšobné obdobie sa skončilo. Momentálne používate obmedzenú bezplatnú verziu – až 20 viditeľných záznamov. Vymazané záznamy sa nezapočítavajú.",
+    "free_limit_popup_title": "Záznamy",
+    "free_limit_popup_after_first_trial": "Záznam uložený! Po skončení skúšobného obdobia vám bezplatná verzia umožňuje uchovávať až 20 aktívnych záznamov. Vymazané záznamy sa do tohto limitu nezapočítavajú.",
+    "free_limit_popup_after_first_free": "Záznam uložený! V bezplatnej verzii môžete uchovávať až 20 aktívnych záznamov. Vymazané záznamy sa nezapočítavajú. Zostáva vám {count} miest.",
+    "free_limit_popup_slots_remaining_trial": "Poznámka: po skončení skúšobného obdobia umožňuje bezplatná verzia 20 záznamov. Na základe vášho aktuálneho počtu vám po skončení skúšobného obdobia zostane {count} miest.",
+    "free_limit_popup_slots_remaining_free": "Zostáva {count} miest v bezplatnej verzii (limit: 20 aktívnych záznamov).",
+    "free_limit_popup_limit_reached_trial": "Pridali ste 20 záznamov. V bezplatnej verzii nebude po skončení skúšobného obdobia možné pridávať nové bez Premium.",
+    "free_limit_popup_limit_reached_free": "Dosiahnutý limit: 20 aktívnych záznamov v bezplatnej verzii. Ak chcete pridať nové, prejdite na Premium."
 }

@@ -144,7 +144,7 @@
     "premium_section_title": "Abonnement og tilgang",
     "premium_status_label": "Nåværende status",
     "premium_trial_days_left": "Dager igjen av prøveperiode",
-    "premium_trial_limit_notice": "I løpet av prøveperioden på 14 dager er alle funksjoner tilgjengelige. Etterpå tillater gratisversjonen opptil 20 avtaler.",
+    "premium_trial_limit_notice": "I løpet av den 14-dagers prøveperioden har du tilgang til alle funksjoner. Når den utløper, kan du lagre opptil 20 synlige oppføringer i gratisversjonen. Slettede oppføringer telles ikke.",
     "premium_free_limit_slots_warning": "Gratisversjon: gjenværende plasser før grensen på 20 avtaler: {count}.",
     "premium_trial_active_hint": "Du har for øyeblikket tilgang til alle appfunksjoner.",
     "premium_free_limited_hint": "Enkelte funksjoner er begrenset. Oppgrader til Premium for full tilgang.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Bruk",
     "avatar_crop_cancel": "Avbryt",
     "nav_client_interactions": "Kundeinteraksjoner",
-    "premium_required_client_interactions": "Kundeinteraksjon er kun tilgjengelig i prøveperioden eller med et Premium-abonnement."
+    "premium_required_client_interactions": "Kundeinteraksjon er kun tilgjengelig i prøveperioden eller med et Premium-abonnement.",
+    "premium_trial_expired_subtitle": "Prøveperioden er utløpt. Du bruker for øyeblikket den begrensede gratisversjonen – opptil 20 synlige oppføringer. Slettede oppføringer telles ikke.",
+    "free_limit_popup_title": "Oppføringer",
+    "free_limit_popup_after_first_trial": "Oppføring lagret! Etter prøveperioden lar gratisversjonen deg lagre opptil 20 aktive oppføringer. Slettede oppføringer telles ikke med i denne grensen.",
+    "free_limit_popup_after_first_free": "Oppføring lagret! I gratisversjonen kan du lagre opptil 20 aktive oppføringer. Slettede oppføringer telles ikke. Du har {count} plasser igjen.",
+    "free_limit_popup_slots_remaining_trial": "Merk: etter prøveperioden tillater gratisversjonen 20 oppføringer. Basert på ditt nåværende antall vil du ha {count} plasser igjen etter prøveperioden.",
+    "free_limit_popup_slots_remaining_free": "{count} plasser igjen i gratisversjonen (grense: 20 aktive oppføringer).",
+    "free_limit_popup_limit_reached_trial": "Du har lagt til 20 oppføringer. I gratisversjonen kan du ikke legge til nye etter prøveperioden uten Premium.",
+    "free_limit_popup_limit_reached_free": "Grensen er nådd: 20 aktive oppføringer i gratisversjonen. Oppgrader til Premium for å legge til nye."
 }

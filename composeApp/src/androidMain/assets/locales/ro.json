@@ -144,7 +144,7 @@
     "premium_section_title": "Abonament și Acces",
     "premium_status_label": "Status curent",
     "premium_trial_days_left": "Zile rămase din perioada de probă",
-    "premium_trial_limit_notice": "În perioada de probă de 14 zile sunt disponibile toate funcțiile. După aceea, versiunea gratuită permite până la 20 de programări.",
+    "premium_trial_limit_notice": "În timpul perioadei de probă de 14 zile, aveți acces la toate funcțiile. După expirare, puteți păstra până la 20 de intrări vizibile în versiunea gratuită. Intrările șterse nu sunt luate în considerare.",
     "premium_free_limit_slots_warning": "Versiune gratuită: locuri rămase până la limita de 20 de programări: {count}.",
     "premium_trial_active_hint": "În prezent aveți acces la toate funcțiile aplicației.",
     "premium_free_limited_hint": "Unele funcții sunt limitate. Treceți la Premium pentru acces complet.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Aplică",
     "avatar_crop_cancel": "Anulează",
     "nav_client_interactions": "Interacțiune cu clienții",
-    "premium_required_client_interactions": "Interacțiunea cu clienții este disponibilă doar în perioada de probă sau cu un abonament Premium."
+    "premium_required_client_interactions": "Interacțiunea cu clienții este disponibilă doar în perioada de probă sau cu un abonament Premium.",
+    "premium_trial_expired_subtitle": "Perioada de probă s-a încheiat. În prezent utilizați versiunea gratuită limitată – până la 20 de intrări vizibile. Intrările șterse nu sunt luate în considerare.",
+    "free_limit_popup_title": "Intrări",
+    "free_limit_popup_after_first_trial": "Intrare salvată! După încheierea perioadei de probă, versiunea gratuită vă permite să păstrați până la 20 de intrări active. Intrările șterse nu se iau în considerare la această limită.",
+    "free_limit_popup_after_first_free": "Intrare salvată! În versiunea gratuită puteți păstra până la 20 de intrări active. Intrările șterse nu sunt luate în considerare. Mai aveți {count} locuri.",
+    "free_limit_popup_slots_remaining_trial": "Notă: după încheierea perioadei de probă, versiunea gratuită permite 20 de intrări. Pe baza numărului dvs. actual, vor rămâne {count} locuri după perioada de probă.",
+    "free_limit_popup_slots_remaining_free": "Au mai rămas {count} locuri în versiunea gratuită (limită: 20 de intrări active).",
+    "free_limit_popup_limit_reached_trial": "Ați adăugat 20 de intrări. În versiunea gratuită, după încheierea perioadei de probă, nu veți putea adăuga altele noi fără Premium.",
+    "free_limit_popup_limit_reached_free": "Limită atinsă: 20 de intrări active în versiunea gratuită. Pentru a adăuga altele noi, treceți la Premium."
 }

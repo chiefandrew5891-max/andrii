@@ -144,7 +144,7 @@
     "premium_section_title": "Abonnement et accès",
     "premium_status_label": "Statut actuel",
     "premium_trial_days_left": "Jours d'essai restants",
-    "premium_trial_limit_notice": "Pendant votre essai de 14 jours, toutes les fonctionnalités sont disponibles. Ensuite, la version gratuite permet jusqu'à 20 rendez-vous.",
+    "premium_trial_limit_notice": "Pendant la période d'essai de 14 jours, vous avez accès à toutes les fonctionnalités. À son expiration, vous pourrez conserver jusqu'à 20 entrées visibles dans la version gratuite. Les entrées supprimées ne sont pas prises en compte.",
     "premium_free_limit_slots_warning": "Version gratuite : places restantes avant la limite de 20 rendez-vous : {count}.",
     "premium_trial_active_hint": "Vous avez actuellement accès à toutes les fonctionnalités de l'application.",
     "premium_free_limited_hint": "Certaines fonctionnalités sont limitées. Passez à Premium pour un accès complet.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Appliquer",
     "avatar_crop_cancel": "Annuler",
     "nav_client_interactions": "Interactions clients",
-    "premium_required_client_interactions": "L'interaction avec les clients est disponible uniquement pendant la période d'essai ou avec un abonnement Premium."
+    "premium_required_client_interactions": "L'interaction avec les clients est disponible uniquement pendant la période d'essai ou avec un abonnement Premium.",
+    "premium_trial_expired_subtitle": "La période d'essai est terminée. Vous utilisez actuellement la version gratuite limitée – jusqu'à 20 entrées visibles. Les entrées supprimées ne sont pas prises en compte.",
+    "free_limit_popup_title": "Entrées",
+    "free_limit_popup_after_first_trial": "Entrée enregistrée ! Après la période d'essai, la version gratuite vous permet de conserver jusqu'à 20 entrées actives. Les entrées supprimées ne comptent pas dans cette limite.",
+    "free_limit_popup_after_first_free": "Entrée enregistrée ! Dans la version gratuite, vous pouvez conserver jusqu'à 20 entrées actives. Les entrées supprimées ne sont pas prises en compte. Il vous reste {count} places.",
+    "free_limit_popup_slots_remaining_trial": "Remarque : après la période d'essai, la version gratuite autorise 20 entrées. Selon votre nombre actuel, il vous restera {count} places après l'essai.",
+    "free_limit_popup_slots_remaining_free": "Il reste {count} places dans la version gratuite (limite : 20 entrées actives).",
+    "free_limit_popup_limit_reached_trial": "Vous avez ajouté 20 entrées. Dans la version gratuite après l'essai, vous ne pourrez pas en ajouter de nouvelles sans Premium.",
+    "free_limit_popup_limit_reached_free": "Limite atteinte : 20 entrées actives dans la version gratuite. Pour en ajouter de nouvelles, passez à Premium."
 }

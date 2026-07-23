@@ -144,7 +144,7 @@
     "premium_section_title": "Abonnement und Zugriff",
     "premium_status_label": "Aktueller Status",
     "premium_trial_days_left": "Verbleibende Testtage",
-    "premium_trial_limit_notice": "Während Ihres 14-tägigen Testzeitraums sind alle Funktionen verfügbar. Danach erlaubt die kostenlose Version bis zu 20 Termine.",
+    "premium_trial_limit_notice": "Während des 14-tägigen Testzeitraums stehen Ihnen alle Funktionen zur Verfügung. Nach dessen Ablauf können Sie in der kostenlosen Version bis zu 20 sichtbare Einträge speichern. Gelöschte Einträge werden nicht gezählt.",
     "premium_free_limit_slots_warning": "Kostenlose Version: verbleibende Plätze bis zum Limit von 20 Terminen: {count}.",
     "premium_trial_active_hint": "Du hast derzeit Zugriff auf alle App-Funktionen.",
     "premium_free_limited_hint": "Einige Funktionen sind eingeschränkt. Upgrade auf Premium für vollen Zugriff.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Übernehmen",
     "avatar_crop_cancel": "Abbrechen",
     "nav_client_interactions": "Kundeninteraktionen",
-    "premium_required_client_interactions": "Kundeninteraktionen sind nur während des Testzeitraums oder mit einem Premium-Abo verfügbar."
+    "premium_required_client_interactions": "Kundeninteraktionen sind nur während des Testzeitraums oder mit einem Premium-Abo verfügbar.",
+    "premium_trial_expired_subtitle": "Testzeitraum abgelaufen. Sie nutzen derzeit die eingeschränkte kostenlose Version – bis zu 20 sichtbare Einträge. Gelöschte Einträge werden nicht gezählt.",
+    "free_limit_popup_title": "Einträge",
+    "free_limit_popup_after_first_trial": "Eintrag gespeichert! Nach Ablauf des Testzeitraums können Sie in der kostenlosen Version bis zu 20 aktive Einträge speichern. Gelöschte Einträge zählen nicht für dieses Limit.",
+    "free_limit_popup_after_first_free": "Eintrag gespeichert! In der kostenlosen Version können Sie bis zu 20 aktive Einträge speichern. Gelöschte Einträge zählen nicht. Sie haben noch {count} Plätze übrig.",
+    "free_limit_popup_slots_remaining_trial": "Hinweis: Nach Ablauf des Testzeitraums erlaubt die kostenlose Version 20 Einträge. Basierend auf Ihrer aktuellen Anzahl verbleiben nach dem Testzeitraum noch {count} Plätze.",
+    "free_limit_popup_slots_remaining_free": "Noch {count} Plätze in der kostenlosen Version verfügbar (Limit: 20 aktive Einträge).",
+    "free_limit_popup_limit_reached_trial": "Sie haben 20 Einträge hinzugefügt. In der kostenlosen Version können Sie nach Ablauf des Testzeitraums ohne Premium keine neuen Einträge hinzufügen.",
+    "free_limit_popup_limit_reached_free": "Limit erreicht: 20 aktive Einträge in der kostenlosen Version. Upgrade auf Premium, um neue hinzuzufügen."
 }

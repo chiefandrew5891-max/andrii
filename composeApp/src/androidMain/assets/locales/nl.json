@@ -144,7 +144,7 @@
     "premium_section_title": "Abonnement en toegang",
     "premium_status_label": "Huidige status",
     "premium_trial_days_left": "Dagen proefperiode over",
-    "premium_trial_limit_notice": "Tijdens je proefperiode van 14 dagen zijn alle functies beschikbaar. Daarna laat de gratis versie maximaal 20 afspraken toe.",
+    "premium_trial_limit_notice": "Tijdens de proefperiode van 14 dagen heeft u toegang tot alle functies. Na afloop kunt u in de gratis versie tot 20 zichtbare items bewaren. Verwijderde items tellen niet mee.",
     "premium_free_limit_slots_warning": "Gratis versie: resterende plaatsen vóór de limiet van 20 afspraken: {count}.",
     "premium_trial_active_hint": "Je hebt momenteel toegang tot alle app-functies.",
     "premium_free_limited_hint": "Sommige functies zijn beperkt. Upgrade naar Premium voor volledige toegang.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Toepassen",
     "avatar_crop_cancel": "Annuleren",
     "nav_client_interactions": "Klantinteracties",
-    "premium_required_client_interactions": "Klantinteractie is alleen beschikbaar tijdens de proefperiode of met een Premium-abonnement."
+    "premium_required_client_interactions": "Klantinteractie is alleen beschikbaar tijdens de proefperiode of met een Premium-abonnement.",
+    "premium_trial_expired_subtitle": "Proefperiode is verlopen. U gebruikt momenteel de beperkte gratis versie – tot 20 zichtbare items. Verwijderde items tellen niet mee.",
+    "free_limit_popup_title": "Items",
+    "free_limit_popup_after_first_trial": "Item opgeslagen! Na de proefperiode kunt u in de gratis versie tot 20 actieve items bewaren. Verwijderde items tellen niet mee voor deze limiet.",
+    "free_limit_popup_after_first_free": "Item opgeslagen! In de gratis versie kunt u tot 20 actieve items bewaren. Verwijderde items tellen niet mee. U heeft nog {count} plaatsen over.",
+    "free_limit_popup_slots_remaining_trial": "Let op: na de proefperiode staat de gratis versie 20 items toe. Op basis van uw huidige aantal heeft u na de proefperiode nog {count} plaatsen over.",
+    "free_limit_popup_slots_remaining_free": "Nog {count} plaatsen over in de gratis versie (limiet: 20 actieve items).",
+    "free_limit_popup_limit_reached_trial": "U heeft 20 items toegevoegd. In de gratis versie kunt u na de proefperiode geen nieuwe items toevoegen zonder Premium.",
+    "free_limit_popup_limit_reached_free": "Limiet bereikt: 20 actieve items in de gratis versie. Upgrade naar Premium om nieuwe toe te voegen."
 }

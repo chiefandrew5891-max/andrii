@@ -144,7 +144,7 @@
     "premium_section_title": "Abonnement og adgang",
     "premium_status_label": "Nuværende status",
     "premium_trial_days_left": "Dage tilbage af prøveperiode",
-    "premium_trial_limit_notice": "I din 14-dages prøveperiode er alle funktioner tilgængelige. Derefter tillader gratisversionen op til 20 aftaler.",
+    "premium_trial_limit_notice": "I løbet af den 14-dages prøveperiode har du adgang til alle funktioner. Når den udløber, kan du gemme op til 20 synlige poster i gratisversionen. Slettede poster tæller ikke med.",
     "premium_free_limit_slots_warning": "Gratisversion: resterende pladser før grænsen på 20 aftaler: {count}.",
     "premium_trial_active_hint": "Du har i øjeblikket adgang til alle appfunktioner.",
     "premium_free_limited_hint": "Visse funktioner er begrænsede. Opgrader til Premium for fuld adgang.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Anvend",
     "avatar_crop_cancel": "Annuller",
     "nav_client_interactions": "Kundeinteraktioner",
-    "premium_required_client_interactions": "Kundeinteraktioner er kun tilgængelige i prøveperioden eller med et Premium-abonnement."
+    "premium_required_client_interactions": "Kundeinteraktioner er kun tilgængelige i prøveperioden eller med et Premium-abonnement.",
+    "premium_trial_expired_subtitle": "Prøveperioden er udløbet. Du bruger i øjeblikket den begrænsede gratis version – op til 20 synlige poster. Slettede poster tæller ikke med.",
+    "free_limit_popup_title": "Posteringer",
+    "free_limit_popup_after_first_trial": "Post gemt! Efter prøveperioden giver gratisversionen dig mulighed for at gemme op til 20 aktive poster. Slettede poster tæller ikke med i denne grænse.",
+    "free_limit_popup_after_first_free": "Post gemt! I gratisversionen kan du gemme op til 20 aktive poster. Slettede poster tæller ikke med. Du har {count} pladser tilbage.",
+    "free_limit_popup_slots_remaining_trial": "Bemærk: Efter prøveperioden tillader gratisversionen 20 poster. Baseret på dit nuværende antal vil du have {count} pladser tilbage efter prøveperioden.",
+    "free_limit_popup_slots_remaining_free": "{count} pladser tilbage i gratisversionen (grænse: 20 aktive poster).",
+    "free_limit_popup_limit_reached_trial": "Du har tilføjet 20 poster. I gratisversionen kan du ikke tilføje nye efter prøveperioden uden Premium.",
+    "free_limit_popup_limit_reached_free": "Grænsen er nået: 20 aktive poster i gratisversionen. Opgrader til Premium for at tilføje nye."
 }

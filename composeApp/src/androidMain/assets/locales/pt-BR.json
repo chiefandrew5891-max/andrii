@@ -144,7 +144,7 @@
     "premium_section_title": "Assinatura e acesso",
     "premium_status_label": "Status atual",
     "premium_trial_days_left": "Dias restantes de teste",
-    "premium_trial_limit_notice": "Durante o teste de 14 dias, todos os recursos ficam disponíveis. Depois disso, a versão gratuita permite até 20 agendamentos.",
+    "premium_trial_limit_notice": "Durante o período de teste de 14 dias, todos os recursos estão disponíveis para você. Após o término, na versão gratuita você poderá armazenar até 20 entradas visíveis. Entradas excluídas não são contadas.",
     "premium_free_limit_slots_warning": "Versão gratuita: vagas restantes antes do limite de 20 agendamentos: {count}.",
     "premium_trial_active_hint": "Você tem acesso a todos os recursos do app no momento.",
     "premium_free_limited_hint": "Alguns recursos estão limitados. Faça upgrade para Premium para acesso total.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Aplicar",
     "avatar_crop_cancel": "Cancelar",
     "nav_client_interactions": "Interação com clientes",
-    "premium_required_client_interactions": "A interação com clientes está disponível apenas durante o período de teste ou com uma assinatura Premium."
+    "premium_required_client_interactions": "A interação com clientes está disponível apenas durante o período de teste ou com uma assinatura Premium.",
+    "premium_trial_expired_subtitle": "O período de teste terminou. Você está usando a versão gratuita limitada — até 20 entradas visíveis. Entradas excluídas não são contadas.",
+    "free_limit_popup_title": "Entradas",
+    "free_limit_popup_after_first_trial": "Entrada salva! Após o término do teste, a versão gratuita permite armazenar até 20 entradas ativas. Entradas excluídas não contam para este limite.",
+    "free_limit_popup_after_first_free": "Entrada salva! Na versão gratuita, você pode armazenar até 20 entradas ativas. Entradas excluídas não são contadas. Você ainda tem {count} vagas.",
+    "free_limit_popup_slots_remaining_trial": "Nota: após o término do teste, a versão gratuita permite 20 entradas. Com base na sua quantidade atual, você terá {count} vagas após o teste.",
+    "free_limit_popup_slots_remaining_free": "Resta(m) {count} vaga(s) na versão gratuita (limite: 20 entradas ativas).",
+    "free_limit_popup_limit_reached_trial": "Você adicionou 20 entradas. Na versão gratuita, após o término do teste, não será possível adicionar novas sem o Premium.",
+    "free_limit_popup_limit_reached_free": "Limite atingido: 20 entradas ativas na versão gratuita. Para adicionar novas, mude para o Premium."
 }

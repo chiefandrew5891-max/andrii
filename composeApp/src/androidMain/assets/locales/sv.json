@@ -144,7 +144,7 @@
     "premium_section_title": "Prenumeration och åtkomst",
     "premium_status_label": "Aktuell status",
     "premium_trial_days_left": "Dagar kvar av provperiod",
-    "premium_trial_limit_notice": "Under din 14-dagars provperiod är alla funktioner tillgängliga. Därefter tillåter gratisversionen upp till 20 bokningar.",
+    "premium_trial_limit_notice": "Under den 14 dagar långa provperioden har du tillgång till alla funktioner. När den har gått ut kan du spara upp till 20 synliga poster i gratisversionen. Borttagna poster räknas inte.",
     "premium_free_limit_slots_warning": "Gratisversion: återstående platser före gränsen på 20 bokningar: {count}.",
     "premium_trial_active_hint": "Du har för närvarande tillgång till alla appfunktioner.",
     "premium_free_limited_hint": "Vissa funktioner är begränsade. Uppgradera till Premium för full tillgång.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Verkställ",
     "avatar_crop_cancel": "Avbryt",
     "nav_client_interactions": "Kundinteraktioner",
-    "premium_required_client_interactions": "Kundinteraktioner är endast tillgängliga under provperioden eller med en Premium-prenumeration."
+    "premium_required_client_interactions": "Kundinteraktioner är endast tillgängliga under provperioden eller med en Premium-prenumeration.",
+    "premium_trial_expired_subtitle": "Provperioden har gått ut. Du använder för närvarande den begränsade gratisversionen – upp till 20 synliga poster. Borttagna poster räknas inte.",
+    "free_limit_popup_title": "Poster",
+    "free_limit_popup_after_first_trial": "Posten har sparats! Efter provperiodens slut låter gratisversionen dig spara upp till 20 aktiva poster. Borttagna poster räknas inte in i denna gräns.",
+    "free_limit_popup_after_first_free": "Posten har sparats! I gratisversionen kan du spara upp till 20 aktiva poster. Borttagna poster räknas inte. Du har {count} platser kvar.",
+    "free_limit_popup_slots_remaining_trial": "Obs: efter provperiodens slut tillåter gratisversionen 20 poster. Baserat på ditt nuvarande antal kommer du att ha {count} platser kvar efter provperioden.",
+    "free_limit_popup_slots_remaining_free": "{count} platser kvar i gratisversionen (gräns: 20 aktiva poster).",
+    "free_limit_popup_limit_reached_trial": "Du har lagt till 20 poster. I gratisversionen kan du inte lägga till nya efter provperioden utan Premium.",
+    "free_limit_popup_limit_reached_free": "Gränsen har nåtts: 20 aktiva poster i gratisversionen. Uppgradera till Premium för att lägga till nya."
 }

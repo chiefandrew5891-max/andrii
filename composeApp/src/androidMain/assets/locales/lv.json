@@ -144,7 +144,7 @@
     "premium_section_title": "Abonēšana un piekļuve",
     "premium_status_label": "Pašreizējais statuss",
     "premium_trial_days_left": "Atlikušās izmēģinājuma dienas",
-    "premium_trial_limit_notice": "14 dienu izmēģinājuma laikā ir pieejamas visas funkcijas. Pēc tam bezmaksas versija ļauj līdz 20 pierakstiem.",
+    "premium_trial_limit_notice": "14 dienu izmēģinājuma periodā jums ir pieejamas visas funkcijas. Pēc tā beigām bezmaksas versijā varat saglabāt līdz 20 redzamiem ierakstiem. Dzēstie ieraksti netiek ņemti vērā.",
     "premium_free_limit_slots_warning": "Bezmaksas versija: atlikušās vietas līdz 20 pierakstu limitam: {count}.",
     "premium_trial_active_hint": "Pašlaik jums ir piekļuve visām lietotnes funkcijām.",
     "premium_free_limited_hint": "Dažas funkcijas ir ierobežotas. Atjauniniet uz Premium, lai iegūtu pilnu piekļuvi.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Apstiprināt",
     "avatar_crop_cancel": "Atcelt",
     "nav_client_interactions": "Saziņa ar klientiem",
-    "premium_required_client_interactions": "Saziņa ar klientiem ir pieejama tikai izmēģinājuma periodā vai ar Premium abonementu."
+    "premium_required_client_interactions": "Saziņa ar klientiem ir pieejama tikai izmēģinājuma periodā vai ar Premium abonementu.",
+    "premium_trial_expired_subtitle": "Izmēģinājuma periods ir beidzies. Pašlaik izmantojat ierobežoto bezmaksas versiju – līdz 20 redzamiem ierakstiem. Dzēstie ieraksti netiek ņemti vērā.",
+    "free_limit_popup_title": "Ieraksti",
+    "free_limit_popup_after_first_trial": "Ieraksts saglabāts! Pēc izmēģinājuma perioda beigām bezmaksas versija ļauj saglabāt līdz 20 aktīviem ierakstiem. Dzēstie ieraksti šajā limitā netiek ieskaitīti.",
+    "free_limit_popup_after_first_free": "Ieraksts saglabāts! Bezmaksas versijā varat saglabāt līdz 20 aktīviem ierakstiem. Dzēstie ieraksti netiek ņemti vērā. Jums ir palikušas {count} vietas.",
+    "free_limit_popup_slots_remaining_trial": "Piezīme: pēc izmēģinājuma perioda beigām bezmaksas versijā atļauti 20 ieraksti. Pamatojoties uz pašreizējo skaitu, pēc izmēģinājuma perioda paliks {count} vietas.",
+    "free_limit_popup_slots_remaining_free": "Palikušas {count} vietas bezmaksas versijā (limits: 20 aktīvi ieraksti).",
+    "free_limit_popup_limit_reached_trial": "Esat pievienojis 20 ierakstus. Bezmaksas versijā pēc izmēģinājuma perioda beigām nevarēsiet pievienot jaunus bez Premium.",
+    "free_limit_popup_limit_reached_free": "Limits sasniegts: 20 aktīvi ieraksti bezmaksas versijā. Lai pievienotu jaunus, pārejiet uz Premium."
 }

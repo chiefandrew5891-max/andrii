@@ -144,7 +144,7 @@
     "premium_section_title": "Subskrypcja i dostęp",
     "premium_status_label": "Bieżący status",
     "premium_trial_days_left": "Pozostało dni okresu próbnego",
-    "premium_trial_limit_notice": "W trakcie 14-dniowego okresu próbnego wszystkie funkcje są dostępne. Po jego zakończeniu darmowa wersja pozwala na maksymalnie 20 wizyt.",
+    "premium_trial_limit_notice": "Podczas 14-dniowego okresu próbnego masz dostęp do wszystkich funkcji. Po jego zakończeniu w wersji bezpłatnej możesz przechowywać do 20 widocznych wpisów. Usunięte wpisy nie są wliczane.",
     "premium_free_limit_slots_warning": "Wersja darmowa: pozostałe miejsca do limitu 20 wizyt: {count}.",
     "premium_trial_active_hint": "Obecnie masz dostęp do wszystkich funkcji aplikacji.",
     "premium_free_limited_hint": "Niektóre funkcje są ograniczone. Przejdź na Premium, aby uzyskać pełny dostęp.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Zastosuj",
     "avatar_crop_cancel": "Anuluj",
     "nav_client_interactions": "Interakcja z klientami",
-    "premium_required_client_interactions": "Interakcja z klientami jest dostępna tylko w okresie próbnym lub z subskrypcją Premium."
+    "premium_required_client_interactions": "Interakcja z klientami jest dostępna tylko w okresie próbnym lub z subskrypcją Premium.",
+    "premium_trial_expired_subtitle": "Okres próbny dobiegł końca. Obecnie korzystasz z ograniczonej bezpłatnej wersji – do 20 widocznych wpisów. Usunięte wpisy nie są wliczane.",
+    "free_limit_popup_title": "Wpisy",
+    "free_limit_popup_after_first_trial": "Wpis zapisany! Po zakończeniu okresu próbnego bezpłatna wersja pozwala na przechowywanie do 20 aktywnych wpisów. Usunięte wpisy nie wliczają się do tego limitu.",
+    "free_limit_popup_after_first_free": "Wpis zapisany! W wersji bezpłatnej możesz przechowywać do 20 aktywnych wpisów. Usunięte wpisy nie są wliczane. Pozostało Ci {count} miejsc.",
+    "free_limit_popup_slots_remaining_trial": "Uwaga: po zakończeniu okresu próbnego bezpłatna wersja pozwala na 20 wpisów. Na podstawie Twojej obecnej liczby po zakończeniu okresu próbnego pozostanie Ci {count} miejsc.",
+    "free_limit_popup_slots_remaining_free": "Pozostało {count} miejsc w wersji bezpłatnej (limit: 20 aktywnych wpisów).",
+    "free_limit_popup_limit_reached_trial": "Dodałeś 20 wpisów. W wersji bezpłatnej po zakończeniu okresu próbnego dodawanie nowych bez wersji Premium nie będzie możliwe.",
+    "free_limit_popup_limit_reached_free": "Osiągnięto limit: 20 aktywnych wpisów w wersji bezpłatnej. Aby dodać nowe, przejdź na Premium."
 }

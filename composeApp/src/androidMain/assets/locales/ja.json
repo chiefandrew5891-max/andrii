@@ -144,7 +144,7 @@
     "premium_section_title": "定期購入とアクセス権",
     "premium_status_label": "現在のステータス",
     "premium_trial_days_left": "試用期間の残り日数",
-    "premium_trial_limit_notice": "14日間のトライアル期間中は、すべての機能を利用できます。終了後、無料版では予約は最大20件までになります。",
+    "premium_trial_limit_notice": "14日間の無料体験期間中はすべての機能をご利用いただけます。終了後は、無料版で最大20件の表示可能なエントリーを保存できます。削除されたエントリーはカウントされません。",
     "premium_free_limit_slots_warning": "無料版: 20件の予約上限までの残り枠: {count}。",
     "premium_trial_active_hint": "現在、アプリのすべての機能をご利用いただけます。",
     "premium_free_limited_hint": "一部の機能が制限されています。すべての機能を利用するにはPremiumにアップグレードしてください。",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "適用",
     "avatar_crop_cancel": "キャンセル",
     "nav_client_interactions": "顧客とのやり取り",
-    "premium_required_client_interactions": "顧客とのやり取りはトライアル期間中または Premium 定期購入時のみご利用いただけます。"
+    "premium_required_client_interactions": "顧客とのやり取りはトライアル期間中または Premium 定期購入時のみご利用いただけます。",
+    "premium_trial_expired_subtitle": "無料体験期間が終了しました。現在、一部制限のある無料版をご利用中です（表示可能なエントリーは最大20件まで）。削除されたエントリーはカウントされません。",
+    "free_limit_popup_title": "エントリー",
+    "free_limit_popup_after_first_trial": "エントリーを保存しました！無料体験終了後、無料版では最大20件のアクティブなエントリーを保存できます。削除されたエントリーはこの上限にカウントされません。",
+    "free_limit_popup_after_first_free": "エントリーを保存しました！無料版では最大20件のアクティブなエントリーを保存できます。削除されたエントリーはカウントされません。残り枠は {count} 件です。",
+    "free_limit_popup_slots_remaining_trial": "ご注意：無料体験終了後、無料版で保存できるのは20件までです。現在の件数に基づくと、無料体験終了後に残る枠は {count} 件です。",
+    "free_limit_popup_slots_remaining_free": "無料版の残り枠は {count} 件です（上限：アクティブなエントリー20件）。",
+    "free_limit_popup_limit_reached_trial": "20件のエントリーを追加しました。無料体験終了後は、Premiumプランに登録しない限り新しいエントリーを追加できません。",
+    "free_limit_popup_limit_reached_free": "上限に達しました：無料版ではアクティブなエントリー20件までです。新しく追加するにはPremiumにアップグレードしてください。"
 }

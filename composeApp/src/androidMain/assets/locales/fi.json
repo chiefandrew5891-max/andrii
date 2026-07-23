@@ -144,7 +144,7 @@
     "premium_section_title": "Tilaus ja käyttöoikeus",
     "premium_status_label": "Nykyinen tila",
     "premium_trial_days_left": "Kokeilujakson päiviä jäljellä",
-    "premium_trial_limit_notice": "14 päivän kokeilujakson aikana kaikki ominaisuudet ovat käytettävissä. Sen jälkeen ilmaisversio sallii enintään 20 ajanvarausta.",
+    "premium_trial_limit_notice": "14 päivän kokeilujakson aikana kaikki ominaisuudet ovat käytettävissäsi. Sen päätyttyä voit säilyttää ilmaisversiossa enintään 20 näkyvää merkintää. Poistettuja merkintöjä ei lasketa.",
     "premium_free_limit_slots_warning": "Ilmaisversio: jäljellä olevat paikat ennen 20 ajanvarauksen rajaa: {count}.",
     "premium_trial_active_hint": "Sinulla on tällä hetkellä pääsy sovelluksen kaikkiin ominaisuuksiin.",
     "premium_free_limited_hint": "Jotkin ominaisuudet on rajoitettu. Päivitä Premium-versioon saadaksesi täydet oikeudet.",
@@ -565,5 +565,13 @@
     "avatar_crop_confirm": "Käytä",
     "avatar_crop_cancel": "Peruuta",
     "nav_client_interactions": "Asiakasvuorovaikutus",
-    "premium_required_client_interactions": "Asiakasvuorovaikutus on käytettävissä vain kokeilujakson aikana tai Premium-tilauksella."
+    "premium_required_client_interactions": "Asiakasvuorovaikutus on käytettävissä vain kokeilujakson aikana tai Premium-tilauksella.",
+    "premium_trial_expired_subtitle": "Kokeilujakso on päättynyt. Käytät tällä hetkellä rajoitettua ilmaisversiota – enintään 20 näkyvää merkintää. Poistettuja merkintöjä ei lasketa.",
+    "free_limit_popup_title": "Merkinnät",
+    "free_limit_popup_after_first_trial": "Merkintä tallennettu! Kokeilujakson päätyttyä ilmaisversio mahdollistaa enintään 20 aktiivisen merkinnän säilyttämisen. Poistettuja merkintöjä ei lasketa tähän rajaan.",
+    "free_limit_popup_after_first_free": "Merkintä tallennettu! Ilmaisversiossa voit säilyttää enintään 20 aktiivista merkintää. Poistettuja merkintöjä ei lasketa. Sinulla on jäljellä {count} paikkaa.",
+    "free_limit_popup_slots_remaining_trial": "Huomaa: kokeilujakson päätyttyä ilmaisversio sallii 20 merkintää. Nykyisen määräsi perusteella kokeilujakson jälkeen on jäljellä {count} paikkaa.",
+    "free_limit_popup_slots_remaining_free": "Jäljellä {count} paikkaa ilmaisversiossa (raja: 20 aktiivista merkintää).",
+    "free_limit_popup_limit_reached_trial": "Olet lisännyt 20 merkintää. Ilmaisversiossa kokeilujakson päätyttyä et voi lisätä uusia ilman Premiumia.",
+    "free_limit_popup_limit_reached_free": "Raja saavutettu: 20 aktiivista merkintää ilmaisversiossa. Voit lisätä uusia siirtymällä Premiumiin."
 }
