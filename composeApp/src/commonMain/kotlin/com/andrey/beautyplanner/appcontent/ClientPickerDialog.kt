@@ -33,6 +33,7 @@ import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.ClientSuggestion
 import com.andrey.beautyplanner.ClientSuggestions
 import com.andrey.beautyplanner.Locales
+import com.andrey.beautyplanner.appcontent.appFontFamily
 
 @Composable
 fun ClientPickerDialog(
