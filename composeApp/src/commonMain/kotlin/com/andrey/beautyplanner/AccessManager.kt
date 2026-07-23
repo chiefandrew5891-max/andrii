@@ -4,6 +4,7 @@ import com.andrey.beautyplanner.access.AccessRepository
 
 object AccessManager {
     const val FREE_ACTIVE_APPOINTMENTS_LIMIT = 20
+    private val FREE_LIMIT_WARNING_THRESHOLDS = setOf(5, 3, 1)
 
     fun getAccessState(nowMillis: Long): AccessState {
         if (AppSettings.developerPremiumOverrideEnabled) {
@@ -61,5 +62,11 @@ object AccessManager {
             AccessTier.FREE_LIMITED -> (FREE_ACTIVE_APPOINTMENTS_LIMIT - currentAppointmentsCount)
                 .coerceAtLeast(0)
         }
+    }
+
+    fun shouldShowFreeLimitWarning(
+        remainingFreeSlots: Int
+    ): Boolean {
+        return remainingFreeSlots in FREE_LIMIT_WARNING_THRESHOLDS
     }
 }

@@ -296,6 +296,12 @@ fun SettingsPage(
                             fontSize = (14 * fontScale).sp,
                             color = onSurface.copy(alpha = 0.80f)
                         )
+
+                        Text(
+                            text = Locales.t("premium_trial_limit_notice"),
+                            fontSize = (14 * fontScale).sp,
+                            color = onSurface.copy(alpha = 0.80f)
+                        )
                     }
                 },
                 actionButton = {
