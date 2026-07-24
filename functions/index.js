@@ -37,7 +37,8 @@ const db = admin.firestore();
 // Constants
 // ---------------------------------------------------------------------------
 
-const TRIAL_DURATION_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+const TRIAL_DURATION_MS        = 14  * 24 * 60 * 60 * 1000; // 14 days
+const SUBSCRIPTION_DURATION_MS = 365 * 24 * 60 * 60 * 1000; // 1 year (fallback)
 
 // ---------------------------------------------------------------------------
 // bootstrapUser
@@ -209,8 +210,8 @@ exports.verifySubscription = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('permission-denied', 'Access denied.');
     }
 
-    // Determine subscription expiry (default: 1 year from now).
-    const subscriptionExpiryMillis = now + 365 * 24 * 60 * 60 * 1000;
+    // Determine subscription expiry (fallback: 1 year from now).
+    const subscriptionExpiryMillis = now + SUBSCRIPTION_DURATION_MS;
 
     const update = {
         tier: 'PREMIUM',
@@ -307,7 +308,7 @@ exports.checkAppUpdate = functions.https.onCall(async (data, _context) => {
     const minVersion    = safeString(platformCfg.minVersion);
     const updateUrl     = safeString(platformCfg.updateUrl);
 
-    const updateAvailable = latestVersion && latestVersion !== versionName;
+    const updateAvailable = latestVersion && isVersionLower(versionName, latestVersion);
     const forceUpdate     = minVersion    && isVersionLower(versionName, minVersion);
 
     return {
@@ -372,9 +373,12 @@ exports.processRtdn = functions.pubsub
             .includes(subscriptionState);
         const now = Date.now();
 
-        // Find the user whose last purchase token matches.
-        const snapshot = await db.collection('users')
-            .where('subscriptionOrderId', '>=', purchaseToken.substring(0, 64))
+        // Find the user whose subscriptionOrderId matches this purchase token.
+        // subscriptionOrderId is stored as transactionId || purchaseToken.substring(0, 64),
+        // so query with exact equality on the same prefix.
+        const tokenKey  = purchaseToken.substring(0, 64);
+        const snapshot  = await db.collection('users')
+            .where('subscriptionOrderId', '==', tokenKey)
             .limit(1)
             .get();
 
