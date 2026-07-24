@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
+import com.andrey.beautyplanner.CloudSyncLogger
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.ProfileAvatarUrlProcessor
 import com.andrey.beautyplanner.ProfileImagePicker
@@ -310,7 +311,10 @@ fun PersonalInfoSettingsScreen() {
 
                     if (!shouldProcessAvatarUrl) {
                         persistProfile(avatarBase64Draft)
-                        scope.launch { MasterProfileSync.syncIfAuthenticated() }
+                        scope.launch {
+                            MasterProfileSync.syncIfAuthenticated()
+                                .onFailure { CloudSyncLogger.log("syncMasterProfile: failed: ${it.message}") }
+                        }
                         return@PrimaryActionButton
                     }
 
@@ -325,7 +329,10 @@ fun PersonalInfoSettingsScreen() {
 
                             avatarBase64Draft = processedBase64
                             persistProfile(processedBase64)
-                            scope.launch { MasterProfileSync.syncIfAuthenticated() }
+                            scope.launch {
+                                MasterProfileSync.syncIfAuthenticated()
+                                    .onFailure { CloudSyncLogger.log("syncMasterProfile: failed: ${it.message}") }
+                            }
                         }
                     }.onFailure {
                         isSaving = false

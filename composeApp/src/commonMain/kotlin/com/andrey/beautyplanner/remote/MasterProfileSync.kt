@@ -29,7 +29,6 @@ object MasterProfileSync {
     suspend fun syncIfAuthenticated(): Result<Map<String, String>> {
         val userId = AppSettings.backendUserId.trim()
         if (userId.isBlank()) return Result.success(emptyMap())
-
         return runCatching {
             val serviceTemplatesJson = CloudSyncJson.json.encodeToString(AppSettings.serviceTemplates)
             BackendBridge.syncMasterProfile(

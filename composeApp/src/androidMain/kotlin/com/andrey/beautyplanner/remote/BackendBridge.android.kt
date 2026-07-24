@@ -176,7 +176,7 @@ actual object BackendBridge {
                 .call(data)
                 .addOnSuccessListener { result ->
                     try {
-                        val map = result.data as? Map<*, *> ?: emptyMap<String, String>()
+                        val map = result.data as? Map<*, *> ?: emptyMap<Any?, Any?>()
                         val parsed = map.entries.associate { (key, value) ->
                             key.toString() to (value?.toString() ?: "")
                         }

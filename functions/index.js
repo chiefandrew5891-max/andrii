@@ -100,8 +100,10 @@ exports.syncMasterProfile = functions.https.onCall(async (data, context) => {
     const profileSpecialization = safeString(data.profileSpecialization);
     const profileRating = normalizeRating(data.profileRating);
     const profileAvatarUrl = safeString(data.profileAvatarUrl);
-    // profileAvatarBase64 may be large – preserve as-is (no trim)
-    const profileAvatarBase64 = (data.profileAvatarBase64 || '').toString();
+    // profileAvatarBase64 may be large – only accept strings, default to empty
+    const profileAvatarBase64 = (typeof data.profileAvatarBase64 === 'string')
+        ? data.profileAvatarBase64
+        : '';
     const clientInteractionsEnabled = normalizeBoolean(data.clientInteractionsEnabled);
     const serviceTemplates = parseServiceTemplates(data.serviceTemplatesJson);
 

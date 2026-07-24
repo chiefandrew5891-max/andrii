@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
+import com.andrey.beautyplanner.CloudSyncLogger
 import com.andrey.beautyplanner.remote.MasterProfileSync
 import kotlinx.coroutines.launch
 
@@ -65,7 +66,10 @@ fun ClientInteractionsScreen() {
                         AppSettings.clientInteractionsEnabled = true
                         AppSettings.persist()
                         showEnableConfirm = false
-                        scope.launch { MasterProfileSync.syncIfAuthenticated() }
+                        scope.launch {
+                            MasterProfileSync.syncIfAuthenticated()
+                                .onFailure { CloudSyncLogger.log("syncMasterProfile: failed: ${it.message}") }
+                        }
                     }
                 ) {
                     Text("Подтвердить")
@@ -129,7 +133,10 @@ fun ClientInteractionsScreen() {
                         } else {
                             AppSettings.clientInteractionsEnabled = false
                             AppSettings.persist()
-                            scope.launch { MasterProfileSync.syncIfAuthenticated() }
+                            scope.launch {
+                                MasterProfileSync.syncIfAuthenticated()
+                                    .onFailure { CloudSyncLogger.log("syncMasterProfile: failed: ${it.message}") }
+                            }
                         }
                     }
                 )
