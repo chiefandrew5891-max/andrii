@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
+import com.andrey.beautyplanner.remote.MasterProfileSync
+import kotlinx.coroutines.launch
 
 @Composable
 fun ClientInteractionsScreen() {
@@ -32,6 +35,7 @@ fun ClientInteractionsScreen() {
     val onBg = MaterialTheme.colors.onBackground
     val onSurface = MaterialTheme.colors.onSurface
 
+    val scope = rememberCoroutineScope()
     var showEnableConfirm by remember { mutableStateOf(false) }
 
     if (showEnableConfirm) {
@@ -61,6 +65,7 @@ fun ClientInteractionsScreen() {
                         AppSettings.clientInteractionsEnabled = true
                         AppSettings.persist()
                         showEnableConfirm = false
+                        scope.launch { MasterProfileSync.syncIfAuthenticated() }
                     }
                 ) {
                     Text("Подтвердить")
@@ -124,6 +129,7 @@ fun ClientInteractionsScreen() {
                         } else {
                             AppSettings.clientInteractionsEnabled = false
                             AppSettings.persist()
+                            scope.launch { MasterProfileSync.syncIfAuthenticated() }
                         }
                     }
                 )
