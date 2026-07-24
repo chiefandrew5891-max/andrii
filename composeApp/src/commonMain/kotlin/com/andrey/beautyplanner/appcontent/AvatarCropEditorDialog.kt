@@ -40,7 +40,6 @@ import com.andrey.beautyplanner.AppSettings
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.ProfileImageCropper
 import com.andrey.beautyplanner.rememberProfileAvatarBitmap
-import kotlin.math.max
 
 /**
  * Full-screen dialog that lets the user pan/zoom a selected photo under a fixed circle crop region.
@@ -62,8 +61,9 @@ fun AvatarCropEditorDialog(
     var offsetY by remember(rawBase64) { mutableStateOf(0f) }
     var scale by remember(rawBase64) { mutableStateOf(1f) }
 
-    // Physical pixel size of the crop container, tracked after layout
-    var containerSizePx by remember { mutableStateOf(0f) }
+    // Physical pixel size of the crop container, tracked after layout.
+    // Reset with new source image so offset/scale/container geometry all start from a clean state.
+    var containerSizePx by remember(rawBase64) { mutableStateOf(0f) }
 
     val minScale = 1f
     val maxScale = 6f
@@ -73,12 +73,12 @@ fun AvatarCropEditorDialog(
     val bitmapH = avatarBitmap?.height?.toFloat() ?: 0f
     val baseScale =
         if (avatarBitmap != null && containerSizePx > 0f && bitmapW > 0f && bitmapH > 0f) {
-            max(containerSizePx / bitmapW, containerSizePx / bitmapH)
+            containerSizePx / minOf(bitmapW, bitmapH)
         } else {
             0f
         }
 
-    fun maxOffsetsFor(scaleValue: Float): Pair<Float, Float> {
+    fun calculateMaxOffsets(scaleValue: Float): Pair<Float, Float> {
         if (baseScale <= 0f || containerSizePx <= 0f) return 0f to 0f
         val displayedW = bitmapW * baseScale * scaleValue
         val displayedH = bitmapH * baseScale * scaleValue
@@ -86,7 +86,7 @@ fun AvatarCropEditorDialog(
             maxOf(0f, (displayedH - containerSizePx) / 2f)
     }
 
-    val (maxOffsetX, maxOffsetY) = maxOffsetsFor(coercedScale)
+    val (maxOffsetX, maxOffsetY) = calculateMaxOffsets(coercedScale)
     val clampedOffsetX = offsetX.coerceIn(-maxOffsetX, maxOffsetX)
     val clampedOffsetY = offsetY.coerceIn(-maxOffsetY, maxOffsetY)
 
@@ -136,7 +136,7 @@ fun AvatarCropEditorDialog(
                         .pointerInput(baseScale, containerSizePx) {
                             detectTransformGestures { _, pan, zoom, _ ->
                                 val nextScale = (scale * zoom).coerceIn(minScale, maxScale)
-                                val (nextMaxX, nextMaxY) = maxOffsetsFor(nextScale)
+                                val (nextMaxX, nextMaxY) = calculateMaxOffsets(nextScale)
 
                                 scale = nextScale
                                 offsetX = (offsetX + pan.x).coerceIn(-nextMaxX, nextMaxX)

@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 private const val AVATAR_DOWNLOAD_CONNECT_TIMEOUT_MS = 10_000
@@ -252,10 +253,12 @@ class MainActivity : ComponentActivity() {
         val left = (cropCenterX - cropHalf).coerceIn(0f, maxLeft)
         val top = (cropCenterY - cropHalf).coerceIn(0f, maxTop)
 
-        val leftPx = left.roundToInt().coerceIn(0, source.width - 1)
-        val topPx = top.roundToInt().coerceIn(0, source.height - 1)
-        val maxSquare = minOf(source.width - leftPx, source.height - topPx)
-        val cropSquare = cropSize.roundToInt().coerceIn(1, maxSquare)
+        val requestedSquare = cropSize.roundToInt().coerceIn(1, minOf(source.width, source.height))
+        val maxLeftPx = (source.width - requestedSquare).coerceAtLeast(0)
+        val maxTopPx = (source.height - requestedSquare).coerceAtLeast(0)
+        val leftPx = floor(left).toInt().coerceIn(0, maxLeftPx)
+        val topPx = floor(top).toInt().coerceIn(0, maxTopPx)
+        val cropSquare = minOf(source.width - leftPx, source.height - topPx, requestedSquare).coerceAtLeast(1)
 
         val cropped = Bitmap.createBitmap(source, leftPx, topPx, cropSquare, cropSquare)
         return Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)

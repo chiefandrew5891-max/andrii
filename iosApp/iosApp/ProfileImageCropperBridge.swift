@@ -59,8 +59,10 @@ final class ProfileImageCropperBridge {
         let cropCenterY = bitmapH / 2.0 - offsetYPx / effectiveScale
 
         let cropHalf = cropSize / 2.0
-        let left = min(max(0, cropCenterX - cropHalf), max(bitmapW - cropSize, 0))
-        let top = min(max(0, cropCenterY - cropHalf), max(bitmapH - cropSize, 0))
+        let maxLeftCoord = max(bitmapW - cropSize, 0)
+        let maxTopCoord = max(bitmapH - cropSize, 0)
+        let left = min(max(0, cropCenterX - cropHalf), maxLeftCoord)
+        let top = min(max(0, cropCenterY - cropHalf), maxTopCoord)
 
         let cropRect = CGRect(x: left, y: top, width: cropSize, height: cropSize)
         guard let croppedCg = cgImage.cropping(to: cropRect) else { return nil }
