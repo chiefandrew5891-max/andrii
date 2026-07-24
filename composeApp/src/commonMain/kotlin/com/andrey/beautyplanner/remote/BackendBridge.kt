@@ -34,4 +34,18 @@ expect object BackendBridge {
         displayName: String,
         authProvider: String
     ): AccessStatusResponse
+
+    suspend fun syncMasterProfile(
+        userId: String,
+        ownerName: String,
+        profileDisplayCustomName: Boolean,
+        profilePhone: String,
+        profilePhoneVisible: Boolean,
+        profileSpecialization: String,
+        profileRating: Float,
+        profileAvatarUrl: String,
+        profileAvatarBase64: String,
+        clientInteractionsEnabled: Boolean,
+        serviceTemplatesJson: String
+    ): Map<String, String>
 }

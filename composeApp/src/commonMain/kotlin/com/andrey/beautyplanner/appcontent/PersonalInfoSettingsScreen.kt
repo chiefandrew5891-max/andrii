@@ -27,10 +27,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andrey.beautyplanner.AppSettings
+import com.andrey.beautyplanner.CloudSyncLogger
 import com.andrey.beautyplanner.Locales
 import com.andrey.beautyplanner.ProfileAvatarUrlProcessor
 import com.andrey.beautyplanner.ProfileImagePicker
 import com.andrey.beautyplanner.rememberProfileAvatarBitmap
+import com.andrey.beautyplanner.remote.MasterProfileSync
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -39,6 +41,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -56,6 +60,8 @@ fun PersonalInfoSettingsScreen() {
     var specializationDraft by remember { mutableStateOf(AppSettings.profileSpecialization) }
     var avatarUrlErrorMessage by remember { mutableStateOf<String?>(null) }
     var isSaving by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
 
     // Raw (uncropped) base64 returned by the picker; triggers the crop editor dialog
     var pendingRawBase64 by remember { mutableStateOf<String?>(null) }
@@ -305,6 +311,10 @@ fun PersonalInfoSettingsScreen() {
 
                     if (!shouldProcessAvatarUrl) {
                         persistProfile(avatarBase64Draft)
+                        scope.launch {
+                            MasterProfileSync.syncIfAuthenticated()
+                                .onFailure { CloudSyncLogger.log("syncMasterProfile: failed: ${it.message}") }
+                        }
                         return@PrimaryActionButton
                     }
 
@@ -319,6 +329,10 @@ fun PersonalInfoSettingsScreen() {
 
                             avatarBase64Draft = processedBase64
                             persistProfile(processedBase64)
+                            scope.launch {
+                                MasterProfileSync.syncIfAuthenticated()
+                                    .onFailure { CloudSyncLogger.log("syncMasterProfile: failed: ${it.message}") }
+                            }
                         }
                     }.onFailure {
                         isSaving = false

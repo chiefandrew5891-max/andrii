@@ -132,6 +132,65 @@ actual object BackendBridge {
         )
     }
 
+    actual suspend fun syncMasterProfile(
+        userId: String,
+        ownerName: String,
+        profileDisplayCustomName: Boolean,
+        profilePhone: String,
+        profilePhoneVisible: Boolean,
+        profileSpecialization: String,
+        profileRating: Float,
+        profileAvatarUrl: String,
+        profileAvatarBase64: String,
+        clientInteractionsEnabled: Boolean,
+        serviceTemplatesJson: String
+    ): Map<String, String> {
+        ensureAuthenticated()
+        return callRawFunction(
+            "syncMasterProfile",
+            mapOf(
+                "userId" to userId,
+                "ownerName" to ownerName,
+                "profileDisplayCustomName" to profileDisplayCustomName,
+                "profilePhone" to profilePhone,
+                "profilePhoneVisible" to profilePhoneVisible,
+                "profileSpecialization" to profileSpecialization,
+                "profileRating" to profileRating,
+                "profileAvatarUrl" to profileAvatarUrl,
+                "profileAvatarBase64" to profileAvatarBase64,
+                "clientInteractionsEnabled" to clientInteractionsEnabled,
+                "serviceTemplatesJson" to serviceTemplatesJson
+            )
+        )
+    }
+
+    private suspend fun callRawFunction(
+        name: String,
+        data: Map<String, Any?>
+    ): Map<String, String> {
+        val functions = Firebase.functions
+
+        return suspendCancellableCoroutine { cont ->
+            functions
+                .getHttpsCallable(name)
+                .call(data)
+                .addOnSuccessListener { result ->
+                    try {
+                        val map = result.data as? Map<*, *> ?: emptyMap<Any?, Any?>()
+                        val parsed = map.entries.associate { (key, value) ->
+                            key.toString() to (value?.toString() ?: "")
+                        }
+                        cont.resume(parsed)
+                    } catch (e: Exception) {
+                        cont.resumeWithException(e)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    cont.resumeWithException(e)
+                }
+        }
+    }
+
     private suspend fun callFunction(
         name: String,
         data: Any

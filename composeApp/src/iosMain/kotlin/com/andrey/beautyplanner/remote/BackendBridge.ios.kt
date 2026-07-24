@@ -107,6 +107,38 @@ actual object BackendBridge {
         )
     }
 
+    actual suspend fun syncMasterProfile(
+        userId: String,
+        ownerName: String,
+        profileDisplayCustomName: Boolean,
+        profilePhone: String,
+        profilePhoneVisible: Boolean,
+        profileSpecialization: String,
+        profileRating: Float,
+        profileAvatarUrl: String,
+        profileAvatarBase64: String,
+        clientInteractionsEnabled: Boolean,
+        serviceTemplatesJson: String
+    ): Map<String, String> {
+        ensureAuthenticated()
+        return callBackendFunction(
+            name = "syncMasterProfile",
+            payload = mapOf(
+                "userId" to userId,
+                "ownerName" to ownerName,
+                "profileDisplayCustomName" to profileDisplayCustomName.toString(),
+                "profilePhone" to profilePhone,
+                "profilePhoneVisible" to profilePhoneVisible.toString(),
+                "profileSpecialization" to profileSpecialization,
+                "profileRating" to profileRating.toString(),
+                "profileAvatarUrl" to profileAvatarUrl,
+                "profileAvatarBase64" to profileAvatarBase64,
+                "clientInteractionsEnabled" to clientInteractionsEnabled.toString(),
+                "serviceTemplatesJson" to serviceTemplatesJson
+            )
+        )
+    }
+
     private suspend fun callAccessFunction(
         name: String,
         payload: Map<String, String>
