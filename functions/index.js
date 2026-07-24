@@ -1,22 +1,35 @@
 /**
  * Beauty Planner – Firebase Cloud Functions
  *
- * This file contains the callable backend functions for the Beauty Planner app.
+ * This file is the single deployment unit for this repository's Firebase
+ * Cloud Functions. It is deployed independently of any other function sets
+ * that may exist in separate Firebase projects or repositories.
  *
- * DEPLOYMENT NOTES
- * ----------------
- * To deploy only the new syncMasterProfile function run:
+ * DEPLOYMENT
+ * ----------
+ * From the repository root:
+ *   firebase deploy --only functions
+ *
+ * Or to deploy a single function:
  *   firebase deploy --only functions:syncMasterProfile
  *
- * Existing deployed functions (bootstrapUser, syncIdentity, verifySubscription,
- * getAccessStatus, checkAppUpdate) are NOT defined here because they live in a
- * separate deployment. Do NOT remove or conflict with those functions when
- * deploying this file to the same Firebase project.
+ * NOTE: The companion access/subscription functions (bootstrapUser,
+ * syncIdentity, verifySubscription, getAccessStatus, checkAppUpdate) are
+ * managed in a separate deployment. Do NOT redefine them here or they will
+ * conflict with the already-deployed versions.
  *
  * FIRESTORE COLLECTION: masters/{userId}
  * This is the dedicated cross-app master-profile document intended to be read
  * by the Beauty Planner Client Booker app. It is separate from the existing
- * user identity / access / subscription documents.
+ * user identity / access / subscription documents under users/{userId}.
+ *
+ * OWNERSHIP MODEL
+ * ---------------
+ * The userId parameter is the Firestore document ID returned by bootstrapUser
+ * (stored as AppSettings.backendUserId on the client). This ID may or may not
+ * equal the Firebase Auth UID. Ownership is therefore validated by reading
+ * users/{userId} and comparing its stored firebaseUid field against
+ * context.auth.uid. This is safe regardless of how bootstrapUser assigns IDs.
  */
 
 'use strict';
@@ -39,14 +52,15 @@ if (admin.apps.length === 0) {
  *
  * Security:
  *   - The caller must be authenticated (context.auth must be present).
- *   - The provided userId must match the authenticated Firebase UID so that a
- *     user can only write their own profile document.
+ *   - Ownership is verified by reading users/{userId} and comparing its stored
+ *     firebaseUid field to context.auth.uid. A user can only write their own
+ *     master profile document.
  *
  * Firestore document path: masters/{userId}
  *
  * Fields written:
- *   userId                  – string  (from auth UID)
- *   ownerName               – string  (trimmed)
+ *   userId                   – string  (backendUserId, the users/{userId} key)
+ *   ownerName                – string  (trimmed)
  *   searchableOwnerName     – string  (lowercase, for future search use)
  *   profileDisplayCustomName – boolean
  *   profilePhone            – string  (trimmed)
@@ -84,8 +98,20 @@ exports.syncMasterProfile = functions.https.onCall(async (data, context) => {
         );
     }
 
-    // 3. Security: a user can only write their own profile
-    if (context.auth.uid !== userId) {
+    // 3. Security: verify the caller owns this user document.
+    //    userId is the Firestore document ID (backendUserId on the client).
+    //    It may or may not equal context.auth.uid, so we look up users/{userId}
+    //    and compare its stored firebaseUid field against the authenticated UID.
+    const db = admin.firestore();
+    const userDoc = await db.doc(`users/${userId}`).get();
+    if (!userDoc.exists) {
+        throw new functions.https.HttpsError(
+            'not-found',
+            'User not found.'
+        );
+    }
+    const storedFirebaseUid = userDoc.get('firebaseUid');
+    if (!storedFirebaseUid || storedFirebaseUid !== context.auth.uid) {
         throw new functions.https.HttpsError(
             'permission-denied',
             'You can only sync your own master profile.'
@@ -107,7 +133,6 @@ exports.syncMasterProfile = functions.https.onCall(async (data, context) => {
     const clientInteractionsEnabled = normalizeBoolean(data.clientInteractionsEnabled);
     const serviceTemplates = parseServiceTemplates(data.serviceTemplatesJson);
 
-    const db = admin.firestore();
     const masterRef = db.doc(`masters/${userId}`);
     const now = Date.now();
 
